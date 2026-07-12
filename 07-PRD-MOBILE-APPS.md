@@ -70,6 +70,8 @@ Design constraints that follow (farmer flow, both platforms): max 2 actions per 
 
 Why one app at this stage: 2 roles × 2 platforms as separate apps = 4 codebases under the parity rule (vs 2); one store listing/review cycle per platform; one name on every payout slip and sales pitch ("KisanSetu app डालो", one QR); cross-role discovery is free. Known trade-offs accepted: the store listing must serve two personas, and both roles share one release train.
 
+**Code architecture:** both apps follow the **MVVM** patterns copied from the founder's Fancall apps — see [20-CODE-ARCHITECTURE.md](20-CODE-ARCHITECTURE.md) §2 (Android) / §3 (iOS): View → ViewModel → Repository → API client, with the shared API-key + AES encode/decode layer (§5). UI renders in Jetpack Compose / SwiftUI (the layers below the View are copied from Fancall; only the View tech is modernised — ratify in 20 §7).
+
 **Split-ready module boundaries (mandatory from the first commit):**
 
 | Module | Contents | Rule |

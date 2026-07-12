@@ -200,7 +200,7 @@ Backup discipline (detail in `06-PRD-BACKEND.md` §8): nightly encrypted `pg_dum
 3. `reference_market_price` in code and schema; "mandi" only in Indian UI strings.
 4. All lifecycle transitions are compare-and-set SQL guarded and 409 on violation.
 5. Every ops mutation writes `audit_events`.
-6. Parameterized SQL only; no ORM, no string-built queries.
+6. Data layer = **Knex + Objection.js** (Fancall canon, [20-CODE-ARCHITECTURE.md](20-CODE-ARCHITECTURE.md) §1): Knex migrations + query builder, Objection models over an `AppModel` base (soft-delete + timestamps). Parameterized/bound queries only — never string-built SQL. (Supersedes the earlier raw-`pg` note.)
 7. Providers only behind interfaces; no `require('razorpay')` outside `payments/`.
 8. The CI region-#2 test (§6) stays green forever.
 

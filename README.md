@@ -47,6 +47,7 @@ Full definitions with violation examples live in [00-GOLDEN-RULES.md](00-GOLDEN-
 | [17-FUNDRAISE-FINANCE.md](17-FUNDRAISE-FINANCE.md) | Burn plan, raise narrative, milestones-to-money mapping. | Founder, investors |
 | [18-LEGAL-COMPLIANCE.md](18-LEGAL-COMPLIANCE.md) | Incorporation, FSSAI, GST, APMC rules, FPO/buyer agreements, trademark, data protection. | Founder, CA |
 | [19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md) | CMS/Analytics module of the Console: who sold what, who bought what, app downloads, active users, trend graphs, CSV export. | Founder, ops lead, web dev |
+| [20-CODE-ARCHITECTURE.md](20-CODE-ARCHITECTURE.md) | Canonical code patterns copied from the founder's Fancall apps: backend MVC (Knex+Objection), Android/iOS MVVM, the API-key + AES encode/decode security mechanism. | Every dev, before writing code |
 
 ## Reading order for a new team member
 
@@ -64,7 +65,7 @@ Full definitions with violation examples live in [00-GOLDEN-RULES.md](00-GOLDEN-
 **Day 2–3 — understand the product:**
 8. [05-PRODUCT-OVERVIEW.md](05-PRODUCT-OVERVIEW.md)
 9. [10-DESIGN-SYSTEM.md](10-DESIGN-SYSTEM.md)
-10. Then the PRD for your surface: [06-PRD-BACKEND.md](06-PRD-BACKEND.md) / [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md) / [08-PRD-WEBSITE.md](08-PRD-WEBSITE.md) / [09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md) with its sibling Console module [19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md) — plus [11-ARCHITECTURE.md](11-ARCHITECTURE.md).
+10. Then the PRD for your surface: [06-PRD-BACKEND.md](06-PRD-BACKEND.md) / [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md) / [08-PRD-WEBSITE.md](08-PRD-WEBSITE.md) / [09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md) with its sibling Console module [19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md) — plus [11-ARCHITECTURE.md](11-ARCHITECTURE.md) and, before writing any code, [20-CODE-ARCHITECTURE.md](20-CODE-ARCHITECTURE.md) (the canonical Fancall-derived patterns for your layer).
 
 **Before you write any code:**
 11. [12-DEVELOPMENT-PLAN.md](12-DEVELOPMENT-PLAN.md) and [15-TASKS-BACKLOG.md](15-TASKS-BACKLOG.md) — and confirm the PRDs are founder-approved. If they are not, you plan; you do not build (rule 3).
