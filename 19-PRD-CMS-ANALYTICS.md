@@ -1,16 +1,16 @@
 # 19 — PRD: CMS / Analytics module (KisanSetu Console)
 
 **Doc owner:** Founder (Alpesh) · **Status:** Draft for founder approval · **Last updated:** 2026-07-12
-**Siblings:** `09-PRD-OPS-DASHBOARD.md` (the other module of the same console — one login, one codebase, one API) · `06-PRD-BACKEND.md` (every screen here maps to endpoints defined there — this doc continues its R-series with R7–R14 + S5 and amends S4) · `10-DESIGN-SYSTEM.md` (stat tile §6.4, tokens) · `18-LEGAL-COMPLIANCE.md` (§10 data protection) · `14-OPS-PLAYBOOK.md` (weekly metrics ritual).
+**Siblings:** `09-PRD-OPS-DASHBOARD.md` (the other module of the same console — one login, one codebase, one API) · `06-PRD-BACKEND.md` (every screen here maps to endpoints defined there — this doc continues its R-series with R7–R14 + S5, amends S4, and consumes the geo/markets surface G1–G3 + M7–M10 of its §6.13) · `10-DESIGN-SYSTEM.md` (stat tile §6.4, tokens) · `18-LEGAL-COMPLIANCE.md` (§10 data protection) · `14-OPS-PLAYBOOK.md` (weekly metrics ritual).
 **Gate:** every build task from this PRD is `[G]` gated on T1.7 founder PRD approval (Golden Rule 3) — same as everything else in the Brain.
 
 ---
 
 ## 1. Purpose
 
-The ops module (`09-PRD-OPS-DASHBOARD.md`) runs **today**: grade, allocate, deliver, pay. This module answers **what happened and where is it going**: who sold what, who bought what, how many people downloaded and use the apps, and whether the two golden metrics (freshness, farmer share — Golden Rule 5) are trending the right way. It is the founder's Friday ritual, the investor-update generator, and the early-warning system for buyer churn (Golden Rule 6: buyer repeat-rate is the retention metric that matters).
+The ops module (`09-PRD-OPS-DASHBOARD.md`) runs **today**: grade, allocate, deliver, pay. This module answers **what happened and where is it going** — who sold what, who bought what, how many people downloaded and use the apps, whether the two golden metrics (freshness, farmer share — Golden Rule 5) are trending the right way — and decides **where KisanSetu is live**: launch geography is CMS configuration, not code (C-6 Markets, Golden Rule 2). It is the founder's Friday ritual, the investor-update generator, and the early-warning system for buyer churn (Golden Rule 6: buyer repeat-rate is the retention metric that matters).
 
-**Product decision (canon):** there is ONE internal web app — the **KisanSetu Console** — with two modules sharing one OTP login, one vanilla-JS codebase, and one API. This doc specifies the CMS/Analytics module: five screens, C-1 through C-5. Any `role='ops'` user sees both modules at MVP (pilot team = founder + Ops Lead); per-screen permissions are a v2 non-goal. English-only at MVP, like the ops module. Desktop-first, fully usable at 768 px. No native app.
+**Product decision (canon):** there is ONE internal web app — the **KisanSetu Console** — with two modules sharing one OTP login, one vanilla-JS codebase, and one API. This doc specifies the CMS/Analytics module: six screens, C-1 through C-6. Any `role='ops'` user sees both modules at MVP (pilot team = founder + Ops Lead); per-screen permissions are a v2 non-goal. English-only at MVP, like the ops module. Desktop-first, fully usable at 768 px. No native app.
 
 Same reality constraint as the sibling: analytics must never block operations. Graphs read a nightly rollup, never the hot tables; if the rollup fails, ops screens are untouched and this module shows a dated banner, not wrong numbers.
 
@@ -18,13 +18,13 @@ Same reality constraint as the sibling: analytics must never block operations. G
 
 | User | Context | Jobs |
 |---|---|---|
-| Founder | Laptop, Friday ritual + before investor calls | C-1 trends, C-3 buyer health, C-5 export for updates |
+| Founder | Laptop, Friday ritual + before investor calls | C-1 trends, C-3 buyer health, C-5 export for updates; C-6 market activation when expanding (occasional, founder-only in practice) |
 | Ops lead | Laptop at hub, weekly | C-2 farmer follow-ups (inactive farmers, data-quality flags), weekly downloads entry on C-4 |
 | Field sales (read) | Phone browser | C-3 buyer list before a visit (repeat-rate, outstanding) |
 
 ## 3. Scope (in) / NON-GOALS
 
-**In (MVP):** C-1 Overview, C-2 Farmers, C-3 Buyers, C-4 App & Users basics (DAU graph + manual downloads entry); stored app events + nightly rollup; endpoints R7–R13 + S5. **v1.1:** C-5 Export (R14), retention cohorts, WAU/MAU graph polish.
+**In (MVP):** C-1 Overview, C-2 Farmers, C-3 Buyers, C-4 App & Users basics (DAU graph + manual downloads entry); C-6 Markets core (mode switch + city activate/deactivate — launch geography depends on it); stored app events + nightly rollup; endpoints R7–R13 + S5 + G1–G3/M7–M10 (geo/markets, `06-PRD-BACKEND.md` §6.13). **v1.1:** C-5 Export (R14), retention cohorts, WAU/MAU graph polish, C-6 demand-signals strip.
 
 **NON-GOALS (explicit):**
 
@@ -39,7 +39,7 @@ Same reality constraint as the sibling: analytics must never block operations. G
 
 ## 4. Information architecture & the week in the life
 
-The console header gains a module switcher: **Ops | Analytics**. Analytics left nav: **Overview · Farmers · Buyers · App & Users · Export**. Header keeps region name + business date (region tz), user, Refresh with "updated n s ago". All money uses the region currency from `GET /me` — no hardcoded ₹ (Golden Rule 2); every query is region-scoped by `region_id`.
+The console header gains a module switcher: **Ops | Analytics**. Analytics left nav: **Overview · Farmers · Buyers · App & Users · Markets · Export**. Header keeps region name + business date (region tz), user, Refresh with "updated n s ago". All money uses the region currency from `GET /me` — no hardcoded ₹ (Golden Rule 2); every query is region-scoped by `region_id`.
 
 | When | Who | Screen | Action |
 |---|---|---|---|
@@ -48,6 +48,7 @@ The console header gains a module switcher: **Ops | Analytics**. Analytics left 
 | Monday | Ops lead | **C-4** | Enter last week's downloads from Play Console + App Store Connect (2 numbers each). |
 | Monthly | Ops lead | **C-2** | Data-quality sweep: farmers with no-shows or dispute-traced crates → FPO conversation. |
 | Before investor call | Founder | **C-5** | Export metrics CSV for the date range; the export itself is audited. |
+| When expanding (occasional) | Founder | **C-6** | Check demand from non-serviceable cities; activate the next city (e.g. Ahmedabad) from the picker — no deploy, no code change. |
 
 ## 5. Metric definitions (stated once — every screen, endpoint and export uses exactly these)
 
@@ -161,6 +162,41 @@ Data: R14 `GET /reports/export?entity=farmers|buyers|metrics&format=csv&from=&to
 - **States:** empty range = disabled button + explanation; oversized range streams anyway (server streams; no timeout at pilot volumes); failure mid-stream = browser-level, retry regenerates.
 - **Acceptance:** (1) exported farmer CSV row count equals the C-2 list total for the same filters; (2) every download produces exactly one `report_exported` audit row, verified in tests; (3) CSV opens clean in Excel/Sheets (UTF-8 BOM, ISO dates, unformatted numbers).
 
+### 6.6 C-6 Markets — where KisanSetu is live
+
+Data: M7 `GET /markets` (mode + active cities + demand signals — everything this screen renders) + M8 `PUT /markets/mode` + M9 `POST /markets/cities` + M10 `DELETE /markets/cities/:city_id`; the cascade picker is fed by the geo reads G1 `GET /geo/countries`, G2 `GET /geo/states`, G3 `GET /geo/cities` (all in `06-PRD-BACKEND.md` §6.13).
+
+**Purpose:** launch geography is **configuration, not code** (Golden Rule 2). This screen holds the mode switch — **Targeted** (default: only explicitly activated cities are serviceable; pilot = Surat, seeded) vs **Auto** (everything worldwide, every city in the geo tables) — and the active-city list. All enforcement reads one DB function, `city_is_serviceable()`: orders outside serviceable cities are blocked with `403 city_not_serviceable`, while signups and leads are ALWAYS accepted (their captured city feeds the demand strip below) and the buyer catalog shows "हम जल्द आ रहे हैं / Coming soon to your city". Retargeting to a new city (e.g. Ahmedabad) is a picker click here, not a deploy. **Markets ≠ regions:** this screen answers "are we live here?"; `regions`/`region_settings` stay the operating unit (prices, cutoff, currency) and provisioning a region for a newly activated city is a manual ops step at MVP (v2 auto-provisions in auto mode) — the screen flags serviceable-but-unprovisioned cities so the two concepts never blur.
+
+Layout sketch:
+
+```
+Markets — where we are live                                        [Refresh]
+┌ Mode ─────────────────────────────────────────────────────────────────┐
+│ (•) Targeted — only activated cities    ( ) Auto — worldwide          │
+│     switching to Auto: "type AUTO to confirm — this opens             │
+│     ordering worldwide"  [____]  [Confirm]                            │
+└───────────────────────────────────────────────────────────────────────┘
+┌ Activate a city ──────────────────────────────────────────────────────┐
+│ Country [India ▾] → State [Gujarat ▾] → City [sur…        🔍]         │
+│   Surat · Surendranagar                        [Activate "Surat"]     │
+└───────────────────────────────────────────────────────────────────────┘
+┌ Active cities ────────────────────────────────────────────────────────┐
+│ Surat, Gujarat, IN · since 2026-07-12 · 14 open orders   [Deactivate] │
+└───────────────────────────────────────────────────────────────────────┘
+┌ Demand from non-serviceable cities (top 10, last 30 d) — v1.1 ────────┐
+│ Ahmedabad 6 leads / 3 signups · Vadodara 2 / 1 · …    (read-only)     │
+└───────────────────────────────────────────────────────────────────────┘
+```
+
+- **Mode switch:** Targeted | Auto. Flipping to **Auto** demands a typed confirmation — the user must type `AUTO` ("this opens ordering worldwide") before M8 fires; the typed guard is client-side, the audit (`targeting_mode_changed`) is server-side and unconditional. Flipping back to Targeted is a plain confirm — previously activated cities simply become binding again. The change takes effect on the next request (`city_is_serviceable()` is read per request — no restart, no deploy).
+- **Cascade picker:** Country → State → City, search-as-you-type on the city field (G3 `search=`, min 2 chars, paginated). Activate writes M9 (`{city_id, notes?}`, audit `city_activated`); an already-active city surfaces the `409 duplicate` inline; re-activating a previously deactivated city resumes it with a fresh `activated_at`. In auto mode the picker and list render read-only with the note "auto mode: every city is serviceable".
+- **Active-cities list:** name/state/country, `activated_at`, `open_orders` (from M7), notes, Deactivate action → M10 (soft: `active=false` + `deactivated_at`, audit `city_deactivated`). **Deactivation guard:** a city with open orders shows a warning **listing those orders** (from `open_orders` + a deep-link into the ops Orders board) and requires an explicit confirm; deactivation NEVER cancels existing orders — they proceed to delivery; only NEW orders are blocked (`city_not_serviceable`) from that moment. A serviceable-but-unprovisioned city (no region yet) carries an amber "not provisioned — create region + prices per 14-OPS-PLAYBOOK.md" chip.
+- **Demand-signals strip (v1.1, read-only):** top 10 non-serviceable cities by leads + signups in the last 30 days (M7 `demand_signals`) — the founder's where-to-expand-next view. Signups/leads are never blocked, so this data always exists.
+- **States:** loading skeleton; targeted mode with zero active cities = red banner "No city is live — ordering is OFF everywhere" (legal state, loudly flagged); auto mode = list + picker in the read-only info state; G3 search with no match = "no city found — check the state"; error = banner + Retry keeping picker state.
+- **Edge cases:** deactivating the only active city in targeted mode → same open-orders warning plus the zero-cities red banner after confirm; mode flipped to auto while the deactivation dialog is open → M10 still succeeds (the row is kept for a later return to targeted, non-binding meanwhile); double-activate race between two ops users → second gets the `409 duplicate` inline; deactivation never touches signups/leads — they keep flowing into the demand strip.
+- **Acceptance:** (1) a fresh seed shows targeted mode with Surat active, and retargeting to Ahmedabad is picker + Activate — zero deploys, zero code changes; (2) switching to Auto requires typing `AUTO`, writes exactly one `targeting_mode_changed` audit row, and a buyer in any geo-table city can immediately place an order (subject to the usual `06-PRD-BACKEND.md` §6.7 guards) without a restart; (3) deactivating a city with open orders shows the warning listing them, and after confirm those orders are untouched while a new order in that city fails `403 city_not_serviceable`; (4) every C-6 action (mode change / activate / deactivate) writes exactly one audit row — an action with no audit row is a test failure.
+
 ## 7. Backend contract (amendments + new surface for `06-PRD-BACKEND.md`)
 
 **S4 amendment — events are now STORED, not just logged.** `POST /events` keeps its transport semantics (batch, fire-and-forget, `202`) but writes thin rows to a new table `app_events (id, user_id nullable, event_name, platform android|ios, app_version, region_id, ts timestamptz, props jsonb)`, indexed on `(ts)`, `(user_id, ts)`, `(event_name, ts)`. Retention 180 days; a nightly job then deletes raw rows older than that, keeping aggregates only (they are already in `metrics_daily`). This powers DAU/MAU; without stored events C-4 is impossible.
@@ -180,6 +216,8 @@ Data: R14 `GET /reports/export?entity=farmers|buyers|metrics&format=csv&from=&to
 | R13 | `GET /reports/app-usage?from=&to=` | DAU/WAU/MAU, version adoption, platform split | C-4 |
 | R14 | `GET /reports/export?entity=farmers\|buyers\|metrics&format=csv&from=&to=` | Streams CSV; writes `audit_events` `report_exported` | C-5 (v1.1) |
 | S5 | `PUT /store-metrics/:date` | Manual weekly downloads entry (upsert on (region_id, date, platform)) | C-4 entry form |
+
+**Markets surface (C-6):** the geo reads (G1 `GET /geo/countries`, G2 `GET /geo/states`, G3 `GET /geo/cities` — search-as-you-type, paginated) and the markets endpoints (M7 `GET /markets`, M8 `PUT /markets/mode`, M9 `POST /markets/cities`, M10 `DELETE /markets/cities/:city_id`, all `ops`) are specified canonically in `06-PRD-BACKEND.md` §6.13 — there, not here, because the enforcement they configure (the `403 city_not_serviceable` order guard and the `GET /config` `serviceable` flag) is a backend concern; C-6 only operates it. The backing tables (`market_settings`, `target_cities`, the `city_is_serviceable()` DB function) and the geo reference tables (scaffold migrations 002–004; market targeting is 005) live in its §5 DDL.
 
 ## 8. Technical notes (binding for the build)
 
@@ -208,9 +246,9 @@ These screens expose farmer and buyer operational data to internal staff — cov
 
 | Phase | Contents |
 |---|---|
-| **MVP** | C-1, C-2, C-3 complete + R7–R12 (thin queries over existing tables); S4 stored-events amendment + `app_events`/`store_metrics`/`metrics_daily` + nightly rollup; C-4 basics (DAU graph, manual downloads entry via S5/R13). |
-| **v1.1** | C-5 export (R14 + audit), W1/W4 retention cohorts, WAU/MAU graphs polish. |
-| **v2** | Store-API auto-sync (`store_metrics.source='api'`), per-screen permissions, threshold alerting (e.g. farmer-share week < 60% pings the founder). |
+| **MVP** | C-1, C-2, C-3 complete + R7–R12 (thin queries over existing tables); S4 stored-events amendment + `app_events`/`store_metrics`/`metrics_daily` + nightly rollup; C-4 basics (DAU graph, manual downloads entry via S5/R13); **C-6 core** (mode switch + city activate/deactivate via G1–G3 + M7–M10, seeded targeted+Surat) — MVP because launch geography depends on it. |
+| **v1.1** | C-5 export (R14 + audit), W1/W4 retention cohorts, WAU/MAU graphs polish, C-6 demand-signals strip (non-serviceable-city leads/signups on M7). |
+| **v2** | Store-API auto-sync (`store_metrics.source='api'`), per-screen permissions, threshold alerting (e.g. farmer-share week < 60% pings the founder), region auto-provisioning when a city is activated in auto mode (`06-PRD-BACKEND.md` §6.13). |
 
 ## 12. Instrumentation of the console itself
 

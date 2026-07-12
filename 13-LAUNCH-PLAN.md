@@ -35,6 +35,7 @@ This document is the go-live sequence for the Surat pilot and the expansion play
 
 | Parameter | Canonical value |
 |---|---|
+| Launch geography | **CMS-managed via Market Targeting** ([19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md) C-6): pilot default = **targeted mode with Surat active (seeded)**. Retargeting to another city (e.g. Ahmedabad) is a CMS action, not a code change. Auto/worldwide mode is a **post-pilot founder action with its own go/no-go review** — never flipped casually |
 | Order cutoff | 18:00 (6 PM) day before delivery (D-1), local time |
 | Delivery window | 06:00–10:00 (target majority of drops before 09:00) |
 | Minimum order value | ₹1,000 |
@@ -53,7 +54,7 @@ Operational context for the pilot. Any numeric value here that also appears in �
 
 | Parameter | Value | Rationale |
 |---|---|---|
-| Geography | Surat city + one FPO catchment in Surat district (single hub) | Beachhead; founder can physically be at the hub every morning |
+| Geography | Surat city + one FPO catchment in Surat district (single hub). Serviceability itself is CMS-managed per §2.1's launch-geography row — Surat is a seeded default, not a hardcode | Beachhead; founder can physically be at the hub every morning |
 | FPO partners | **1** | One relationship done deeply beats three done badly; second FPO only after go/no-go gate |
 | Farmers | **25–50** via the FPO | Enough supply for 2 crops without over-promising offtake |
 | Buyers | **15–25** HoReCa (mix: ~10 restaurants, 3 hotels, 3 caterers, 2–4 cloud kitchens) | Matches founder-led sales capacity of 5 visits/day ([04-GTM-SALES-MARKETING.md](04-GTM-SALES-MARKETING.md)) |

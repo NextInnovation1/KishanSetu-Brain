@@ -23,14 +23,14 @@ Global-first, Surat-first (Golden rule #2): every table that touches money, lang
 | Farmer app | `farmer` | See today's prices, post a listing, track grading/allocation status, see payout history |
 | Buyer app | `buyer` | Browse graded catalog with availability, place order, track status, view traceability + invoice |
 | Console — Ops module | `ops` | Set daily prices, grade listings, allocate listings→order items, update delivery status, trigger payouts, work leads, read SLA/farmer-share reports |
-| Console — CMS/Analytics module | `ops` | Who sold what, who bought what, downloads & active users, trend graphs, CSV export (R7–R14; screens C-1…C-5 in `19-PRD-CMS-ANALYTICS.md`). Same login, same JWT: any `ops` user sees both modules at MVP — per-screen permissions are a v2 non-goal |
+| Console — CMS/Analytics module | `ops` | Who sold what, who bought what, downloads & active users, trend graphs, CSV export, market targeting (where KisanSetu is live) (R7–R14 + G1–G3/M7–M10; screens C-1…C-6 in `19-PRD-CMS-ANALYTICS.md`). Same login, same JWT: any `ops` user sees both modules at MVP — per-screen permissions are a v2 non-goal |
 | Website | none (public) | `POST /leads`, read nothing |
 | Founder/CA | `ops` | Export reports for the weekly metrics ritual (`14-OPS-PLAYBOOK.md`) — audited CSV via R14 |
 
 ## 3. Scope (in) / Non-goals (out)
 
 ### In (MVP)
-Auth (phone OTP → JWT), users + role profiles (buyers start `pending`, ops-activated), region/FPO/hub hierarchy, region settings + client bootstrap config (`GET /config`), produce catalog with pluggable translations, daily price feed, listings + grading (with one evidence photo via a storage interface) + splits, orders + server-side pricing + cart quote (`POST /orders/quote`) + two-phase allocation (evening supply-check confirm / morning binding allocation) + traceability, buyer credit enforcement, buyer quality disputes + credit notes, payments (farmer payout + buyer invoice; manual UTR entry at MVP, Razorpay UPI behind a provider interface), leads, ops report endpoints (incl. receivables aging), CMS/analytics report endpoints (R7–R14 + nightly `metrics_daily` rollup + manual `store_metrics` entry — consumed by `19-PRD-CMS-ANALYTICS.md`), SLA timestamp instrumentation, batch app instrumentation (`POST /events` — **stored** to `app_events`, §6.11 S4), rate limiting, audit events, seed + migration tooling.
+Auth (phone OTP → JWT), users + role profiles (buyers start `pending`, ops-activated), region/FPO/hub hierarchy, region settings + client bootstrap config (`GET /config`), produce catalog with pluggable translations, daily price feed, listings + grading (with one evidence photo via a storage interface) + splits, orders + server-side pricing + cart quote (`POST /orders/quote`) + two-phase allocation (evening supply-check confirm / morning binding allocation) + traceability, buyer credit enforcement, buyer quality disputes + credit notes, payments (farmer payout + buyer invoice; manual UTR entry at MVP, Razorpay UPI behind a provider interface), leads, ops report endpoints (incl. receivables aging), CMS/analytics report endpoints (R7–R14 + nightly `metrics_daily` rollup + manual `store_metrics` entry — consumed by `19-PRD-CMS-ANALYTICS.md`), market targeting (geo reference reads G1–G3 + CMS-managed serviceable cities M7–M10 + the `city_not_serviceable` order guard, §6.13 — screen C-6 in `19-PRD-CMS-ANALYTICS.md`), SLA timestamp instrumentation, batch app instrumentation (`POST /events` — **stored** to `app_events`, §6.11 S4), rate limiting, audit events, seed + migration tooling.
 
 ### NON-GOALS (explicit, with reasons)
 
@@ -130,6 +130,7 @@ CREATE TABLE users (
   role        text NOT NULL CHECK (role IN ('farmer','buyer','ops')),
   language    text NOT NULL DEFAULT 'en',      -- BCP-47; UI language
   region_id   uuid NOT NULL REFERENCES regions(id),
+  city_id     integer REFERENCES cities(id),   -- geo reference (scaffold migrations 002–004; market-targeting block below). Captured at signup (A3) — NEVER a signup blocker (§6.13)
   status      text NOT NULL DEFAULT 'active'    -- farmers signup 'active'; buyers signup 'pending' (§6.2/§6.3), ops flips to 'active'
                 CHECK (status IN ('pending','active','blocked')),
   created_at  timestamptz NOT NULL DEFAULT now(),
@@ -332,6 +333,7 @@ CREATE TABLE leads (
   message       text,
   source        text NOT NULL DEFAULT 'website', -- 'website','meta_ads','referral','event'
   region_id     uuid REFERENCES regions(id),
+  city_id       integer REFERENCES cities(id),   -- captured when the form gives one; feeds C-6 demand-from-non-serviceable-cities (§6.13)
   status        text NOT NULL DEFAULT 'new'
                   CHECK (status IN ('new','contacted','sampled','converted','dropped')),
   assigned_to   uuid REFERENCES users(id),
@@ -400,6 +402,50 @@ CREATE TABLE metrics_daily (                    -- nightly rollup at 00:30 regio
   PRIMARY KEY (region_id, date)
 );
 
+-- ============ market targeting (CMS module — screen C-6 in 19-PRD-CMS-ANALYTICS.md; endpoints §6.13) ============
+-- Geo reference tables `countries` / `states` / `cities` ship as scaffold migrations 002–004,
+-- column-for-column compatible with the countries-states-cities dataset (integer identity PKs,
+-- so the dataset's ids import as-is). Not restated here; this PRD relies only on:
+--   cities(id, name, state_id, country_id) · states(id, name, country_id) · countries(id, name, iso2).
+-- The two tables + function below are scaffold migration 005_market_targeting.sql — referenced
+-- the same way as 002–004, and reviewed against THIS document when development resumes (Golden Rule 3).
+
+CREATE TABLE market_settings (                  -- singleton: HOW serviceability is decided
+  id             smallint PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  targeting_mode text NOT NULL DEFAULT 'targeted' CHECK (targeting_mode IN ('targeted','auto')),
+    -- 'targeted': only active target_cities rows are serviceable (pilot default; Surat seeded)
+    -- 'auto':     EVERY city in the geo tables is serviceable, worldwide (founder-level switch, C-6)
+  updated_by     uuid REFERENCES users(id),
+  updated_at     timestamptz NOT NULL DEFAULT now()
+);
+-- Seeded by the migration: one row, targeting_mode='targeted'. Surat's target_cities row comes
+-- from seed tooling — the pilot default is targeted + Surat active, with zero code involved.
+
+CREATE TABLE target_cities (                    -- WHERE we are live when targeting_mode='targeted'
+  id             integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  city_id        integer NOT NULL UNIQUE REFERENCES cities(id),
+  active         boolean NOT NULL DEFAULT true,
+  activated_at   timestamptz NOT NULL DEFAULT now(),
+  deactivated_at timestamptz,                   -- set on soft-deactivate (M10); rows are never deleted
+  activated_by   uuid REFERENCES users(id),
+  notes          text
+);
+CREATE INDEX idx_target_cities_active ON target_cities (city_id) WHERE active;
+
+-- DB truth function: ALL enforcement reads this one function — the §6.7 order guard and the
+-- GET /config `serviceable` flag (§6.11). Flipping the mode changes its answer instantly; no restart.
+CREATE FUNCTION city_is_serviceable(p_city_id integer) RETURNS boolean
+LANGUAGE sql STABLE AS $$
+  SELECT CASE
+    WHEN (SELECT targeting_mode FROM market_settings WHERE id = 1) = 'auto'
+      THEN EXISTS (SELECT 1 FROM cities WHERE id = p_city_id)
+    ELSE EXISTS (SELECT 1 FROM target_cities WHERE city_id = p_city_id AND active)
+  END;
+$$;
+-- Demand capture: `users.city_id` and `leads.city_id` (above) record WHERE demand comes from.
+-- Signups and leads are ALWAYS accepted regardless of serviceability — only ORDERS are guarded
+-- (§6.7 `city_not_serviceable`) — so C-6 can show "demand from non-serviceable cities" (§6.13).
+
 -- ============ indexes ============
 CREATE INDEX idx_listings_hub_status   ON listings (hub_id, status);
 CREATE INDEX idx_listings_farmer       ON listings (farmer_id, created_at DESC);
@@ -435,7 +481,7 @@ Base URL dev: `http://localhost:4000/v1`. All responses JSON `snake_case`. Auth 
              "field_errors": { "qty": "must be > 0" } } }
 ```
 
-- **Error codes** (HTTP → `code`): `400 validation_failed` · `401 unauthorized` / `otp_invalid` / `otp_expired` / `token_expired` · `403 forbidden_role` / `user_blocked` / `account_pending` / `credit_hold` · `404 not_found` · `409 conflict_state` (illegal lifecycle transition) / `insufficient_stock` / `duplicate` / `past_cutoff` / `claim_window_closed` · `422 price_unavailable` / `below_min_order` · `429 rate_limited` (with `Retry-After` header) · `500 internal` (message is generic; details go to logs only).
+- **Error codes** (HTTP → `code`): `400 validation_failed` · `401 unauthorized` / `otp_invalid` / `otp_expired` / `token_expired` · `403 forbidden_role` / `user_blocked` / `account_pending` / `credit_hold` / `city_not_serviceable` (buyer's city not live — §6.13) · `404 not_found` · `409 conflict_state` (illegal lifecycle transition) / `insufficient_stock` / `duplicate` / `past_cutoff` / `claim_window_closed` · `422 price_unavailable` / `below_min_order` · `429 rate_limited` (with `Retry-After` header) · `500 internal` (message is generic; details go to logs only).
 - **Idempotency**: `POST /orders` and `POST /payments/...` accept an optional `Idempotency-Key` header; a repeat with the same key returns the original response (keys stored 24 h in an `idempotency_keys` table).
 - **JWT claims**: `{ sub: user_id, role, region_id, iat, exp }`. HS256, secret from env `JWT_SECRET` (≥32 bytes). Expiry 30 days; renewal = new OTP login (no refresh-token machinery at MVP).
 
@@ -662,6 +708,7 @@ Pricing is 100% server-side from the published price row for `delivery_date` (fa
 **Order-placement guards (real placement only; `POST /orders/quote` skips these):**
 - **Pending buyer** (`users.status='pending'`) → `403 { "error": { "code": "account_pending" } }`. The account must be ops-activated (§6.3 U10) first.
 - **Credit hold** — computed against the buyer's outstanding `buyer_invoice` payments (unpaid `amount` minus any `credit_note`): if **outstanding exposure > `buyer_profiles.exposure_cap`** (₹25,000) **OR any buyer_invoice is ≥ 10 days past `due_date`** → `403 { "error": { "code": "credit_hold" } }`. A buyer's **first 4 orders are pay-on-delivery** (invoice due on the delivery date, `due_date = delivery_date`); from the 5th order onward, `due_date = delivery_date + credit_terms` days (net-7). "First 4" counts the buyer's non-cancelled orders.
+- **City not serviceable** — `city_is_serviceable(users.city_id)` for the ordering buyer returns false (§6.13: targeted mode with no active `target_cities` row for the buyer's city) → `403 { "error": { "code": "city_not_serviceable" } }`. Orders are the ONLY thing market targeting blocks — signups and leads are always accepted, and `POST /orders/quote` still prices (§6.13). In the normal path the buyer never reaches this guard: `GET /config?city_id=` returns `serviceable:false` (§6.11) and the buyer catalog renders the "हम जल्द आ रहे हैं / Coming soon to your city" state instead of a checkout. A buyer row with NULL `city_id` (pre-capture) is treated as non-serviceable — visible, never silent — until ops backfills the city via U7.
 
 ```json
 // O5 (delivered order) — traceability block, the premium differentiator
@@ -759,7 +806,7 @@ Instrumentation rules: an allocation with any missing timestamp is counted in `i
 - **Downloads** — store-reported installs from `store_metrics` (§5). **Signups** — rows in `users`. Two distinct series; R13 (and screen C-4) report both and never conflate them.
 - **GMV** — Σ `orders.total` of orders delivered that day. **kg moved** — Σ `order_allocations.qty` on delivered orders. **farmer_share_pct** — per R3 (Σ farmer payouts ÷ Σ buyer produce subtotal). **median_freshness_h** — per R2 (incomplete chains excluded, never interpolated).
 
-**CMS / analytics reports (Console CMS module — screens C-1…C-5 in `19-PRD-CMS-ANALYTICS.md`).** The R-series continues (R1–R6 above are unchanged; no renumbering needed). All require the `ops` role; list endpoints use the §6.1 envelope and error shape. Privacy: these endpoints expose per-farmer/per-buyer operational data to internal staff only — covered by the DPDP service purpose (`18-LEGAL-COMPLIANCE.md` §10); the only path for data to leave the console is R14's audited CSV.
+**CMS / analytics reports (Console CMS module — screens C-1…C-5 in `19-PRD-CMS-ANALYTICS.md`; the module's sixth screen, C-6 Markets, rides the §6.13 geo/markets surface, not the R-series).** The R-series continues (R1–R6 above are unchanged; no renumbering needed). All require the `ops` role; list endpoints use the §6.1 envelope and error shape. Privacy: these endpoints expose per-farmer/per-buyer operational data to internal staff only — covered by the DPDP service purpose (`18-LEGAL-COMPLIANCE.md` §10); the only path for data to leave the console is R14's audited CSV.
 
 | # | Method & path | Role | Purpose |
 |---|---|---|---|
@@ -845,6 +892,13 @@ R14 streams `text/csv` (`Content-Disposition: attachment`), `format=csv` only at
 ```
 `min_supported_version` drives the client force-update gate; because S3 is public and pre-auth, an out-of-date app can learn it must upgrade before the user even logs in.
 
+**Market-targeting extension (§6.13):** S3 additionally accepts `?city_id=` (the client's captured city) and the response then carries `"serviceable": <bool>`, straight from `city_is_serviceable()` — this is the **single public serviceability check**; there is deliberately no separate `GET /markets/check` endpoint (one bootstrap call stays one bootstrap call). Buyer app behavior on `serviceable:false`: the catalog shows the "हम जल्द आ रहे हैं / Coming soon to your city" state — browse, signup, and profile still work; only ordering is off (§6.7 guard is the server-side backstop). Without `?city_id=` the key is omitted.
+
+```json
+// GET /config?region=IN-GJ-SURAT&city_id=57996 → 200 — same body as above, plus:
+{ "…": "…", "serviceable": true }
+```
+
 **S4 `POST /events`** — fire-and-forget batch transport for app analytics/instrumentation. **AMENDED for the CMS module (supersedes the earlier logs-only behavior): accepted events are now STORED**, one thin row each in `app_events` (§5), *and* still emitted as structured `pino` lines (`event:` field, §11). The server tags `user_id`/`region_id` from the JWT, takes batch-level `platform` + `app_version` from the body, and skips-and-counts unknown `name`s. Still best-effort: never blocks UX, returns `202` even if some rows are dropped. Stored events are what make DAU/WAU/MAU and screen C-4 possible (R13); retention is **180 days**, enforced by the 00:30 nightly rollup (§6.6), which folds aggregates into `metrics_daily` before purging.
 
 ```json
@@ -894,6 +948,53 @@ Guard: `claimed_at` must be **within 2 h of the allocation's `delivered_ts`** �
   "credit_note_payment_id": "…" }
 ```
 Resolution effects: `credit` → creates a `credit_note` payment (`type='credit_note'`, `order_id`, `dispute_id`, `amount`, status `paid`) that reduces the buyer's outstanding balance (feeds §6.7 credit-hold and R5 aging); `replacement` → logged for ops fulfilment, no money row; `rejected` → closed with reason. All four endpoints write `audit_events` (`dispute_created` / `dispute_resolved`).
+
+### 6.13 Geo reference & market targeting
+
+Launch geography is **CMS-managed configuration, not code** (Golden rule #2 — the codebase never hardcodes a city). The `market_settings` singleton (§5) holds the mode: **`targeted`** (default) — only cities explicitly activated in `target_cities` are serviceable; **`auto`** — every city in the geo tables is serviceable, worldwide. One DB truth function, `city_is_serviceable(city_id)` (§5), answers "are we live here?" and is the only thing enforcement reads — flipping the mode changes every answer instantly, no restart, no deploy. Pilot default: **targeted with Surat active (seeded)**; retargeting to, say, Ahmedabad is a founder action on screen C-6 (`19-PRD-CMS-ANALYTICS.md`), not a release. Auto/worldwide is a founder-level, post-pilot action.
+
+**Markets vs regions (the two concepts never blur):** `target_cities` answers *"are we live here?"* — a binary serviceability fact. `regions` / `region_settings` (§5) remain the **operating unit** — prices, cutoff, delivery window, currency, tax scheme. Activating a city does NOT create a region: provisioning a region (+ hub, FPO, price feed) for a newly activated city stays a **manual ops step at MVP** (`14-OPS-PLAYBOOK.md`); a city can be serviceable-but-unprovisioned, and C-6 flags that state. v2: auto-provision a region from country defaults when a city is activated in auto mode.
+
+**Signup/lead capture:** `POST /auth/signup` (A3) now carries `city_id` (the apps' Country → State → City picker, fed by G1–G3 — the A2 `signup_token` is accepted on the geo reads so the picker works pre-account); `POST /leads` (D1) accepts an optional `city_id`. Neither is EVER rejected for a non-serviceable city — that demand is exactly what the C-6 demand-signals strip surfaces. Only orders are blocked (§6.7, `403 city_not_serviceable`); the public check is the `GET /config` `serviceable` flag (§6.11).
+
+| # | Method & path | Role | Purpose |
+|---|---|---|---|
+| G1 | `GET /geo/countries` | any authed (A2 `signup_token` accepted) | Country pick-list for the cascade pickers (C-6 + signup city capture) |
+| G2 | `GET /geo/states?country_id=` | any authed (A2 `signup_token` accepted) | States of a country |
+| G3 | `GET /geo/cities?state_id=&search=&limit=&offset=` | any authed (A2 `signup_token` accepted) | Cities of a state, search-as-you-type (`search` = name prefix, `ILIKE`) |
+| M7 | `GET /markets` | ops | Everything C-6 renders: mode + active cities (incl. `open_orders`) + demand signals (v1.1) |
+| M8 | `PUT /markets/mode` | ops | Switch `targeting_mode` (`targeted`\|`auto`); writes `audit_events` `targeting_mode_changed` |
+| M9 | `POST /markets/cities` | ops | Activate a city `{city_id, notes?}`; re-activates a deactivated row; `409 duplicate` if already active; writes `city_activated` |
+| M10 | `DELETE /markets/cities/:city_id` | ops | **Soft** deactivate: `active=false` + `deactivated_at`; writes `city_deactivated`; NEVER touches existing orders |
+
+The M-series continues from §6.8 (M1–M6 are payments — no renumbering, same precedent as the R-series continuing R7–R14). G1–G3 use the §6.1 list envelope; the geo reads raise the `limit` max to 250 so a country picker fills in one call. G3 requires `state_id`; without `search` it pages the whole state alphabetically.
+
+```json
+// G3: GET /geo/cities?state_id=1064&search=sur&limit=20&offset=0 → 200
+{ "data": [ { "id": 57996, "name": "Surat", "state_id": 1064, "state_code": "GJ",
+              "country_id": 101, "country_code": "IN",
+              "latitude": 21.19594000, "longitude": 72.83023000 },
+            { "id": 58009, "name": "Surendranagar", "state_id": 1064, "state_code": "GJ",
+              "country_id": 101, "country_code": "IN",
+              "latitude": 22.70000000, "longitude": 71.68333000 } ],
+  "total": 2, "limit": 20, "offset": 0 }
+```
+
+```json
+// M7: GET /markets → 200 — mode, the active list, and where blocked demand is coming from
+{ "targeting_mode": "targeted",
+  "active_cities": [ { "city_id": 57996, "name": "Surat", "state": "Gujarat", "country": "India",
+                       "activated_at": "2026-07-12T09:00:00Z", "activated_by": "…",
+                       "notes": "pilot seed", "open_orders": 14, "region_provisioned": true } ],
+  "demand_signals": [ { "city_id": 57588, "name": "Ahmedabad", "state": "Gujarat", "country": "India",
+                        "leads_30d": 6, "signups_30d": 3 },
+                      { "city_id": 58164, "name": "Vadodara", "state": "Gujarat", "country": "India",
+                        "leads_30d": 2, "signups_30d": 1 } ] }
+```
+
+M7 rules: `open_orders` = orders not yet `delivered`/`cancelled` whose buyer's `city_id` is this city — C-6 uses it for the deactivation warning; `region_provisioned` = whether an active region covers the city (the manual ops step above); `demand_signals` (**v1.1**) = leads + signups of the last 30 days grouped by captured `city_id` where `city_is_serviceable()` is false, top 10 by combined count — read-only, so the founder sees where to expand next. In `auto` mode `active_cities` still returns the (now non-binding) target list and C-6 renders it read-only. M8 body is `{ "targeting_mode": "auto" }`; the typed-"AUTO" confirmation is a **C-6 client guard** (the API accepts any authorized M8 call and audits it). All M-series writes are audited: `targeting_mode_changed` / `city_activated` / `city_deactivated` — a C-6 action with no audit row is a test failure (§9).
+
+**Scaffold note:** the geo reference tables ship as scaffold migrations `002_countries.sql`–`004_cities.sql` (column-compatible with the countries-states-cities dataset); `005_market_targeting.sql` (`market_settings` + `target_cities` + `city_is_serviceable()`) sits beside them — and, like everything in the scaffold, is reviewed against THIS document when development resumes (Golden Rule 3).
 
 ## 7. Edge cases & error states (canonical decisions)
 
@@ -950,6 +1051,7 @@ Resolution effects: `credit` → creates a `credit_note` payment (`type='credit_
 - **Disputes**: a claim filed >2 h after `delivered_ts` returns `409 claim_window_closed`; a `credit` resolution creates a `credit_note` that lowers the buyer's outstanding in R5 by exactly `amount`.
 - **Listing expiry**: a `posted` listing past `harvest_date + 1 day` (region tz) is swept to `closed` with `reason=expired_no_show`, drops out of `available_qty` (from `harvest_date` 12:00), and frees the farmer's open-listing budget.
 - **CMS analytics**: an event accepted by S4 appears in R13's counts for its `ts` date **within the same day** (today is served from raw `app_events`; `metrics_daily` catches up at 00:30); the nightly rollup produces **exactly one `metrics_daily` row per active region per day**, and a re-run upserts rather than duplicates; every R14 CSV export writes an `audit_events` row (`action='report_exported'`, detail = entity + date range + row count) — an export with no audit row is a test failure; R9 and R11 return the §6.1 list envelope and honor `limit`/`offset` (default 20, max 100).
+- **Market targeting**: `POST /orders` from a buyer whose city is not serviceable returns `403 city_not_serviceable` (and `GET /config?city_id=` returns the same verdict the guard enforces — one function, §6.13); flipping `market_settings.targeting_mode` to `auto` via M8 makes ANY geo-table city serviceable immediately — no restart, no deploy (the guard calls `city_is_serviceable()` per request); deactivating a city (M10) is soft — existing orders are untouched and proceed to delivery while new orders fail; every C-6 action writes exactly one `audit_events` row (`targeting_mode_changed` / `city_activated` / `city_deactivated`) — an action with no audit row is a test failure; a fresh seed comes up targeted with Surat active.
 - **Global-first**: inserting a second region row (e.g. `KE-NAIROBI`, KES, `Africa/Nairobi`, `tax_scheme='none'`, `languages={en,sw}`) and re-running the full API test suite scoped to it passes with **zero migrations** — this is a CI test, not a promise.
 - **Non-functional**: p95 < 300 ms for all GETs at pilot data volumes (10k listings, 5k orders) on a 2-vCPU VM; smoke suite (supertest) covers the 5 core flows end-to-end and runs in CI on every push.
 
@@ -957,9 +1059,9 @@ Resolution effects: `credit` → creates a `credit_note` payment (`type='credit_
 
 | Phase | Contents |
 |---|---|
-| **MVP (pilot)** | Everything in §6 with `provider='manual'` payouts, dev/MSG91 OTP, **one local-disk grading/dispute evidence photo via `storage.js`**, no invoice PDFs. WhatsApp/push nudges optional (manual broadcast acceptable — `14-OPS-PLAYBOOK.md`). **CMS module MVP**: stored `app_events` (S4), 00:30 `metrics_daily` rollup, R7–R12, R13 basics (DAU graph, platform split), manual weekly `store_metrics` entry (S5). |
-| **Phase 2 (live pilot hardening)** | Razorpay UPI payouts (M5/M6), WhatsApp Business templates (order confirmed, out for delivery, payout done, daily price broadcast), FCM/APNs push, invoice PDF (`GET /orders/:id/invoice.pdf`), **swap `storage.js` from local-disk to the S3-compatible bucket** (grading/dispute photos migrate transparently) + buyer-facing listing photo gallery. **CMS v1.1**: R14 audited CSV export (moved up from Phase 3), WAU/MAU graph polish, W1/W4 retention cohorts on R13. |
-| **Phase 3 (scale-up)** | Buyer subscription flags + priority allocation, standing orders (repeat weekly), FPO-SaaS endpoints (hub-scoped ops accounts), managed Postgres + PITR. **CMS v2**: Play/App Store API auto-sync into `store_metrics` (retires S5 manual entry, `source='api'`), per-screen console permissions, alerting. |
+| **MVP (pilot)** | Everything in §6 with `provider='manual'` payouts, dev/MSG91 OTP, **one local-disk grading/dispute evidence photo via `storage.js`**, no invoice PDFs. WhatsApp/push nudges optional (manual broadcast acceptable — `14-OPS-PLAYBOOK.md`). **CMS module MVP**: stored `app_events` (S4), 00:30 `metrics_daily` rollup, R7–R12, R13 basics (DAU graph, platform split), manual weekly `store_metrics` entry (S5). **Market targeting MVP** (§6.13): geo reads G1–G3, markets M7–M10, `GET /config` `serviceable` flag, `city_not_serviceable` order guard, seeded targeted+Surat — launch geography depends on it (C-6 core in `19-PRD-CMS-ANALYTICS.md`). |
+| **Phase 2 (live pilot hardening)** | Razorpay UPI payouts (M5/M6), WhatsApp Business templates (order confirmed, out for delivery, payout done, daily price broadcast), FCM/APNs push, invoice PDF (`GET /orders/:id/invoice.pdf`), **swap `storage.js` from local-disk to the S3-compatible bucket** (grading/dispute photos migrate transparently) + buyer-facing listing photo gallery. **CMS v1.1**: R14 audited CSV export (moved up from Phase 3), WAU/MAU graph polish, W1/W4 retention cohorts on R13, C-6 demand-signals strip (`demand_signals` on M7, §6.13). |
+| **Phase 3 (scale-up)** | Buyer subscription flags + priority allocation, standing orders (repeat weekly), FPO-SaaS endpoints (hub-scoped ops accounts), managed Postgres + PITR. **CMS v2**: Play/App Store API auto-sync into `store_metrics` (retires S5 manual entry, `source='api'`), per-screen console permissions, alerting, auto-provision a region from country defaults when a city is activated in auto mode (§6.13). |
 
 CMS phase mapping: the phases named **MVP / v1.1 / v2** in `19-PRD-CMS-ANALYTICS.md` land in this table's **MVP / Phase 2 / Phase 3** rows respectively.
 

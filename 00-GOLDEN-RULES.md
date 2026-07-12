@@ -40,6 +40,7 @@ These six rules are the constitution of KisanSetu. Every document in this Brain,
 - **Time:** timezone-aware timestamps (UTC storage, local display).
 - **Generic domain terms in the schema:** `reference_market_price`, not `mandi_price`. "Mandi" may appear only in UI copy for the India region. Same for tax: a per-region tax abstraction of which GST is the Indian instance.
 - **Geography as data:** region → hub → farm hierarchy in the data model, so a new city or country is configuration, not code.
+- **Launch geography is configuration, not code:** the CMS Markets screen ([19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md) C-6) decides where we are live; the codebase never hardcodes a city.
 - **Payment/messaging providers behind interfaces:** Razorpay-UPI and WhatsApp Business API are India instances of abstract payout/messaging providers.
 
 **And the Surat-first half:**
