@@ -64,7 +64,23 @@ Design constraints that follow (farmer flow, both platforms): max 2 actions per 
 
 ## 5. Global conventions (apply to every screen)
 
-### 5.1 Platform & performance floor
+### 5.0 App architecture: one app, two user types, split-ready (FOUNDER-RATIFIED 12 Jul 2026)
+
+**One application per platform** carrying both user types — farmer and buyer — with the role picked at signup (S-05). **One backend serves both** (and the Console): the single Node/Postgres monolith of [06-PRD-BACKEND.md](06-PRD-BACKEND.md) / [11-ARCHITECTURE.md](11-ARCHITECTURE.md) — the backend is never split by role.
+
+Why one app at this stage: 2 roles × 2 platforms as separate apps = 4 codebases under the parity rule (vs 2); one store listing/review cycle per platform; one name on every payout slip and sales pitch ("KisanSetu app डालो", one QR); cross-role discovery is free. Known trade-offs accepted: the store listing must serve two personas, and both roles share one release train.
+
+**Split-ready module boundaries (mandatory from the first commit):**
+
+| Module | Contents | Rule |
+|---|---|---|
+| `core` | auth/OTP, session, API client, i18n, design system ([10-DESIGN-SYSTEM.md](10-DESIGN-SYSTEM.md)), config, events | knows nothing about roles |
+| `farmer` | F-01…F-04 screens + their view-models | imports `core` only |
+| `buyer` | B-01…B-04 screens + their view-models | imports `core` only |
+
+Android: separate Gradle modules; iOS: separate SPM packages. **`farmer` and `buyer` never import each other** — enforced by the build system, checked in review (part of the T4.1/T5.1 parity audit).
+
+**Split triggers (v2 — repackage the same modules as "KisanSetu Kisan" / "KisanSetu Business", days not weeks if boundaries held):** any of — (a) post-seed dev team in place and 2+ cities live; (b) funnel data shows store-listing persona confusion suppressing installs; (c) the two roles need different release cadences badly enough that one train hurts. Until a trigger fires, one app is the rule.
 
 | Item | Value |
 |---|---|
@@ -534,7 +550,7 @@ North-star product funnels: farmer **sell funnel** (`sell_started → sell_submi
 
 | # | Question | Decision taken here | Owner / deadline |
 |---|---|---|---|
-| 1 | One account = one role, or role switching? | One role per account at MVP; switch via support call | Founder, PRD approval |
+| 1 | One account = one role, or role switching? | One role per account at MVP; switch via support call. **One-app-two-user-types + single shared backend RATIFIED by founder 12 Jul 2026 (§5.0)** — the app-count question is closed; only role-switching UX remains open | Founder, PRD approval (role-switch UX only) |
 | 2 | Order cutoff time & minimum order value | 18:00 (D-1) cutoff / ₹1,000 minimum / ₹50 delivery fee (waived ≥₹4,000) / 06:00–10:00 delivery window — all server-configured via `GET /config`; validate against real HoReCa behavior | Founder, end of Phase 0 (T0.2 interview data) |
 | 3 | Farmer-facing price = net farmer price (take rate pre-netted) | Yes — the green number must be literally what the farmer receives; requires `farmer_price_a/b` in the price feed | Backend PRD ([06-PRD-BACKEND.md](06-PRD-BACKEND.md)), before build |
 | 4 | Buyer self-serve vs ops-activated | Ops-activated (pending banner); B2B sales-led, prevents junk accounts | Founder, PRD approval |
