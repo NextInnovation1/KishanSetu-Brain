@@ -1,0 +1,432 @@
+<title>KisanSetu — Design Board</title>
+<style>
+  :root{
+    --ground:#FAF7F0; --surface:#FFFFFF; --line:#E7E1D2; --ink:#1C1917; --muted:#6E7263;
+    --brand:#14532D; --brand-ink:#F6F3EA; --leaf:#178A3F; --leaf-chip:#22C55E;
+    --amber:#B45309; --amber-chip:#F59E0B; --shadow:0 10px 30px rgba(28,25,23,.08);
+    --serif:"Iowan Old Style",Palatino,"Palatino Linotype",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari",sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --ground:#0C1A12; --surface:#13241A; --line:#25402F; --ink:#F0EDE1; --muted:#98A692;
+           --brand:#2E7D4B; --brand-ink:#F6F3EA; --leaf:#4ADE80; --amber:#FBBF24;
+           --shadow:0 10px 30px rgba(0,0,0,.35); }
+  }
+  :root[data-theme="dark"]{ --ground:#0C1A12; --surface:#13241A; --line:#25402F; --ink:#F0EDE1; --muted:#98A692;
+           --brand:#2E7D4B; --brand-ink:#F6F3EA; --leaf:#4ADE80; --amber:#FBBF24;
+           --shadow:0 10px 30px rgba(0,0,0,.35); }
+  :root[data-theme="light"]{ --ground:#FAF7F0; --surface:#FFFFFF; --line:#E7E1D2; --ink:#1C1917; --muted:#6E7263;
+           --brand:#14532D; --brand-ink:#F6F3EA; --leaf:#178A3F; --amber:#B45309;
+           --shadow:0 10px 30px rgba(28,25,23,.08); }
+
+  body{ background:var(--ground); color:var(--ink); font-family:var(--sans); line-height:1.55; margin:0; }
+  .wrap{ max-width:1080px; margin:0 auto; padding:48px 24px 96px; }
+  .eyebrow{ font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+  h1,h2{ font-family:var(--serif); text-wrap:balance; margin:0; }
+  h1{ font-size:clamp(40px,6vw,64px); line-height:1.04; font-weight:600; }
+  h2{ font-size:clamp(24px,3.4vw,34px); line-height:1.15; font-weight:600; }
+  section{ margin-top:72px; }
+  .sec-head{ display:flex; flex-direction:column; gap:6px; margin-bottom:26px; max-width:62ch; }
+  .sec-head p{ margin:0; color:var(--muted); }
+  .note{ font-size:14px; color:var(--muted); max-width:60ch; }
+
+  /* masthead */
+  .mast{ display:flex; flex-direction:column; gap:18px; padding-top:12px; }
+  .mark{ display:flex; align-items:center; gap:14px; }
+  .mark svg{ display:block; }
+  .tag{ font-family:var(--serif); font-size:clamp(18px,2.4vw,24px); color:var(--muted); font-style:italic; }
+  .mast-meta{ display:flex; gap:18px; flex-wrap:wrap; font-family:var(--mono); font-size:12px; color:var(--muted); border-top:1px solid var(--line); padding-top:14px; }
+
+  /* palette */
+  .swatches{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; }
+  .sw{ border-radius:10px; overflow:hidden; border:1px solid var(--line); background:var(--surface); }
+  .sw .chip{ height:84px; }
+  .sw .m{ padding:10px 12px; }
+  .sw .m b{ display:block; font-size:14px; }
+  .sw .m span{ font-family:var(--mono); font-size:12px; color:var(--muted); }
+
+  /* type specimen */
+  .spec{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:28px 30px; display:flex; flex-direction:column; gap:14px; box-shadow:var(--shadow); }
+  .spec .row{ display:flex; align-items:baseline; gap:18px; flex-wrap:wrap; border-bottom:1px dashed var(--line); padding-bottom:12px; }
+  .spec .row:last-child{ border-bottom:0; padding-bottom:0; }
+  .spec .lbl{ font-family:var(--mono); font-size:11px; color:var(--muted); min-width:140px; }
+  .t-display{ font-family:var(--serif); font-size:34px; }
+  .t-h{ font-size:21px; font-weight:650; }
+  .t-body{ font-size:16px; max-width:56ch; }
+  .t-num{ font-size:30px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--leaf); }
+  .t-cap{ font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+
+  /* phones */
+  .phones{ display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start; }
+  figure.ph{ margin:0; display:flex; flex-direction:column; gap:10px; }
+  figcaption{ font-size:13px; color:var(--muted); max-width:250px; }
+  figcaption b{ color:var(--ink); }
+  .phone{ width:252px; background:#101410; border-radius:34px; padding:9px; box-shadow:var(--shadow); }
+  .screen{ background:#FAF7F0; color:#1C1917; border-radius:26px; overflow:hidden; height:520px; display:flex; flex-direction:column; font-size:13px; }
+  .sbar{ display:flex; justify-content:space-between; font-family:var(--mono); font-size:9px; color:#6E7263; padding:7px 16px 3px; }
+  .abar{ padding:10px 16px 8px; display:flex; justify-content:space-between; align-items:center; }
+  .abar .t{ font-weight:700; font-size:16px; }
+  .scr-body{ flex:1; padding:4px 12px 10px; overflow:hidden; display:flex; flex-direction:column; gap:8px; }
+  .bnav{ display:flex; border-top:1px solid #E7E1D2; background:#fff; }
+  .bnav div{ flex:1; text-align:center; padding:8px 0 10px; font-size:10.5px; color:#6E7263; }
+  .bnav .on{ color:#14532D; font-weight:700; }
+  .bnav i{ display:block; font-style:normal; font-size:15px; }
+
+  .pcard{ background:#fff; border:1px solid #E7E1D2; border-radius:12px; padding:9px 12px; display:flex; align-items:center; gap:10px; }
+  .pcard .em{ font-size:22px; }
+  .pcard .nm b{ display:block; font-size:14px; }
+  .pcard .nm span{ font-size:10.5px; color:#6E7263; }
+  .pcard .pr{ margin-left:auto; text-align:right; }
+  .pcard .old{ text-decoration:line-through; color:#9C9284; font-size:11px; display:block; }
+  .pcard .new{ color:#178A3F; font-weight:800; font-size:16px; font-variant-numeric:tabular-nums; }
+  .fab{ margin-top:auto; background:#14532D; color:#F6F3EA; border-radius:14px; text-align:center; padding:13px; font-weight:800; font-size:15px; }
+  .hello{ font-size:17px; font-weight:700; padding:2px 4px; }
+  .hello small{ display:block; font-weight:400; color:#6E7263; font-size:11px; }
+
+  .pgrid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .pcell{ background:#fff; border:1.5px solid #E7E1D2; border-radius:12px; text-align:center; padding:10px 4px; }
+  .pcell.sel{ border-color:#14532D; background:#EAF3EC; box-shadow:inset 0 0 0 1px #14532D; }
+  .pcell .em{ font-size:24px; display:block; }
+  .pcell b{ font-size:13px; }
+  .pcell span{ display:block; font-size:10px; color:#6E7263; }
+  .stepper{ background:#fff; border:1px solid #E7E1D2; border-radius:12px; display:flex; align-items:center; justify-content:space-between; padding:8px 10px; }
+  .stepper .btn{ width:34px; height:34px; border-radius:10px; background:#EAF3EC; color:#14532D; font-size:19px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .stepper .val{ font-size:19px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .flabel{ font-size:11px; color:#6E7263; margin:2px 2px -4px; }
+
+  .paysucc{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; text-align:center; padding:0 14px; }
+  .paysucc .ok{ width:56px; height:56px; border-radius:50%; background:#22C55E; color:#fff; font-size:30px; display:flex; align-items:center; justify-content:center; }
+  .paysucc .amt{ font-size:32px; font-weight:800; font-variant-numeric:tabular-nums; color:#14532D; }
+  .paysucc .sub{ font-size:12px; color:#6E7263; }
+  .receipt{ width:100%; background:#fff; border:1px dashed #C9C2B0; border-radius:10px; padding:8px 12px; font-family:var(--mono); font-size:10px; color:#57534E; text-align:left; }
+
+  .gchip{ font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:99px; letter-spacing:.04em; }
+  .ga{ background:#14532D; color:#fff; } .gb{ background:#F59E0B; color:#231A05; }
+  .fresh{ font-size:9.5px; color:#178A3F; font-weight:700; }
+  .bcard{ background:#fff; border:1px solid #E7E1D2; border-radius:12px; padding:10px 12px; }
+  .bcard .top{ display:flex; align-items:center; gap:8px; }
+  .bcard .em{ font-size:20px; }
+  .bcard b{ font-size:14px; }
+  .bcard .prices{ display:flex; gap:8px; margin-top:7px; }
+  .tier{ flex:1; border:1px solid #E7E1D2; border-radius:9px; padding:5px 8px; }
+  .tier .p{ font-weight:800; font-size:14px; font-variant-numeric:tabular-nums; }
+  .tier .mk{ font-size:9px; color:#9C9284; text-decoration:line-through; }
+
+  .tl{ display:flex; flex-direction:column; }
+  .tl .step{ display:flex; gap:10px; }
+  .tl .rail{ display:flex; flex-direction:column; align-items:center; }
+  .tl .dot{ width:11px; height:11px; border-radius:50%; background:#22C55E; border:2px solid #fff; box-shadow:0 0 0 1.5px #22C55E; }
+  .tl .dot.off{ background:#E7E1D2; box-shadow:0 0 0 1.5px #C9C2B0; }
+  .tl .bar{ width:2px; flex:1; min-height:20px; background:#22C55E; }
+  .tl .bar.off{ background:#E7E1D2; }
+  .tl .tx{ padding-bottom:12px; }
+  .tl .tx b{ font-size:12.5px; display:block; }
+  .tl .tx span{ font-size:10.5px; color:#6E7263; font-family:var(--mono); }
+
+  /* browser frame */
+  .browser{ border:1px solid var(--line); border-radius:14px; overflow:hidden; box-shadow:var(--shadow); background:#FAF7F0; color:#1C1917; }
+  .bbar{ background:#ECE6D8; padding:9px 14px; display:flex; align-items:center; gap:8px; }
+  .bbar .d{ width:10px; height:10px; border-radius:50%; background:#C9C2B0; }
+  .bbar .url{ margin-left:10px; background:#FAF7F0; border-radius:7px; font-family:var(--mono); font-size:11px; color:#6E7263; padding:3px 12px; flex:1; }
+  .site-hero{ padding:40px 40px 30px; display:grid; grid-template-columns:1.2fr .8fr; gap:26px; align-items:center; }
+  .site-hero h3{ font-family:var(--serif); font-size:clamp(22px,3vw,34px); line-height:1.1; margin:0 0 10px; color:#14532D; }
+  .site-hero p{ margin:0 0 16px; font-size:14px; color:#57534E; max-width:44ch; }
+  .cta{ display:inline-block; border-radius:10px; padding:10px 16px; font-weight:700; font-size:13px; margin-right:8px; }
+  .cta.p{ background:#14532D; color:#F6F3EA; } .cta.s{ background:transparent; color:#14532D; box-shadow:inset 0 0 0 1.5px #14532D; }
+  .chain{ background:#14532D; color:#F6F3EA; padding:22px 40px 26px; }
+  .chain .cl{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .chain .nd{ background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.25); border-radius:9px; padding:6px 10px; font-size:11.5px; text-align:center; }
+  .chain .nd b{ display:block; font-size:12.5px; }
+  .chain .nd.hot{ background:#F59E0B; color:#231A05; border-color:#F59E0B; }
+  .chain .ar{ opacity:.6; }
+  .chain .cap{ font-size:11px; opacity:.75; margin-top:10px; font-family:var(--mono); }
+  .stat-tiles{ display:flex; gap:0; border-top:1px solid #E7E1D2; }
+  .stat-tiles .st{ flex:1; padding:16px 20px; border-right:1px solid #E7E1D2; }
+  .stat-tiles .st:last-child{ border-right:0; }
+  .stat-tiles .n{ font-size:22px; font-weight:800; font-variant-numeric:tabular-nums; color:#14532D; }
+  .stat-tiles .c{ font-size:11px; color:#6E7263; }
+
+  /* components section */
+  .comp-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; }
+  .comp{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; }
+  .comp h4{ margin:0 0 4px; font-size:14px; }
+  .comp .why{ font-size:12px; color:var(--muted); margin:0 0 12px; }
+  .chips{ display:flex; gap:6px; flex-wrap:wrap; }
+  .schip{ font-size:11px; font-weight:700; padding:3px 10px; border-radius:99px; }
+  .c-new{ background:#E0ECFF; color:#1D4ED8; } .c-grade{ background:#EAF3EC; color:#14532D; }
+  .c-sold{ background:#FEF3C7; color:#92400E; } .c-del{ background:#DCFCE7; color:#166534; }
+  :root[data-theme="dark"] .schip, :root[data-theme="dark"] .demo-light,
+  .dark-safe{ }
+  .demo-light{ background:#FAF7F0; color:#1C1917; border-radius:10px; padding:12px; border:1px solid #E7E1D2; }
+
+  .foot{ margin-top:80px; border-top:1px solid var(--line); padding-top:18px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; font-family:var(--mono); font-size:12px; color:var(--muted); }
+  @media (max-width:640px){ .site-hero{ grid-template-columns:1fr; } .stat-tiles{ flex-wrap:wrap; } .stat-tiles .st{ min-width:45%; } }
+</style>
+
+<div class="wrap">
+
+  <header class="mast">
+    <span class="eyebrow">Design Board · v1 · July 2026</span>
+    <div class="mark">
+      <svg width="64" height="44" viewBox="0 0 64 44" aria-hidden="true">
+        <path d="M4 36 Q32 4 60 36" fill="none" stroke="var(--brand)" stroke-width="4" stroke-linecap="round"/>
+        <line x1="4" y1="36" x2="60" y2="36" stroke="var(--brand)" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+        <circle cx="32" cy="19" r="5.5" fill="var(--leaf)"/>
+        <path d="M32 13.5 q4 -6 9 -6 q-1 6 -9 6" fill="var(--leaf)"/>
+      </svg>
+      <h1>KisanSetu</h1>
+    </div>
+    <p class="tag">From Farm to Business — Direct, Fresh &amp; Fair. · खेत से सीधा आपके किचन तक</p>
+    <div class="mast-meta">
+      <span>Surat · Gujarat</span><span>Android · Kotlin/Compose</span><span>iOS · Swift 5/SwiftUI</span><span>Web · vanilla JS</span><span>API · Node + Postgres</span><span>⚖ golden rule: Android ↔ iOS same-to-same</span>
+    </div>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">01 · Foundations</span>
+      <h2>Trust, in green and cream</h2>
+      <p>The brand's job is trust on both ends of the bridge — a farmer underpaid for generations, a chef burned by rotten deliveries. So: honest numbers, real farm names, no gloss.</p>
+    </div>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#14532D"></div><div class="m"><b>Forest</b><span>#14532D · primary, buttons</span></div></div>
+      <div class="sw"><div class="chip" style="background:#22C55E"></div><div class="m"><b>Leaf</b><span>#22C55E · money in farmer's favor</span></div></div>
+      <div class="sw"><div class="chip" style="background:#FAF7F0; border-bottom:1px solid #E7E1D2"></div><div class="m"><b>Cream</b><span>#FAF7F0 · ground</span></div></div>
+      <div class="sw"><div class="chip" style="background:#1C1917"></div><div class="m"><b>Ink</b><span>#1C1917 · text</span></div></div>
+      <div class="sw"><div class="chip" style="background:#F59E0B"></div><div class="m"><b>Amber</b><span>#F59E0B · grades &amp; harvest, sparingly</span></div></div>
+    </div>
+    <div style="height:20px"></div>
+    <div class="spec">
+      <div class="row"><span class="lbl">display · serif</span><span class="t-display">Direct, Fresh &amp; Fair.</span></div>
+      <div class="row"><span class="lbl">heading · sans 650</span><span class="t-h">आज के भाव · Today's prices</span></div>
+      <div class="row"><span class="lbl">body · sans 16</span><span class="t-body">Every crate is tagged to its source farm and harvest date. Freshness is stated in hours, never adjectives.</span></div>
+      <div class="row"><span class="lbl">money · tabular</span><span class="t-num">₹2,280</span><span class="t-cap">paid via UPI · 11:04 AM</span></div>
+    </div>
+    <p class="note">Devanagari and Gujarati render via system Noto/Mukta stacks; Hindi strings get +10–15% line-height over Latin. Farmer-facing type never drops below 18sp.</p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">02 · Farmer flow · identical on Android (Compose) &amp; iOS (SwiftUI)</span>
+      <h2>Two taps to sell, one glance to trust</h2>
+      <p>Designed for low digital literacy: max two actions per screen, picture grids instead of dropdowns, every price shown against the mandi rate it beats.</p>
+    </div>
+    <div class="phones">
+
+      <figure class="ph">
+        <div class="phone"><div class="screen">
+          <div class="sbar"><span>9:41</span><span>▲ 4G ▮</span></div>
+          <div class="scr-body">
+            <div class="hello">नमस्ते, रमेशभाई 🙏<small>Olpad · Surat Taluka FPO</small></div>
+            <div class="flabel">आज के भाव · TODAY'S PRICES</div>
+            <div class="pcard"><span class="em">🍅</span><span class="nm"><b>टमाटर</b><span>Tomato · प्रति किलो</span></span><span class="pr"><span class="old">मंडी ₹14</span><span class="new">₹19</span></span></div>
+            <div class="pcard"><span class="em">🫛</span><span class="nm"><b>भिंडी</b><span>Okra · प्रति किलो</span></span><span class="pr"><span class="old">मंडी ₹28</span><span class="new">₹36</span></span></div>
+            <div class="pcard"><span class="em">🥬</span><span class="nm"><b>पालक</b><span>Palak · प्रति किलो</span></span><span class="pr"><span class="old">मंडी ₹18</span><span class="new">₹24</span></span></div>
+            <div class="fab">＋ फ़सल बेचें · Sell produce</div>
+          </div>
+          <div class="bnav"><div class="on"><i>🏠</i>होम</div><div><i>🌾</i>मेरी फ़सल</div><div><i>💳</i>भुगतान</div></div>
+        </div></div>
+        <figcaption><b>Home.</b> Greeting, live prices with the mandi rate struck through, one giant primary action. Nothing else.</figcaption>
+      </figure>
+
+      <figure class="ph">
+        <div class="phone"><div class="screen">
+          <div class="sbar"><span>9:42</span><span>▲ 4G ▮</span></div>
+          <div class="abar"><span class="t">फ़सल बेचें</span><span style="color:#6E7263">✕</span></div>
+          <div class="scr-body">
+            <div class="flabel">क्या बेचना है? · PICK PRODUCE</div>
+            <div class="pgrid">
+              <div class="pcell sel"><span class="em">🍅</span><b>टमाटर</b><span>₹19/किलो</span></div>
+              <div class="pcell"><span class="em">🧅</span><b>प्याज़</b><span>₹16/किलो</span></div>
+              <div class="pcell"><span class="em">🫛</span><b>भिंडी</b><span>₹36/किलो</span></div>
+              <div class="pcell"><span class="em">🥬</span><b>पालक</b><span>₹24/किलो</span></div>
+            </div>
+            <div class="flabel">कितना? · QUANTITY (KG)</div>
+            <div class="stepper"><span class="btn">−</span><span class="val">120 किलो</span><span class="btn">＋</span></div>
+            <div class="flabel">कटाई कब? · HARVEST</div>
+            <div class="stepper" style="justify-content:center; gap:10px"><span style="font-weight:700">कल सुबह · Tomorrow AM</span></div>
+            <div class="fab">पक्का करें → अनुमानित ₹2,280</div>
+          </div>
+        </div></div>
+        <figcaption><b>New listing.</b> Picture grid, big stepper, tomorrow as default harvest. The button already shows the estimated payout.</figcaption>
+      </figure>
+
+      <figure class="ph">
+        <div class="phone"><div class="screen">
+          <div class="sbar"><span>11:04</span><span>▲ 4G ▮</span></div>
+          <div class="paysucc">
+            <div class="ok">✓</div>
+            <div class="amt">₹2,280</div>
+            <div style="font-weight:700">पैसा आ गया!</div>
+            <div class="sub">टमाटर 120 किलो · ग्रेड A 96kg + B 24kg<br>UPI: ramesh@ybl · आज 11:04 बजे</div>
+            <div class="receipt">UTR 615023998877<br>मंडी भाव होता: ₹1,680<br>KisanSetu से मिला: ₹2,280 (+36%)</div>
+          </div>
+          <div class="bnav"><div><i>🏠</i>होम</div><div><i>🌾</i>मेरी फ़सल</div><div class="on"><i>💳</i>भुगतान</div></div>
+        </div></div>
+        <figcaption><b>Payout.</b> The receipt is the advertisement: what the mandi would have paid, printed next to what we paid.</figcaption>
+      </figure>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">03 · Buyer flow · identical on Android (Compose) &amp; iOS (SwiftUI)</span>
+      <h2>Order by grade, verify by farm</h2>
+      <p>Professional and restrained for HoReCa managers. Grade chips everywhere produce appears; traceability is the premium moment — a vertical trace from farm to door with timestamps.</p>
+    </div>
+    <div class="phones">
+
+      <figure class="ph">
+        <div class="phone"><div class="screen">
+          <div class="sbar"><span>9:41</span><span>◔ 5G ▮</span></div>
+          <div class="abar"><span class="t">Catalog</span><span style="font-size:11px;color:#178A3F;font-weight:700">Delivery: tomorrow 7–10 AM</span></div>
+          <div class="scr-body">
+            <div class="bcard">
+              <div class="top"><span class="em">🍅</span><b>Tomato · टमाटर</b><span class="fresh" style="margin-left:auto">harvested &lt;24h</span></div>
+              <div class="prices">
+                <div class="tier"><span class="gchip ga">GRADE A</span><div class="p">₹26/kg</div><div class="mk">market ₹34</div></div>
+                <div class="tier"><span class="gchip gb">GRADE B</span><div class="p">₹22/kg</div><div class="mk">market ₹28</div></div>
+              </div>
+            </div>
+            <div class="bcard">
+              <div class="top"><span class="em">🧅</span><b>Onion · प्याज़</b><span class="fresh" style="margin-left:auto">harvested &lt;36h</span></div>
+              <div class="prices">
+                <div class="tier"><span class="gchip ga">GRADE A</span><div class="p">₹21/kg</div><div class="mk">market ₹27</div></div>
+                <div class="tier"><span class="gchip gb">GRADE B</span><div class="p">₹18/kg</div><div class="mk">market ₹23</div></div>
+              </div>
+            </div>
+            <div class="bcard">
+              <div class="top"><span class="em">🥬</span><b>Spinach · पालक</b><span class="fresh" style="margin-left:auto">same-day</span></div>
+              <div class="prices">
+                <div class="tier"><span class="gchip ga">GRADE A</span><div class="p">₹32/kg</div><div class="mk">market ₹40</div></div>
+              </div>
+            </div>
+            <div class="fab" style="background:#14532D">Cart · 3 items · ₹4,140</div>
+          </div>
+          <div class="bnav"><div class="on"><i>🧺</i>Catalog</div><div><i>🛒</i>Cart</div><div><i>📦</i>Orders</div></div>
+        </div></div>
+        <figcaption><b>Catalog.</b> Two prices per produce — one per grade — each shown against the market rate it undercuts.</figcaption>
+      </figure>
+
+      <figure class="ph">
+        <div class="phone"><div class="screen">
+          <div class="sbar"><span>10:12</span><span>◔ 5G ▮</span></div>
+          <div class="abar"><span class="t">Order #KS-0142</span><span style="font-family:var(--mono);font-size:10px;color:#6E7263">INV-2026-0142</span></div>
+          <div class="scr-body">
+            <div class="demo-light" style="padding:10px 12px; background:#fff">
+              <b style="font-size:13px">Hotel Gateway Surat</b><br>
+              <span style="font-size:11px;color:#6E7263">Tomato A ×40kg · Onion A ×30kg · Palak A ×12kg — ₹2,054</span>
+            </div>
+            <div class="flabel">STATUS</div>
+            <div class="tl">
+              <div class="step"><div class="rail"><div class="dot"></div><div class="bar"></div></div><div class="tx"><b>Placed</b><span>yesterday 6:32 PM</span></div></div>
+              <div class="step"><div class="rail"><div class="dot"></div><div class="bar"></div></div><div class="tx"><b>Confirmed &amp; graded at hub</b><span>today 7:15 AM</span></div></div>
+              <div class="step"><div class="rail"><div class="dot"></div><div class="bar off"></div></div><div class="tx"><b>Out for delivery · cold van</b><span>today 8:30 AM</span></div></div>
+              <div class="step"><div class="rail"><div class="dot off"></div></div><div class="tx"><b>Delivered</b><span>ETA 9:40 AM</span></div></div>
+            </div>
+          </div>
+          <div class="bnav"><div><i>🧺</i>Catalog</div><div><i>🛒</i>Cart</div><div class="on"><i>📦</i>Orders</div></div>
+        </div></div>
+        <figcaption><b>Order timeline.</b> Status is a timeline, not text — with the cold-van step made visible because that's what they're paying for.</figcaption>
+      </figure>
+
+      <figure class="ph">
+        <div class="phone"><div class="screen">
+          <div class="sbar"><span>10:13</span><span>◔ 5G ▮</span></div>
+          <div class="abar"><span class="t">Traceability</span><span class="gchip ga">GRADE A</span></div>
+          <div class="scr-body">
+            <div class="demo-light" style="background:#fff; padding:10px 12px"><b style="font-size:13px">🍅 Tomato · 40 kg</b><br><span style="font-size:11px;color:#6E7263">Crate KS-C-7731 · QR verified</span></div>
+            <div class="tl" style="padding-top:4px">
+              <div class="step"><div class="rail"><div class="dot"></div><div class="bar"></div></div><div class="tx"><b>Farm — Rameshbhai Patel, Olpad</b><span>harvested today 5:40 AM</span></div></div>
+              <div class="step"><div class="rail"><div class="dot"></div><div class="bar"></div></div><div class="tx"><b>Hub — Surat Taluka FPO</b><span>weighed &amp; graded 7:15 AM</span></div></div>
+              <div class="step"><div class="rail"><div class="dot"></div><div class="bar"></div></div><div class="tx"><b>Dispatched — cold van 4°C</b><span>8:30 AM</span></div></div>
+              <div class="step"><div class="rail"><div class="dot"></div></div><div class="tx"><b>Your kitchen</b><span>9:38 AM · 3h 58m from harvest</span></div></div>
+            </div>
+            <div class="receipt" style="background:#EAF3EC; border-color:#14532D; color:#14532D">Farmer's share of this crate: 63% ✓</div>
+          </div>
+          <div class="bnav"><div><i>🧺</i>Catalog</div><div><i>🛒</i>Cart</div><div class="on"><i>📦</i>Orders</div></div>
+        </div></div>
+        <figcaption><b>Traceability.</b> Farm, hub, van, kitchen — timestamped. The farmer-share line at the bottom is the brand in one number.</figcaption>
+      </figure>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">04 · Website · vanilla JS, EN/हिं toggle</span>
+      <h2>The broken chain is the centerpiece</h2>
+      <p>Single page for credibility in sales meetings and for lead capture. The hero states the promise; the chain diagram shows exactly whose cut we remove; the form feeds straight into the backend's <span style="font-family:var(--mono); font-size:.9em">/leads</span> table.</p>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="d"></span><span class="d"></span><span class="d"></span><span class="url">kisansetu.in</span></div>
+      <div class="site-hero">
+        <div>
+          <h3>From Farm to Business —<br>Direct, Fresh &amp; Fair.</h3>
+          <p>Graded, farm-traceable produce delivered to your kitchen within 24–48 hours of harvest. Farmers keep 60–70% of every rupee you pay.</p>
+          <span class="cta p">मैं किसान हूँ</span><span class="cta s">I run a food business</span>
+        </div>
+        <div class="stat-tiles" style="flex-direction:column; border:1px solid #E7E1D2; border-radius:12px">
+          <div class="st" style="border-right:0; border-bottom:1px solid #E7E1D2"><div class="n">&lt;48h</div><div class="c">farm to door, cold chain</div></div>
+          <div class="st" style="border-right:0; border-bottom:1px solid #E7E1D2"><div class="n">60–70%</div><div class="c">of final price to the farmer</div></div>
+          <div class="st" style="border-right:0"><div class="n">Surat</div><div class="c">pilot · FPO partnered</div></div>
+        </div>
+      </div>
+      <div class="chain">
+        <div class="cl">
+          <span class="nd hot"><b>Farmer</b>keeps 30–40%</span><span class="ar">→</span>
+          <span class="nd"><b>Agent</b>cut</span><span class="ar">→</span>
+          <span class="nd"><b>Wholesaler</b>cut</span><span class="ar">→</span>
+          <span class="nd"><b>Sub-dealer</b>cut</span><span class="ar">→</span>
+          <span class="nd"><b>Retailer</b>cut</span><span class="ar">→</span>
+          <span class="nd hot"><b>You</b>pay 100%</span>
+        </div>
+        <div class="cap">THE OLD CHAIN · five hands, five days, forty percent · KisanSetu: farm → hub → you</div>
+      </div>
+      <div class="stat-tiles">
+        <div class="st"><div class="n">~150M</div><div class="c">farmers in India</div></div>
+        <div class="st"><div class="n">86%</div><div class="c">small &amp; marginal holdings</div></div>
+        <div class="st"><div class="n">₹1.5L cr</div><div class="c">annual post-harvest loss</div></div>
+        <div class="st"><div class="n">24–48h</div><div class="c">our harvest-to-door promise</div></div>
+      </div>
+    </div>
+    <p class="note" style="margin-top:14px">Full build in <span style="font-family:var(--mono)">website/</span> — responsive, EN/HI dictionary in <span style="font-family:var(--mono)">js/main.js</span>, lead form POSTs to the API with a WhatsApp fallback.</p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">05 · Shared component vocabulary</span>
+      <h2>Four components carry the whole product</h2>
+    </div>
+    <div class="comp-grid">
+      <div class="comp">
+        <h4>Price card</h4>
+        <p class="why">Mandi price struck through, ours in leaf green. Trust arithmetic, everywhere money appears.</p>
+        <div class="demo-light"><div class="pcard" style="border:0; padding:0"><span class="em">🍅</span><span class="nm"><b>टमाटर</b><span>Tomato · per kg</span></span><span class="pr"><span class="old">मंडी ₹14</span><span class="new">₹19</span></span></div></div>
+      </div>
+      <div class="comp">
+        <h4>Status chips</h4>
+        <p class="why">Listing and order states as tinted chips — scannable at hub speed.</p>
+        <div class="demo-light"><div class="chips"><span class="schip c-new">नई · posted</span><span class="schip c-grade">ग्रेड A</span><span class="schip c-sold">बिक गई</span><span class="schip c-del">delivered</span></div></div>
+      </div>
+      <div class="comp">
+        <h4>Trace line</h4>
+        <p class="why">Farm → hub → van → kitchen with timestamps. The differentiator, rendered identically on iOS, web and invoices.</p>
+        <div class="demo-light"><div class="tl"><div class="step"><div class="rail"><div class="dot"></div><div class="bar"></div></div><div class="tx"><b>Olpad farm</b><span>5:40 AM</span></div></div><div class="step"><div class="rail"><div class="dot"></div></div><div class="tx"><b>Your kitchen</b><span>9:38 AM</span></div></div></div></div>
+      </div>
+      <div class="comp">
+        <h4>Stat tile</h4>
+        <p class="why">Big tabular number, one-line caption. Website, dashboards, investor deck — same tile.</p>
+        <div class="demo-light" style="text-align:left"><div class="n" style="font-size:26px; font-weight:800; color:#14532D">63%</div><div class="c" style="font-size:12px; color:#6E7263">farmer's share this week · target ≥60%</div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span>KisanSetu · design board v1</span>
+    <span>full system: docs/DESIGN.md · plan: docs/PLAN.md · tasks: docs/TASKS.md</span>
+  </footer>
+
+</div>
