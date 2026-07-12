@@ -1,6 +1,6 @@
 # 15 — TASKS BACKLOG
 
-_KisanSetu Brain · July 2026 · Owner: Alpesh (founder; owner defaults to founder until hires land). Siblings: [12-DEVELOPMENT-PLAN.md](12-DEVELOPMENT-PLAN.md) (sequencing), [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md) (go-live), [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) (ops SOPs), PRDs 06–09._
+_KisanSetu Brain · July 2026 · Owner: Alpesh (founder; owner defaults to founder until hires land). Siblings: [12-DEVELOPMENT-PLAN.md](12-DEVELOPMENT-PLAN.md) (sequencing), [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md) (go-live), [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) (ops SOPs), PRDs 06–09 + 19._
 
 ## Legend & the gate
 
@@ -8,7 +8,7 @@ _KisanSetu Brain · July 2026 · Owner: Alpesh (founder; owner defaults to found
 - Size: **S** ≤ 1 day · **M** 1–3 days · **L** 1–2 weeks
 - Every task has acceptance criteria (AC). A task is done when its AC are demonstrably true, not when the work "feels finished".
 
-> **THE GATE (Golden Rule 3 — PLAN BEFORE CODE):** every task in workstreams **T2 (backend), T3 (website + ops dashboard), T4 (Android), T5 (iOS)** is `[G]` — blocked until the founder has read and formally approved [06-PRD-BACKEND.md](06-PRD-BACKEND.md), [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md), [08-PRD-WEBSITE.md](08-PRD-WEBSITE.md), [09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md) and [10-DESIGN-SYSTEM.md](10-DESIGN-SYSTEM.md) in writing (a dated "APPROVED" note per PRD, filed in this repo). Code scaffolds already exist at `~/Desktop/KisanSetu-Backend/-Website/-Android/-iOS` — they are **inputs, not progress**: on approval, each scaffold is re-reviewed against its PRD and either adopted, refactored, or discarded. No scaffold task is marked done in this backlog.
+> **THE GATE (Golden Rule 3 — PLAN BEFORE CODE):** every task in workstreams **T2 (backend), T3 (website + ops dashboard), T4 (Android), T5 (iOS)** is `[G]` — blocked until the founder has read and formally approved [06-PRD-BACKEND.md](06-PRD-BACKEND.md), [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md), [08-PRD-WEBSITE.md](08-PRD-WEBSITE.md), [09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md), [10-DESIGN-SYSTEM.md](10-DESIGN-SYSTEM.md) and [19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md) in writing (a dated "APPROVED" note per PRD, filed in this repo). Code scaffolds already exist at `~/Desktop/KisanSetu-Backend/-Website/-Android/-iOS` — they are **inputs, not progress**: on approval, each scaffold is re-reviewed against its PRD and either adopted, refactored, or discarded. No scaffold task is marked done in this backlog.
 
 ---
 
@@ -31,13 +31,13 @@ _KisanSetu Brain · July 2026 · Owner: Alpesh (founder; owner defaults to found
 
 | ID | St | Task | Acceptance criteria | Size |
 |---|---|---|---|---|
-| T1.1 | [x] | Brain corpus written (README, 00–18) | All 20 files exist in `/KisanSetu-Brain/`, mutually consistent with the shared brief; PRDs contain purpose/scope/non-goals/spec/edge-cases/AC/rollout/metrics | L |
+| T1.1 | [x] | Brain corpus written (README, 00–19) | All 21 files exist in `/KisanSetu-Brain/`, mutually consistent with the shared brief; PRDs contain purpose/scope/non-goals/spec/edge-cases/AC/rollout/metrics | L |
 | T1.2 | [x] | Design system defined | [10-DESIGN-SYSTEM.md](10-DESIGN-SYSTEM.md) + `design/design-board.html`: palette, type, spacing, components, grade-chip rules | M |
 | T1.3 | [x] | Farmer app UX flow (Hindi-first, low-literacy) | Screen list + flows in [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md); max 2 actions/screen, ≥48dp targets honored | M |
 | T1.4 | [x] | Buyer app UX flow (professional B2B) | Screen list + flows incl. traceability view in [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md) | M |
 | T1.5 | [x] | Website design (single page, EN/HI) | Spec in [08-PRD-WEBSITE.md](08-PRD-WEBSITE.md) | S |
 | T1.6 | [x] | Ops dashboard flows | Grading queue, allocation board, delivery statuses, payout, SLA reports specified in [09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md) | M |
-| T1.7 | [ ] | **Founder PRD approval — THE GATE** | Dated written "APPROVED" (or change requests) on 06, 07, 08, 09, 10; open questions in each PRD answered or ownered | S |
+| T1.7 | [ ] | **Founder PRD approval — THE GATE** | Dated written "APPROVED" (or change requests) on 06, 07, 08, 09, 10, 19; open questions in each PRD answered or ownered | S |
 | T1.8 | [ ] | App icons + wordmark finals (contract designer) | Vector wordmark, adaptive Android icon, iOS icon set, favicon; passes trademark decision from T0.5 | M |
 | T1.9 | [ ] | Printed matter designed | Payout slip (fields per [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §7.3), buyer invoice, A2 grade-chart template, buyer mini grade card, fallback forms #F1–#F6 | M |
 
@@ -61,6 +61,8 @@ _KisanSetu Brain · July 2026 · Owner: Alpesh (founder; owner defaults to found
 | T2.14 | [G] | Invoice PDF generation | One consolidated invoice per delivery: exempt bill-of-supply lines + taxable delivery/handling line per [18-LEGAL-COMPLIANCE.md](18-LEGAL-COMPLIANCE.md) §4 | M |
 | T2.15 | [G] | Automated tests + CI | supertest on 5 core flows (auth, listing lifecycle, order+allocation, payout, SLA report); GitHub Actions green | M |
 | T2.16 | [G] | Production deploy plan (execute only when pilot needs it) | Single VM/managed Node + managed Postgres + daily backups + restore drill documented; per [11-ARCHITECTURE.md](11-ARCHITECTURE.md); no cloud spend before buyers exist | M |
+| T2.17 | [G] | Analytics events storage + rollups (per [19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md)) | S4 `POST /events` amendment stores thin rows in `app_events` (user_id nullable, event_name, platform, app_version, region_id, ts, props jsonb; indexed on (ts), (user_id, ts), (event_name, ts)); 180-day retention with nightly aggregate-only rollup; `store_metrics` table for manual weekly downloads entry (source, entered_by); `metrics_daily` filled by nightly job at 00:30 region tz; DAU/WAU/MAU + active-farmer/active-buyer definitions match the 19-PRD definitions exactly | M |
+| T2.18 | [G] | Reports API R7–R14 (ops role) | R7 overview snapshot; R8 daily metrics time series reads `metrics_daily`, never raw tables; R9/R10 farmers list + per-farmer drill-down; R11/R12 buyers list + per-buyer drill-down; R13 app-usage from `app_events` + `store_metrics` (downloads never conflated with signups); R14 streams CSV and writes audit_event `report_exported`; all endpoints ops-role guarded, region_id-scoped | L |
 
 ## T3 · Website + ops dashboard (vanilla JS) — ALL GATED ON T1.7
 
@@ -71,6 +73,7 @@ _KisanSetu Brain · July 2026 · Owner: Alpesh (founder; owner defaults to found
 | T3.3 | [G] | "Hours from harvest" live counter (post-pilot only) | Renders real SLA median from API; ships only after 4 weeks of live data ([13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md) §8) | M |
 | T3.4 | [G] | Deploy: static hosting + domain + analytics | HTTPS on final domain; Plausible/GA4 events on lead submit | S |
 | T3.5 | [G] | Ops dashboard v1 | All [09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md) MVP views: price setting, grading queue, allocation board, delivery status, payout trigger, SLA/metrics reports (M1–M8) | L |
+| T3.6 | [G] | Console CMS/Analytics module v1 (C-1 overview, C-2 farmers, C-3 buyers, C-4 app&users basics) | Per [19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md) acceptance criteria; same login/codebase/API as T3.5 with top-level "Ops \| Analytics" switcher; graphs via one shared hand-rolled SVG helper (line + bar, ~150 lines, [10-DESIGN-SYSTEM.md](10-DESIGN-SYSTEM.md) tokens) — no chart library, no CDN; trend graphs read `metrics_daily` via R8; C-4 basics = DAU graph + manual weekly downloads entry form + downloads/signups tiles (per [19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md) §6.4); C-5 export is v1.1 | L |
 
 ## T4 · Android app (Kotlin + Jetpack Compose + Material3) — ALL GATED ON T1.7
 
@@ -110,6 +113,7 @@ _KisanSetu Brain · July 2026 · Owner: Alpesh (founder; owner defaults to found
 | T6.7 | [ ] | Dry-run week executed | All 5 drill days passed per [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md) §3 pass conditions; fallback kit #F1–#F6 printed and used in the D3 drill | M |
 | T6.8 | [ ] | Weekly metrics ritual + tracking sheet | `ops/metrics-weekly.xlsx` template with M1–M8 formulas; first ritual run on dry-run data | S |
 | T6.9 | [ ] | Ops Lead hired (month 2) | Hire can run §2–§8 solo after one supervised week; payout + price SOPs cross-trained | M |
+| T6.10 | [ ] | Weekly store-metrics entry (starts when apps are live on store tracks) | Every week: downloads from Play Console + App Store Connect entered into `store_metrics` (source=manual, entered_by recorded) as part of the T6.8 weekly ritual; store-API auto-sync stays a v2 non-goal per [19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md) | S |
 
 ## T7 · Marketing & sales (from launch; per [04-GTM-SALES-MARKETING.md](04-GTM-SALES-MARKETING.md))
 

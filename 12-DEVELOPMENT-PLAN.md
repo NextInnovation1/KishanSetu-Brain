@@ -2,13 +2,13 @@
 
 **What this is:** how development WILL run once un-paused. Development is currently **PAUSED** (Golden Rule #3, `00-GOLDEN-RULES.md`): no code until the founder approves the PRD corpus. This document is the operating manual for the build phase that follows approval.
 **Owner:** Alpesh (founder = solo dev + PM for the MVP) · **Status:** Draft for founder approval
-**Reads with:** `06-PRD-BACKEND.md`, `07-PRD-MOBILE-APPS.md`, `08-PRD-WEBSITE.md`, `09-PRD-OPS-DASHBOARD.md`, `10-DESIGN-SYSTEM.md`, `11-ARCHITECTURE.md`, `13-LAUNCH-PLAN.md`, `15-TASKS-BACKLOG.md`.
+**Reads with:** `06-PRD-BACKEND.md`, `07-PRD-MOBILE-APPS.md`, `08-PRD-WEBSITE.md`, `09-PRD-OPS-DASHBOARD.md`, `10-DESIGN-SYSTEM.md`, `11-ARCHITECTURE.md`, `13-LAUNCH-PLAN.md`, `15-TASKS-BACKLOG.md`, `19-PRD-CMS-ANALYTICS.md`.
 
 ---
 
 ## 1. Un-pause preconditions (all must be true before week 1)
 
-1. Founder has approved PRDs 05–11 and this plan (sign-off recorded in `README.md` change log).
+1. Founder has approved PRDs 05–11 + `19-PRD-CMS-ANALYTICS.md` and this plan (sign-off recorded in `README.md` change log).
 2. Phase 0 gates met (`13-LAUNCH-PLAN.md`): ≥3/10 buyer interviews positive (else FPO-SaaS pivot re-plans everything), 1 FPO pilot MoU signed, 2 beachhead crops frozen, name/trademark check done.
 3. **Existing scaffolds are reviewed, not trusted:** code in `KisanSetu-Backend/`, `-Website/`, `-Android/`, `-iOS/` predates these PRDs. Week 1 includes a gap review of each scaffold against its PRD; keep what conforms, rewrite what doesn't. The PRDs win every conflict.
 4. Real unit economics from Phase 0 replace illustrative numbers anywhere they appear in UI copy (website receipt bars, price examples).
@@ -18,19 +18,22 @@
 Dependency-driven, matching `11-ARCHITECTURE.md` (one backend, one database, four thin clients):
 
 ```
-W1–3   BACKEND        auth/OTP → catalog+price_feed → listings → orders+allocations → payments stub → leads → seed+smoke
+W1–3   BACKEND        auth/OTP → catalog+price_feed → listings → orders+allocations → payments stub → leads → events storage (app_events) → seed+smoke
 W1     WEBSITE v1     deploy early — credibility for founder's parallel sales meetings (08-PRD-WEBSITE.md §13)
 W3–4   OPS DASHBOARD  the business runs on this before any consumer UI exists
+W4–5   CONSOLE CMS    analytics module (19-PRD-CMS-ANALYTICS.md) in the same app, right after the ops module
 W3–8   MOBILE         Android+iOS in lock-step cross-platform units (never sequential platforms)
 W8–9   INTEGRATIONS   Razorpay payouts, WhatsApp Business, FCM/APNs, real SMS OTP; website→prod leads + analytics
 W9–10  HARDENING      field testing, bug burn-down, release candidates, pilot dry run
 ```
 
-Why this order: (1) every client consumes the same REST API, so the API contract freezes first; (2) the **ops dashboard precedes mobile** because during pilot week 1 the hub can run entirely on ops + WhatsApp — the farmer/buyer apps improve the experience, ops *is* the business; (3) the website ships first because it has no backend dependency except `POST /leads` (stub acceptable for 2 weeks) and the founder is selling from week 1; (4) integrations go last because every external approval (Razorpay KYC, WhatsApp Business verification, SMS DLT) runs on third-party clocks — **applications for all of them are filed in week 1** even though integration code lands in week 8 (see risks §10).
+Why this order: (1) every client consumes the same REST API, so the API contract freezes first; (2) the **ops dashboard precedes mobile** because during pilot week 1 the hub can run entirely on ops + WhatsApp — the farmer/buyer apps improve the experience, ops *is* the business; (3) the website ships first because it has no backend dependency except `POST /leads` (stub acceptable for 2 weeks) and the founder is selling from week 1; (4) integrations go last because every external approval (Razorpay KYC, WhatsApp Business verification, SMS DLT) runs on third-party clocks — **applications for all of them are filed in week 1** even though integration code lands in week 8 (see risks §10); (5) the Console's CMS/Analytics module (`19-PRD-CMS-ANALYTICS.md`) shares the ops dashboard's login, codebase and API, so it ships right after it (W4–5) — but its C-4 (app & users) screen can only show history that was *stored*, so the `POST /events` → `app_events` storage amendment lands with the backend milestone (W1–3), before the first mobile build reaches a device in W5: DAU history starts on day 1 of app release.
 
 ## 3. Parity workflow (Golden Rule #1 made operational)
 
 **The unit of mobile work is the cross-platform unit, not the platform ticket.** One unit = one feature slice spanning: API change (if any) + Android implementation + iOS implementation + string keys (EN/HI/GU stubs) + design-token/component usage + analytics events. Examples: "Farmer Home + price cards", "OTP login", "Buyer order detail + trace line".
+
+**Parity scope note:** Golden Rule #1 applies to the two mobile apps, **not** to the KisanSetu Console (internal, web-only — `09-PRD-OPS-DASHBOARD.md` + `19-PRD-CMS-ANALYTICS.md`). But the analytics events that feed the Console's CMS module **are** under the parity rule via `07-PRD-MOBILE-APPS.md`: identical event names, properties, and firing points on Android and iOS — that is what the checklist line "Same analytics event names + properties fire on both" protects, and what keeps C-4's DAU/retention numbers trustworthy.
 
 Rules:
 
@@ -69,12 +72,12 @@ Rules:
 | Repo | Contents | Deploy target |
 |---|---|---|
 | `KisanSetu-Brain` | This corpus — PRDs, design board, decisions. | — (docs) |
-| `KisanSetu-Backend` | Node 20 + Express API, SQL migrations, seed, smoke tests, **and the ops dashboard** (static vanilla-JS app served by the same Express instance at `/ops`) | API host |
+| `KisanSetu-Backend` | Node 20 + Express API, SQL migrations, seed, smoke tests, **and the KisanSetu Console** (ops + CMS/analytics modules — one static vanilla-JS app served by the same Express instance at `/ops`) | API host |
 | `KisanSetu-Website` | Marketing site, vanilla JS, no build step | Static hosting |
 | `KisanSetu-Android` | Kotlin + Jetpack Compose + Material3 | Play Console |
 | `KisanSetu-iOS` | Swift 5 + SwiftUI, XcodeGen (`project.yml` in repo, `.xcodeproj` gitignored) | App Store Connect |
 
-*Decision:* the ops dashboard lives inside `KisanSetu-Backend` — same origin (no CORS), one deploy, and it versions in lock-step with the API it administers. A sixth repo would add ceremony for a one-person team.
+*Decision:* the Console (both modules) lives inside `KisanSetu-Backend` — same origin (no CORS), one deploy, and it versions in lock-step with the API it administers. A sixth repo would add ceremony for a one-person team.
 
 Conventions (all repos):
 
@@ -146,9 +149,9 @@ Assumes: founder full-time (sales in mornings, code after), contract designer pa
 |---|---|
 | **W1** | Scaffold gap-review vs PRDs done; repos + CI skeletons up; **all third-party applications filed** (Play Console, Apple Developer, Razorpay KYC, WhatsApp Business verification, SMS DLT registration); **website v1 live on domain** with `/leads` stub captured to DB; backend: auth + users + migrations green |
 | **W2** | Backend: produce, price_feed, listings lifecycle done with smoke tests 1–2 green; ops dashboard wireframes (T1.5) approved |
-| **W3** | Backend: orders + allocations + payments stub + leads; **API contract frozen** (breaking changes now require PRD amendment); smoke suite 1–5 green; staging VM live |
+| **W3** | Backend: orders + allocations + payments stub + leads + `app_events` storage (S4 amendment — events stored, not just logged, so C-4 has history from the first app build; `19-PRD-CMS-ANALYTICS.md`); **API contract frozen** (breaking changes now require PRD amendment); smoke suite 1–5 green; staging VM live |
 | **W4** | **Ops dashboard usable end-to-end:** daily price setting, grading queue, allocation, delivery status, payout trigger — a full fake order-day run-through by founder on staging. *Gate A: the business could run on ops + WhatsApp alone from this point* |
-| **W5** | Mobile units: app shells, design-system components (4 core components both platforms), OTP login + role pick shipped to internal tracks (first Play internal + TestFlight builds); crash reporting live |
+| **W5** | Mobile units: app shells, design-system components (4 core components both platforms), OTP login + role pick shipped to internal tracks (first Play internal + TestFlight builds); crash reporting live; Console CMS/Analytics module v1 usable on staging (C-1 overview, C-2 farmers, C-3 buyers, C-4 basics per `19-PRD-CMS-ANALYTICS.md`) |
 | **W6** | Farmer flow: Home (price cards) + New Listing (picture grid, stepper, offline queue) both platforms, parity-checked |
 | **W7** | Farmer flow complete: My Listings (chips) + Payments; **field test #1 with 3 farmers at hub** → top-3 fixes; buyer Catalog + Cart underway |
 | **W8** | Buyer flow complete: Catalog, Cart, Orders timeline, Order Detail with trace line; buyer field test with 2 kitchens; TestFlight external submitted; **code freeze for integrations** |

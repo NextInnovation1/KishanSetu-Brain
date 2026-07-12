@@ -488,9 +488,9 @@ v1.1 and v2 items ship on both platforms simultaneously per the parity contract 
 
 ## 9. Instrumentation
 
-Transport: events buffered on-device and batched to `POST /events` (flush at 20 events / 30 s / app-background; offline buffer survives restarts; device_id pre-login, user_id attached post-login). No third-party analytics SDK at MVP (size + privacy budget).
+Transport: events buffered on-device and batched to `POST /events` (S4, [06-PRD-BACKEND.md](06-PRD-BACKEND.md) §6.11) — batch body is exactly `{platform, app_version, events: [{name, ts, props}]}`; flush at 20 events / 30 s / app-background; offline buffer survives restarts. `user_id` and `region_id` are derived server-side from the JWT and never client-sent; `role` is not stored on `app_events`. `os_version`, `language`, `network_state` (and `device_id`, if kept) travel as `props` keys, not top-level fields. Pre-login events (`app_open`, `otp_requested`, `otp_failed`, `role_selected`, …) are buffered on-device and flushed only **after** auth, attributed to the resulting `user_id`; sessions that never authenticate are never uploaded (S4 is authed-only at MVP; pre-auth ingestion is deferred per 06). No third-party analytics SDK at MVP (size + privacy budget).
 
-Common properties on every event: `platform, app_version, os_version, language, role, region_id, network_state, ts`.
+Batch-level fields: `platform`, `app_version`. Per-event fields: `name`, `ts`, `props` — with `os_version`, `language`, `network_state` carried as `props` keys on every event.
 
 | Event | Extra properties | Fired when |
 |---|---|---|

@@ -1,13 +1,15 @@
 # 09 — PRD: Ops Dashboard (internal)
 
 **Doc owner:** Founder (Alpesh) · **Status:** Draft for founder approval · **Last updated:** 2026-07-12
-**Siblings:** `06-PRD-BACKEND.md` (every screen here maps to endpoints defined there — endpoint IDs like F2, L6, O11 refer to its §6 tables) · `14-OPS-PLAYBOOK.md` (the human SOPs this tool digitizes) · `10-DESIGN-SYSTEM.md` (palette/type) · `05-PRODUCT-OVERVIEW.md`.
+**Siblings:** `06-PRD-BACKEND.md` (every screen here maps to endpoints defined there — endpoint IDs like F2, L6, O11 refer to its §6 tables) · `14-OPS-PLAYBOOK.md` (the human SOPs this tool digitizes) · `10-DESIGN-SYSTEM.md` (palette/type) · `05-PRODUCT-OVERVIEW.md` · `19-PRD-CMS-ANALYTICS.md` (the Console's second module — see §1).
 
 ---
 
 ## 1. Purpose
 
 **This is the tool the business runs on.** Before a single farmer or buyer opens an app, the ops dashboard must let one person run a full day: set prices the evening before, grade the morning intake, match graded supply to orders, push deliveries through their statuses, pay farmers, answer leads, and read the two metrics (freshness hours, farmer share — Golden rule #5). Build order in `12-DEVELOPMENT-PLAN.md` puts this **before** the mobile apps for exactly that reason.
+
+**One console, two modules.** The internal web app is the **KisanSetu Console**. This document specs its **OPS module** — the daily-operations screens below. Its second module, **CMS/Analytics** (management reporting: who sold what, who bought what, app downloads, active users, trend graphs, CSV export), is specified in `19-PRD-CMS-ANALYTICS.md`. Same login, same vanilla-JS codebase, same API; any `role='ops'` user sees both modules at MVP (per-screen permissions are a v2 non-goal). Nothing from that module is re-specified here.
 
 Reality constraint (from `PLAN.md` heritage, kept as law): *the software must never block a delivery.* Every action here has a manual fallback documented in `14-OPS-PLAYBOOK.md`; the dashboard records reality, it does not gate it.
 
@@ -32,14 +34,14 @@ Environment truths that shape the UI: used at 05:30 in a shed with patchy 4G; bi
 | React/Vue/build pipeline | Founder-fixed stack: vanilla JS, no build step (same discipline as `08-PRD-WEBSITE.md`). One `index.html` + ES modules + `fetch`. Zero deploy friction. |
 | Real-time sync (websockets) | 1–2 concurrent ops users at pilot. 30 s polling + a visible "Refresh" button is sufficient and debuggable. |
 | Role/permission editor | Roles are fixed; ops accounts are seeded (`06-PRD-BACKEND.md` §6.2). |
-| Charts library / BI suite | Reports are tables with big numbers. Export = copy-paste or CSV later. Real BI waits for real volume. |
+| Charts library / BI suite | Reports here are tables with big numbers. Export = copy-paste or CSV later. Trend graphs live in the Console's CMS/Analytics module (`19-PRD-CMS-ANALYTICS.md`) via a small hand-rolled SVG helper — no chart library anywhere. Real BI waits for real volume. |
 | Mobile native ops app | Browser on tablet covers the hub; offline-first ops tooling is Phase 3 at the earliest. |
 | Route planning / 3PL integration | 3PL owns routes (Golden rule #4, asset-light). We record statuses only. |
 | Printable label designer | Crate QR labels are generated from a fixed template (Phase 2); design tool never. |
 
 ## 4. Information architecture & a day in the life
 
-Left nav (order = daily workflow order): **Today · Prices · Grading · Allocation · Deliveries · Payouts · Leads · Reports · Partners**. Header: region name + business date (region tz), logged-in user, Refresh button with "updated 12 s ago" stamp. All money rendered with the region's currency symbol from `GET /me` — no hardcoded ₹ in code (Golden rule #2).
+Left nav (order = daily workflow order): **Today · Prices · Grading · Allocation · Deliveries · Payouts · Leads · Reports · Partners**. Header: a top-level module switcher — **Ops | Analytics** — (the Analytics screens behind it are specified in `19-PRD-CMS-ANALYTICS.md`, not here), region name + business date (region tz), logged-in user, Refresh button with "updated 12 s ago" stamp. All money rendered with the region's currency symbol from `GET /me` — no hardcoded ₹ in code (Golden rule #2).
 
 The dashboard exists to run this loop (times are Surat pilot defaults; SOP detail in `14-OPS-PLAYBOOK.md`):
 
@@ -151,7 +153,7 @@ Data: D2/D3. Table: name, E.164 phone (tap-to-call + WhatsApp deep link `wa.me/<
 **Acceptance:** lead from website form appears within one poll cycle (≤ 30 s); every status change audited; zero leads lost (total in UI = D2 total = rows in table, checked in weekly ritual).
 
 ### 5.9 Reports
-Data: R1/R2/R3.
+Data: R1/R2/R3. These operational report views (the M1–M8 metrics) stay in the OPS module; deep analytics — trend graphs, farmer/buyer drill-downs, app usage — live in the CMS/Analytics module (`19-PRD-CMS-ANALYTICS.md`).
 - **SLA report:** date range picker (default last 7 days) → median + p90 harvest→door overall and per produce; breach list (> 48 h) with order links; incomplete-chain count with listing links ("fix your timestamps" queue). Big number styled green < 36 (target), amber 36–48 (promise), red > 48.
 - **Farmer share:** Σ payouts ÷ Σ delivered produce subtotal, overall + per produce + weekly trend table. Green ≥ 60%.
 - **Fulfilment:** ordered vs delivered kg, cancellation reasons histogram, buyer repeat rate (buyers with ≥ 2 delivered orders in window ÷ active buyers).

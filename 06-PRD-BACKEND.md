@@ -1,7 +1,7 @@
 # 06 — PRD: Backend API & Database
 
 **Doc owner:** Founder (Alpesh) · **Status:** Draft for founder approval · **Last updated:** 2026-07-12
-**Siblings:** `00-GOLDEN-RULES.md` (rules this doc must obey) · `05-PRODUCT-OVERVIEW.md` (what the clients do) · `07-PRD-MOBILE-APPS.md`, `08-PRD-WEBSITE.md`, `09-PRD-OPS-DASHBOARD.md` (the four consumers of this API) · `11-ARCHITECTURE.md` (system-level rationale) · `14-OPS-PLAYBOOK.md` (the human procedures these endpoints digitize).
+**Siblings:** `00-GOLDEN-RULES.md` (rules this doc must obey) · `05-PRODUCT-OVERVIEW.md` (what the clients do) · `07-PRD-MOBILE-APPS.md`, `08-PRD-WEBSITE.md`, `09-PRD-OPS-DASHBOARD.md`, `19-PRD-CMS-ANALYTICS.md` (the consumers of this API — the ops dashboard and the CMS/analytics module are the two modules of the single KisanSetu Console) · `11-ARCHITECTURE.md` (system-level rationale) · `14-OPS-PLAYBOOK.md` (the human procedures these endpoints digitize).
 
 > Golden rule #3: PLAN BEFORE CODE. This PRD supersedes the scaffold at `~/Desktop/KisanSetu-Backend` (including `migrations/001_init.sql`, which uses `mandi_price_per_kg` and has no region layer — both are corrected here). When development resumes, the scaffold is reviewed against THIS document, not the other way around.
 
@@ -9,7 +9,7 @@
 
 ## 1. Purpose
 
-One backend serves everything: farmer app, buyer app (Android + iOS), marketing website lead form, and the internal ops dashboard. It is the single source of truth for prices, listings, orders, traceability, and money. It must directly serve the two metrics (Golden rule #5):
+One backend serves everything: farmer app, buyer app (Android + iOS), marketing website lead form, and the internal KisanSetu Console (ops + CMS/analytics modules, one login). It is the single source of truth for prices, listings, orders, traceability, and money. It must directly serve the two metrics (Golden rule #5):
 
 1. **Freshness** — every allocation carries the timestamp chain `harvest_ts → hub_in_ts → dispatch_ts → delivered_ts`, so median harvest→door hours is a SQL query, not an estimate.
 2. **Farmer share** — the daily price feed stores both what the buyer pays (`platform_price_a/b`) and what the farmer receives (`farmer_price_a/b`), so farmer-share % is computed from records, not claimed.
@@ -22,14 +22,15 @@ Global-first, Surat-first (Golden rule #2): every table that touches money, lang
 |---|---|---|
 | Farmer app | `farmer` | See today's prices, post a listing, track grading/allocation status, see payout history |
 | Buyer app | `buyer` | Browse graded catalog with availability, place order, track status, view traceability + invoice |
-| Ops dashboard | `ops` | Set daily prices, grade listings, allocate listings→order items, update delivery status, trigger payouts, work leads, read SLA/farmer-share reports |
+| Console — Ops module | `ops` | Set daily prices, grade listings, allocate listings→order items, update delivery status, trigger payouts, work leads, read SLA/farmer-share reports |
+| Console — CMS/Analytics module | `ops` | Who sold what, who bought what, downloads & active users, trend graphs, CSV export (R7–R14; screens C-1…C-5 in `19-PRD-CMS-ANALYTICS.md`). Same login, same JWT: any `ops` user sees both modules at MVP — per-screen permissions are a v2 non-goal |
 | Website | none (public) | `POST /leads`, read nothing |
-| Founder/CA | `ops` | Export reports for the weekly metrics ritual (`14-OPS-PLAYBOOK.md`) |
+| Founder/CA | `ops` | Export reports for the weekly metrics ritual (`14-OPS-PLAYBOOK.md`) — audited CSV via R14 |
 
 ## 3. Scope (in) / Non-goals (out)
 
 ### In (MVP)
-Auth (phone OTP → JWT), users + role profiles (buyers start `pending`, ops-activated), region/FPO/hub hierarchy, region settings + client bootstrap config (`GET /config`), produce catalog with pluggable translations, daily price feed, listings + grading (with one evidence photo via a storage interface) + splits, orders + server-side pricing + cart quote (`POST /orders/quote`) + two-phase allocation (evening supply-check confirm / morning binding allocation) + traceability, buyer credit enforcement, buyer quality disputes + credit notes, payments (farmer payout + buyer invoice; manual UTR entry at MVP, Razorpay UPI behind a provider interface), leads, ops report endpoints (incl. receivables aging), SLA timestamp instrumentation, batch app instrumentation (`POST /events`), rate limiting, audit events, seed + migration tooling.
+Auth (phone OTP → JWT), users + role profiles (buyers start `pending`, ops-activated), region/FPO/hub hierarchy, region settings + client bootstrap config (`GET /config`), produce catalog with pluggable translations, daily price feed, listings + grading (with one evidence photo via a storage interface) + splits, orders + server-side pricing + cart quote (`POST /orders/quote`) + two-phase allocation (evening supply-check confirm / morning binding allocation) + traceability, buyer credit enforcement, buyer quality disputes + credit notes, payments (farmer payout + buyer invoice; manual UTR entry at MVP, Razorpay UPI behind a provider interface), leads, ops report endpoints (incl. receivables aging), CMS/analytics report endpoints (R7–R14 + nightly `metrics_daily` rollup + manual `store_metrics` entry — consumed by `19-PRD-CMS-ANALYTICS.md`), SLA timestamp instrumentation, batch app instrumentation (`POST /events` — **stored** to `app_events`, §6.11 S4), rate limiting, audit events, seed + migration tooling.
 
 ### NON-GOALS (explicit, with reasons)
 
@@ -37,7 +38,7 @@ Auth (phone OTP → JWT), users + role profiles (buyers start `pending`, ops-act
 |---|---|
 | **GraphQL** | Four first-party clients we control, all needing the same ~8 aggregates. REST with purpose-built endpoints is simpler to cache, rate-limit, log, and debug. GraphQL adds a resolver layer, N+1 discipline, and tooling for zero product benefit at 25 buyers. |
 | **Microservices / Kubernetes** | One pilot city, one dev (founder). A modular monolith deploys in minutes and keeps every transaction in one Postgres. Split only when a module has independent scaling or team boundaries (`11-ARCHITECTURE.md` §8). |
-| **ORM (Prisma/Sequelize/TypeORM)** | Schema is ~15 tables; the hard queries (allocation matching, SLA medians, farmer share) are exactly where ORMs get in the way. Plain SQL via `pg` with parameterized queries; migrations are numbered `.sql` files. |
+| **ORM (Prisma/Sequelize/TypeORM)** | Schema is ~18 tables; the hard queries (allocation matching, SLA medians, farmer share) are exactly where ORMs get in the way. Plain SQL via `pg` with parameterized queries; migrations are numbered `.sql` files. |
 | **Redis / any second datastore** | Sessions are stateless JWTs; rate limiting is in-process (single instance); queues don't exist yet. Postgres does caching-adjacent jobs (e.g. `otp_codes` table) fine at this scale. Add Redis only when we run >1 API instance AND need shared rate-limit/queue state. |
 | **Event bus / message queue** | Order volume at pilot is tens/day. Side effects (WhatsApp, push) run inline with retry, or from a 1-minute cron sweep. |
 | **Search engine (Elastic etc.)** | Catalog is <100 produce items; `ILIKE` is enough. |
@@ -45,6 +46,8 @@ Auth (phone OTP → JWT), users + role profiles (buyers start `pending`, ops-act
 | **Websockets / server push** | Ops dashboard polls every 30 s; apps poll on foreground + FCM/APNs nudges later. |
 | **Multi-currency conversion** | Currency is a *field* everywhere (global-first), but each region operates in exactly one currency. No FX, ever, until a region demands it. |
 | **Self-service admin/permissions UI** | Roles are fixed (`farmer`,`buyer`,`ops`); ops users are inserted by migration/seed at pilot. |
+| **Play Console / App Store Connect API integration** | Download counts are entered manually once a week (§6.11 S5 → `store_metrics`). Store APIs need service accounts, key management, and quota handling — for two numbers a week at pilot scale. v2 per `19-PRD-CMS-ANALYTICS.md`. |
+| **Third-party analytics SaaS (Mixpanel/GA etc.)** | Thin stored rows in `app_events` (§5) + the nightly `metrics_daily` rollup answer every C-1…C-4 question. One Postgres, no data leaves our infra (DPDP posture, `18-LEGAL-COMPLIANCE.md`). |
 
 ## 4. Global-first conventions (binding)
 
@@ -354,6 +357,49 @@ CREATE TABLE invoice_sequences (                -- per region+month invoice numb
   PRIMARY KEY (region_id, yyyymm)
 );
 
+-- ============ analytics (CMS module — read via R7–R14; screens in 19-PRD-CMS-ANALYTICS.md) ============
+CREATE TABLE app_events (                       -- thin stored rows behind POST /events (§6.11 S4)
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     uuid REFERENCES users(id),        -- from JWT; nullable leaves room for pre-auth events later
+  event_name  text NOT NULL,                    -- 'catalog_viewed', 'order_placed', ... (unknown names dropped at ingest)
+  platform    text NOT NULL CHECK (platform IN ('android','ios')),
+  app_version text,                             -- semver, batch-level field from the client
+  region_id   uuid NOT NULL REFERENCES regions(id),
+  ts          timestamptz NOT NULL,             -- client event time; server receipt time goes to logs
+  props       jsonb
+);
+-- Retention: 180 days. The 00:30 nightly rollup (§6.6) purges older rows AFTER their aggregates
+-- land in metrics_daily — raw events are ephemeral, aggregates are kept forever.
+
+CREATE TABLE store_metrics (                    -- store-reported installs; MANUAL weekly entry at MVP (§6.11 S5)
+  region_id       uuid NOT NULL REFERENCES regions(id),
+  date            date NOT NULL,                -- business date in region tz
+  platform        text NOT NULL CHECK (platform IN ('android','ios')),
+  downloads_total int NOT NULL,                 -- lifetime installs as shown in Play Console / App Store Connect
+  downloads_new   int NOT NULL DEFAULT 0,       -- new installs since the previous entry
+  source          text NOT NULL DEFAULT 'manual' CHECK (source IN ('manual','api')),  -- 'api' reserved for the v2 store-API sync
+  entered_by      uuid REFERENCES users(id),
+  updated_at      timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (region_id, date, platform)
+);
+-- Downloads ≠ signups: installs live here (store-reported); signups live in users. R13/C-4 report both, never conflated.
+
+CREATE TABLE metrics_daily (                    -- nightly rollup at 00:30 region tz (§6.6); graphs read THIS, never raw tables
+  region_id          uuid NOT NULL REFERENCES regions(id),
+  date               date NOT NULL,             -- business date in region tz
+  currency           char(3) NOT NULL,          -- §4 money convention
+  gmv                numeric(12,2) NOT NULL DEFAULT 0,  -- Σ orders.total delivered that date
+  orders             int NOT NULL DEFAULT 0,            -- delivered count
+  kg_moved           numeric(12,2) NOT NULL DEFAULT 0,  -- Σ order_allocations.qty on delivered orders
+  dau                int NOT NULL DEFAULT 0,             -- per the canonical definitions (§6.10)
+  new_farmers        int NOT NULL DEFAULT 0,
+  new_buyers         int NOT NULL DEFAULT 0,
+  farmer_share_pct   numeric(5,2),              -- null when nothing delivered that day (never fabricated)
+  median_freshness_h numeric(6,1),              -- null when no complete timestamp chains (R2 rule: excluded, never guessed)
+  computed_at        timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (region_id, date)
+);
+
 -- ============ indexes ============
 CREATE INDEX idx_listings_hub_status   ON listings (hub_id, status);
 CREATE INDEX idx_listings_farmer       ON listings (farmer_id, created_at DESC);
@@ -370,6 +416,9 @@ CREATE INDEX idx_otp_phone             ON otp_codes (phone, created_at DESC);
 CREATE INDEX idx_disputes_alloc        ON disputes (order_allocation_id);
 CREATE INDEX idx_disputes_open         ON disputes (resolution, claimed_at DESC);   -- open-claim worklist (resolution IS NULL)
 CREATE INDEX idx_payments_invoice_due  ON payments (due_date) WHERE type = 'buyer_invoice' AND status <> 'paid';  -- R5 aging + credit_hold
+CREATE INDEX idx_app_events_ts         ON app_events (ts);                 -- rollup + retention purge scans
+CREATE INDEX idx_app_events_user_ts    ON app_events (user_id, ts);        -- DAU/WAU/MAU distinct-user counts (R13)
+CREATE INDEX idx_app_events_name_ts    ON app_events (event_name, ts);     -- per-event trend queries
 ```
 
 ## 6. API specification
@@ -546,6 +595,8 @@ Side effects: `harvest_ts` **and** `hub_in_ts` are **stored on the listing at gr
 
 **Listing expiry (lifecycle sweep):** a listing still `posted` at the **end of `harvest_date + 1 day` (region tz)** is a no-show. A daily cron sweep (runs 00:15 region tz) sets such rows to `status='closed'` with audit action `listing_closed` / `detail.reason='expired_no_show'`; no payout row is created. To stop stale rows from inflating supply, `available_qty` (§6.7 O1) **excludes any `posted` listing once its `harvest_date` 12:00 (region tz) has passed** — i.e. exclusion begins the same day, before the overnight sweep formally closes it. Expiring/expired listings surface on the ops **Today** screen (`09-PRD-OPS-DASHBOARD.md`) so a hub can chase or reopen them. This keeps `available_qty` truthful and frees the farmer's 10-open-listings budget (L1 cap).
 
+**Nightly metrics rollup (analytics sweep):** a second nightly cron runs at **00:30 region tz** — after the 00:15 expiry sweep, so expiries are settled before yesterday is measured — and upserts yesterday's `metrics_daily` row per region (§5): `gmv`, `orders`, `kg_moved`, `dau`, `new_farmers`, `new_buyers`, `farmer_share_pct`, `median_freshness_h`, each computed per the canonical definitions in §6.10. Idempotent: keyed on `(region_id, date)`, a re-run recomputes the row rather than duplicating it. The same job then purges `app_events` rows older than **180 days** — aggregates outlive raw events. Every CMS trend graph (`19-PRD-CMS-ANALYTICS.md` C-1…C-4) reads `metrics_daily` via R8; nothing queries the raw `app_events`/`orders` tables for time series.
+
 ### 6.7 Buyer catalog, orders & allocation
 
 | # | Method & path | Role | Purpose |
@@ -670,7 +721,7 @@ Rules: one payout per listing (`409 duplicate`); listing must be `graded`/`alloc
 ```
 Phone normalized to E.164 server-side (default country code from the site's region, `+91` at launch). Honeypot field `website_url` — non-empty → silently accept and discard (bot trap).
 
-### 6.10 Ops reports & SLA instrumentation
+### 6.10 Ops reports, SLA instrumentation & CMS analytics
 
 | # | Method & path | Role | Purpose |
 |---|---|---|---|
@@ -700,6 +751,77 @@ Aging is computed as `Σ(unpaid buyer_invoice.amount) − Σ(credit_note.amount)
 ```
 Instrumentation rules: an allocation with any missing timestamp is counted in `incomplete_chains` and excluded from medians (never guessed). Report R2 is the input to the weekly metrics ritual in `14-OPS-PLAYBOOK.md`.
 
+**Canonical metric definitions (stated once, here; every report in this section, the nightly rollup (§6.6), and `19-PRD-CMS-ANALYTICS.md` reuse these — never redefine):**
+
+- **DAU** — distinct `user_id` with ≥1 `app_events` row on that calendar day, day boundary in **region tz**. **WAU / MAU** — 7-day / 30-day rolling distinct `user_id`.
+- **Active farmer** (business sense) — ≥1 **graded** listing in the period. **Active buyer** — ≥1 **delivered** order in the period. App-activity (DAU) and business-activity are different numbers; R7/C-1 shows both, labelled.
+- **Repeat-rate** — buyers with ≥2 delivered orders in the window ÷ active buyers (matches `09-PRD-OPS-DASHBOARD.md` §5.9).
+- **Downloads** — store-reported installs from `store_metrics` (§5). **Signups** — rows in `users`. Two distinct series; R13 (and screen C-4) report both and never conflate them.
+- **GMV** — Σ `orders.total` of orders delivered that day. **kg moved** — Σ `order_allocations.qty` on delivered orders. **farmer_share_pct** — per R3 (Σ farmer payouts ÷ Σ buyer produce subtotal). **median_freshness_h** — per R2 (incomplete chains excluded, never interpolated).
+
+**CMS / analytics reports (Console CMS module — screens C-1…C-5 in `19-PRD-CMS-ANALYTICS.md`).** The R-series continues (R1–R6 above are unchanged; no renumbering needed). All require the `ops` role; list endpoints use the §6.1 envelope and error shape. Privacy: these endpoints expose per-farmer/per-buyer operational data to internal staff only — covered by the DPDP service purpose (`18-LEGAL-COMPLIANCE.md` §10); the only path for data to leave the console is R14's audited CSV.
+
+| # | Method & path | Role | Purpose |
+|---|---|---|---|
+| R7 | `GET /reports/overview` | ops | C-1 snapshot: today's GMV, orders, kg moved, active farmers/buyers, DAU, new signups, open disputes, pending payouts |
+| R8 | `GET /reports/metrics/daily?metrics=gmv,orders,dau,farmer_share&from=&to=` | ops | Time series for the trend graphs — reads `metrics_daily` only, never raw tables |
+| R9 | `GET /reports/farmers?sort=&period=&limit=&offset=` | ops | C-2 sortable farmer list (name, village, hub, listings, kg A/B, payouts, farmer-share %, last active); paginated |
+| R10 | `GET /reports/farmers/:id` | ops | C-2 drill-down: full sell history, monthly kg/earnings trend, data-quality flags |
+| R11 | `GET /reports/buyers?sort=&period=&limit=&offset=` | ops | C-3 sortable buyer list (business, type, orders, GMV, AOV, repeat-rate, credit status, disputes); paginated |
+| R12 | `GET /reports/buyers/:id` | ops | C-3 drill-down: full purchase history, monthly GMV trend, credit/receivables panel, dispute history |
+| R13 | `GET /reports/app-usage?from=&to=` | ops | C-4: DAU/WAU/MAU, app-version adoption vs `min_supported_version`, platform split, downloads vs signups (from `app_events` + `store_metrics`) |
+| R14 | `GET /reports/export?entity=farmers\|buyers\|metrics&format=csv&from=&to=` | ops | Streams CSV of the R9/R11 lists or the R8 time series; **every call writes `audit_events` action `report_exported`** (Phase 2 / CMS v1.1) |
+
+```json
+// R7: GET /reports/overview → 200 — today in region tz; "active" per the canonical definitions above
+{ "date": "2026-11-12", "region": "IN-GJ-SURAT", "currency": "INR",
+  "gmv": 41200.00, "orders": 18, "kg_moved": 1240.5,
+  "active_farmers_today": 22, "active_buyers_today": 14, "dau": 61, "new_signups": 3,
+  "open_disputes": 2, "pending_payouts": { "count": 5, "amount": 9350.00 } }
+```
+R7 is the only CMS read allowed to touch raw tables (today's rollup doesn't exist yet); everything historical goes through `metrics_daily`.
+
+```json
+// R8: GET /reports/metrics/daily?metrics=gmv,dau,farmer_share&from=2026-11-05&to=2026-11-07 → 200
+{ "from": "2026-11-05", "to": "2026-11-07", "region": "IN-GJ-SURAT", "currency": "INR",
+  "series": [ { "date": "2026-11-05", "gmv": 32100.00, "dau": 48, "farmer_share": 67.4 },
+              { "date": "2026-11-06", "gmv": 35400.00, "dau": 52, "farmer_share": 68.1 },
+              { "date": "2026-11-07", "gmv": 41250.00, "dau": 57, "farmer_share": 66.9 } ] }
+```
+R8 rules: `metrics` ⊆ {`gmv`,`orders`,`kg_moved`,`dau`,`new_farmers`,`new_buyers`,`farmer_share`,`median_freshness_h`} — unknown name → `400 validation_failed`; range capped at 366 days; a date with no rollup row returns `null` values (never a live recompute). This endpoint feeds the hand-rolled SVG chart helper shared by C-1…C-4 — no chart library, no CDN (`19-PRD-CMS-ANALYTICS.md`).
+
+```json
+// R10: GET /reports/farmers/:id → 200 — C-2 drill-down (internal console; §6.7's buyer-facing trace PII rule does not apply here)
+{ "farmer": { "id": "…", "name": "Ramesh Patel", "village": "Kathor", "hub": "Kamrej Hub",
+    "last_active_at": "2026-11-11T06:40:12Z" },
+  "totals": { "listings": 34, "kg_graded_a": 1890, "kg_graded_b": 410,
+    "payouts_total": 46530.00, "currency": "INR", "farmer_share_pct": 68.2 },
+  "sell_history": [ { "listing_id": "…", "date": "2026-11-07", "produce_code": "tomato",
+      "posted_qty": 100, "graded_qty": 98, "grade_split": { "A": 70, "B": 28 },
+      "payout": { "amount": 1918.00, "status": "paid", "utr": "AXISN0231…" } } ],
+  "monthly_trend": [ { "month": "2026-10", "kg": 620, "earnings": 12400.00 } ],
+  "flags": { "no_shows": 1, "disputes_traced": 0 } }
+```
+`no_shows` counts listings swept `expired_no_show` (§6.6); `disputes_traced` counts disputes whose allocation traces to this farmer's listings (§6.12). R12 mirrors this shape for buyers: `purchase_history` rows (date, items by crop+grade, value, status, `invoice_no`), monthly GMV trend, the R5 receivables panel scoped to the buyer, and dispute history.
+
+```json
+// R13: GET /reports/app-usage?from=2026-11-01&to=2026-11-07 → 200
+// Usage computed from app_events; installs from store_metrics — downloads ≠ signups, both reported.
+{ "from": "2026-11-01", "to": "2026-11-07", "region": "IN-GJ-SURAT",
+  "dau": [ { "date": "2026-11-06", "count": 52 }, { "date": "2026-11-07", "count": 57 } ],
+  "wau": 118, "mau": 203,
+  "platform_split": { "android": 0.83, "ios": 0.17 },
+  "version_adoption": [ { "platform": "android", "app_version": "1.2.0", "users": 96, "below_min_supported": false },
+                        { "platform": "android", "app_version": "1.0.3", "users": 7,  "below_min_supported": true } ],
+  "downloads": { "android": { "downloads_total": 410, "new_in_range": 37 },
+                 "ios":     { "downloads_total": 88,  "new_in_range": 9 },
+                 "source": "manual", "last_entered_on": "2026-11-04" },
+  "signups_by_role": [ { "date": "2026-11-07", "farmer": 2, "buyer": 1 } ] }
+```
+`below_min_supported` compares against `region_settings.min_supported_version_*` (§5) — the same floor S3 serves to clients. W1/W4 retention cohorts are a v1.1 addition to this endpoint (`19-PRD-CMS-ANALYTICS.md` phasing).
+
+R14 streams `text/csv` (`Content-Disposition: attachment`), `format=csv` only at MVP; the `audit_events` row carries `action='report_exported'` and `detail = { entity, from, to, row_count }`, so every export is attributable (DPDP posture).
+
 ### 6.11 System, config & instrumentation
 
 | # | Method & path | Auth | Purpose |
@@ -707,7 +829,8 @@ Instrumentation rules: an allocation with any missing timestamp is counted in `i
 | S1 | `GET /health` | public | `{"status":"ok","db":"ok"}`, 503 if DB ping fails |
 | S2 | `GET /version` | public | `{"version":"1.4.2","migration":"007"}` |
 | S3 | `GET /config` | public (region-scoped) | Client bootstrap: commerce constants + force-update floors |
-| S4 | `POST /events` | any authed | Batch app-instrumentation transport |
+| S4 | `POST /events` | any authed | Batch app-instrumentation transport — **stored** to `app_events` (amended, see below) |
+| S5 | `PUT /store-metrics/:date` | ops | Manual weekly entry of Play Console / App Store Connect install counts → `store_metrics` |
 
 **S3 `GET /config`** — the single call every client makes on launch (before or after login). Region resolves from the JWT when present, else from `?region=IN-GJ-SURAT` (default = the launch region). Reads `region_settings` (§5); values are region-scoped so country #2 is a data insert.
 
@@ -722,15 +845,25 @@ Instrumentation rules: an allocation with any missing timestamp is counted in `i
 ```
 `min_supported_version` drives the client force-update gate; because S3 is public and pre-auth, an out-of-date app can learn it must upgrade before the user even logs in.
 
-**S4 `POST /events`** — fire-and-forget batch transport for app analytics/instrumentation. Accepts an array of events; the server timestamps receipt, tags `user_id`/`role`/`region_id` from the JWT, and emits each as a structured `pino` line (`event:` field, §11). Best-effort: it never blocks UX and returns `202` even if some rows are dropped (bad `name`s are skipped and counted).
+**S4 `POST /events`** — fire-and-forget batch transport for app analytics/instrumentation. **AMENDED for the CMS module (supersedes the earlier logs-only behavior): accepted events are now STORED**, one thin row each in `app_events` (§5), *and* still emitted as structured `pino` lines (`event:` field, §11). The server tags `user_id`/`region_id` from the JWT, takes batch-level `platform` + `app_version` from the body, and skips-and-counts unknown `name`s. Still best-effort: never blocks UX, returns `202` even if some rows are dropped. Stored events are what make DAU/WAU/MAU and screen C-4 possible (R13); retention is **180 days**, enforced by the 00:30 nightly rollup (§6.6), which folds aggregates into `metrics_daily` before purging.
 
 ```json
 // POST /events
-{ "events": [ { "name": "catalog_viewed", "ts": "2026-11-07T09:12:01Z", "props": { "produce_count": 24 } },
+{ "platform": "android", "app_version": "1.2.0",
+  "events": [ { "name": "catalog_viewed", "ts": "2026-11-07T09:12:01Z", "props": { "produce_count": 24 } },
               { "name": "cart_quote_requested", "ts": "2026-11-07T09:13:40Z", "props": { "subtotal": 990 } } ] }
 // 202 { "accepted": 2, "dropped": 0 }
 ```
-Rate-limited per §8 (rolled into the authed global bucket, with a higher batch allowance). No new table at MVP — events are logs, not rows (consistent with the "no event bus / no second datastore" non-goals).
+Rate-limited per §8 (rolled into the authed global bucket, with a higher batch allowance). The earlier "events are logs, not rows" rule is **withdrawn**: `app_events` is a table now — but it is still plain Postgres, so the §3 non-goals stand (no event bus, no second datastore, no analytics SaaS).
+
+**S5 `PUT /store-metrics/:date`** — manual weekly entry of install counts read off Play Console / App Store Connect (store APIs are a v2 integration — §3 non-goals). Upserts `store_metrics` (§5) for the ops user's region with `source='manual'`, `entered_by` from the JWT; writes `audit_events` action `store_metrics_entered`. This is the C-4 downloads data source at MVP.
+
+```json
+// S5: PUT /store-metrics/2026-11-04   (ops — weekly ritual, 14-OPS-PLAYBOOK.md)
+{ "rows": [ { "platform": "android", "downloads_total": 410, "downloads_new": 37 },
+            { "platform": "ios",     "downloads_total": 88,  "downloads_new": 9 } ] }
+// 200 { "upserted": 2, "source": "manual" }
+```
 
 ### 6.12 Disputes & credit notes
 
@@ -816,6 +949,7 @@ Resolution effects: `credit` → creates a `credit_note` payment (`type='credit_
 - **Quote/config**: `POST /orders/quote` returns the same subtotal/fee/total as the eventual `POST /orders` but writes no row; `GET /config` returns the region's cutoff/window/min-order/fee/waiver + `min_supported_version` with zero auth.
 - **Disputes**: a claim filed >2 h after `delivered_ts` returns `409 claim_window_closed`; a `credit` resolution creates a `credit_note` that lowers the buyer's outstanding in R5 by exactly `amount`.
 - **Listing expiry**: a `posted` listing past `harvest_date + 1 day` (region tz) is swept to `closed` with `reason=expired_no_show`, drops out of `available_qty` (from `harvest_date` 12:00), and frees the farmer's open-listing budget.
+- **CMS analytics**: an event accepted by S4 appears in R13's counts for its `ts` date **within the same day** (today is served from raw `app_events`; `metrics_daily` catches up at 00:30); the nightly rollup produces **exactly one `metrics_daily` row per active region per day**, and a re-run upserts rather than duplicates; every R14 CSV export writes an `audit_events` row (`action='report_exported'`, detail = entity + date range + row count) — an export with no audit row is a test failure; R9 and R11 return the §6.1 list envelope and honor `limit`/`offset` (default 20, max 100).
 - **Global-first**: inserting a second region row (e.g. `KE-NAIROBI`, KES, `Africa/Nairobi`, `tax_scheme='none'`, `languages={en,sw}`) and re-running the full API test suite scoped to it passes with **zero migrations** — this is a CI test, not a promise.
 - **Non-functional**: p95 < 300 ms for all GETs at pilot data volumes (10k listings, 5k orders) on a 2-vCPU VM; smoke suite (supertest) covers the 5 core flows end-to-end and runs in CI on every push.
 
@@ -823,13 +957,15 @@ Resolution effects: `credit` → creates a `credit_note` payment (`type='credit_
 
 | Phase | Contents |
 |---|---|
-| **MVP (pilot)** | Everything in §6 with `provider='manual'` payouts, dev/MSG91 OTP, **one local-disk grading/dispute evidence photo via `storage.js`**, no invoice PDFs. WhatsApp/push nudges optional (manual broadcast acceptable — `14-OPS-PLAYBOOK.md`). |
-| **Phase 2 (live pilot hardening)** | Razorpay UPI payouts (M5/M6), WhatsApp Business templates (order confirmed, out for delivery, payout done, daily price broadcast), FCM/APNs push, invoice PDF (`GET /orders/:id/invoice.pdf`), **swap `storage.js` from local-disk to the S3-compatible bucket** (grading/dispute photos migrate transparently) + buyer-facing listing photo gallery. |
-| **Phase 3 (scale-up)** | Buyer subscription flags + priority allocation, standing orders (repeat weekly), FPO-SaaS endpoints (hub-scoped ops accounts), CSV exports, managed Postgres + PITR. |
+| **MVP (pilot)** | Everything in §6 with `provider='manual'` payouts, dev/MSG91 OTP, **one local-disk grading/dispute evidence photo via `storage.js`**, no invoice PDFs. WhatsApp/push nudges optional (manual broadcast acceptable — `14-OPS-PLAYBOOK.md`). **CMS module MVP**: stored `app_events` (S4), 00:30 `metrics_daily` rollup, R7–R12, R13 basics (DAU graph, platform split), manual weekly `store_metrics` entry (S5). |
+| **Phase 2 (live pilot hardening)** | Razorpay UPI payouts (M5/M6), WhatsApp Business templates (order confirmed, out for delivery, payout done, daily price broadcast), FCM/APNs push, invoice PDF (`GET /orders/:id/invoice.pdf`), **swap `storage.js` from local-disk to the S3-compatible bucket** (grading/dispute photos migrate transparently) + buyer-facing listing photo gallery. **CMS v1.1**: R14 audited CSV export (moved up from Phase 3), WAU/MAU graph polish, W1/W4 retention cohorts on R13. |
+| **Phase 3 (scale-up)** | Buyer subscription flags + priority allocation, standing orders (repeat weekly), FPO-SaaS endpoints (hub-scoped ops accounts), managed Postgres + PITR. **CMS v2**: Play/App Store API auto-sync into `store_metrics` (retires S5 manual entry, `source='api'`), per-screen console permissions, alerting. |
+
+CMS phase mapping: the phases named **MVP / v1.1 / v2** in `19-PRD-CMS-ANALYTICS.md` land in this table's **MVP / Phase 2 / Phase 3** rows respectively.
 
 ## 11. Metrics & instrumentation
 
-Emitted as structured `pino` log events (`event:` field) and derivable from tables: `otp_requested/verified`, `buyer_activated`, `listing_posted/graded/split/expired`, `order_placed/confirmed/dispatched/delivered/cancelled`, `allocation_created/deleted`, `payout_created/paid/failed`, `invoice_created`, `credit_note_issued`, `dispute_created/resolved`, `lead_created`, `price_published`. App-side events arrive via `POST /events` (§6.11) and are logged with the same `event:` shape. Weekly KPI SQL pack (fulfilment %, median freshness h, farmer share %, buyer repeat rate, GMV, take rate realized, dispute rate = M7, receivables aging) versioned in-repo at `reports/weekly.sql`. Request logs carry `request_id`, `user_id`, `role`, latency ms.
+Emitted as structured `pino` log events (`event:` field) and derivable from tables: `otp_requested/verified`, `buyer_activated`, `listing_posted/graded/split/expired`, `order_placed/confirmed/dispatched/delivered/cancelled`, `allocation_created/deleted`, `payout_created/paid/failed`, `invoice_created`, `credit_note_issued`, `dispute_created/resolved`, `lead_created`, `price_published`. App-side events arrive via `POST /events` (§6.11), are **stored in `app_events`** (§5), and are logged with the same `event:` shape; the 00:30 nightly rollup (§6.6) folds them into `metrics_daily`, which the Console CMS module reads through R7–R14 (§6.10). Weekly KPI SQL pack (fulfilment %, median freshness h, farmer share %, buyer repeat rate, GMV, take rate realized, dispute rate = M7, receivables aging) versioned in-repo at `reports/weekly.sql`. Request logs carry `request_id`, `user_id`, `role`, latency ms.
 
 ## 12. Open questions (owner + deadline; decisions taken provisionally so build is unblocked)
 

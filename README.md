@@ -36,7 +36,7 @@ Full definitions with violation examples live in [00-GOLDEN-RULES.md](00-GOLDEN-
 | [06-PRD-BACKEND.md](06-PRD-BACKEND.md) | Backend PRD: domain model, API surface, auth, state machines, SLA timestamps. | Backend dev |
 | [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md) | ONE PRD for BOTH apps (rule 1): farmer flow + buyer flow, screen by screen. | Android + iOS devs |
 | [08-PRD-WEBSITE.md](08-PRD-WEBSITE.md) | Marketing site PRD: hero, broken-chain visual, how-it-works, lead capture. | Web dev |
-| [09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md) | Internal ops tool PRD: price setting, grading queue, allocation, payouts, SLA reports. | Web dev, ops lead |
+| [09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md) | OPS module of the internal KisanSetu Console (one web app, two modules — see 19): price setting, grading queue, allocation, payouts, SLA reports. | Web dev, ops lead |
 | [10-DESIGN-SYSTEM.md](10-DESIGN-SYSTEM.md) | Colors, type, components, voice & tone; governs all four surfaces. See also `design/design-board.html`. | Designer, all devs |
 | [11-ARCHITECTURE.md](11-ARCHITECTURE.md) | System architecture, stack decisions (Node 20/Express, Postgres 16, Kotlin/Compose, Swift/SwiftUI, vanilla-JS web), environments, conventions. | All devs |
 | [12-DEVELOPMENT-PLAN.md](12-DEVELOPMENT-PLAN.md) | Build order, milestones, dependency graph — activates only after PRD approval. | All devs |
@@ -46,6 +46,7 @@ Full definitions with violation examples live in [00-GOLDEN-RULES.md](00-GOLDEN-
 | [16-RISKS-MITIGATIONS.md](16-RISKS-MITIGATIONS.md) | Risk register: supply reliability, FPO dependence, buyer churn, regulatory, funding. | Founder |
 | [17-FUNDRAISE-FINANCE.md](17-FUNDRAISE-FINANCE.md) | Burn plan, raise narrative, milestones-to-money mapping. | Founder, investors |
 | [18-LEGAL-COMPLIANCE.md](18-LEGAL-COMPLIANCE.md) | Incorporation, FSSAI, GST, APMC rules, FPO/buyer agreements, trademark, data protection. | Founder, CA |
+| [19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md) | CMS/Analytics module of the Console: who sold what, who bought what, app downloads, active users, trend graphs, CSV export. | Founder, ops lead, web dev |
 
 ## Reading order for a new team member
 
@@ -63,7 +64,7 @@ Full definitions with violation examples live in [00-GOLDEN-RULES.md](00-GOLDEN-
 **Day 2–3 — understand the product:**
 8. [05-PRODUCT-OVERVIEW.md](05-PRODUCT-OVERVIEW.md)
 9. [10-DESIGN-SYSTEM.md](10-DESIGN-SYSTEM.md)
-10. Then the PRD for your surface: [06-PRD-BACKEND.md](06-PRD-BACKEND.md) / [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md) / [08-PRD-WEBSITE.md](08-PRD-WEBSITE.md) / [09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md) — plus [11-ARCHITECTURE.md](11-ARCHITECTURE.md).
+10. Then the PRD for your surface: [06-PRD-BACKEND.md](06-PRD-BACKEND.md) / [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md) / [08-PRD-WEBSITE.md](08-PRD-WEBSITE.md) / [09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md) with its sibling Console module [19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md) — plus [11-ARCHITECTURE.md](11-ARCHITECTURE.md).
 
 **Before you write any code:**
 11. [12-DEVELOPMENT-PLAN.md](12-DEVELOPMENT-PLAN.md) and [15-TASKS-BACKLOG.md](15-TASKS-BACKLOG.md) — and confirm the PRDs are founder-approved. If they are not, you plan; you do not build (rule 3).
