@@ -47,7 +47,7 @@ The dashboard exists to run this loop (times are Surat pilot defaults; SOP detai
 |---|---|---|---|
 | 17:00–18:00 (D−1) | Founder/ops | **Prices** | Check reference market prices from the mandi shadow/contacts → copy yesterday → adjust → publish tomorrow's price feed. Farmer apps update; WhatsApp price broadcast goes out (manual at MVP). |
 | Evening (D−1) | Farmers | (farmer app) | Post listings for tomorrow's harvest against published prices. |
-| By 21:00 (D−1) | Buyers | (buyer app) | Place orders for tomorrow's delivery. |
+| By 18:00 (D−1) | Buyers | (buyer app) | Place orders for tomorrow's delivery (canonical cutoff, [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md) §2.1). |
 | 05:00–07:00 (D) | Ops at hub | **Grading** | Farmers arrive; weigh, grade A/B (split where needed); farmer notified with graded qty. |
 | 06:30–07:15 (D) | Ops at hub | **Allocation** | "Suggest all" FIFO match → review → fix shortfalls (call buyers / edit items). |
 | 07:15–07:45 (D) | Ops at hub | **Deliveries** | Confirm orders → mark out-for-delivery as 3PL loads (stamps `dispatch_ts`). |

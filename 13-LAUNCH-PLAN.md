@@ -25,6 +25,32 @@ This document is the go-live sequence for the Surat pilot and the expansion play
 
 ## 2. Pilot configuration (frozen numbers)
 
+### 2.1 Canonical pilot parameters — SINGLE SOURCE OF TRUTH
+
+**This table is the single source of truth for KisanSetu's core pilot operating numbers (CEO-set).** Read it before quoting any of these values anywhere:
+
+- **(a)** These are the authoritative canonical values. Where any other document states a different number for a parameter below, **this table wins** and the other document is wrong until reconciled.
+- **(b)** The docs that carry operational promises — **03-BUSINESS-MODEL, 04-GTM-SALES-MARKETING, 05, 07, 08, 14-OPS-PLAYBOOK, and 18-LEGAL-COMPLIANCE** — must reference or match this table exactly (no restating a conflicting cutoff time, delivery window, minimum order, fee, credit term, SLA, or farmer-share number).
+- **(c)** The app's `GET /config` values in [06-PRD-BACKEND.md](06-PRD-BACKEND.md) are **seeded FROM this table, per region** (region → config), not hand-set in the client. Changing a value here is the only sanctioned way to change what the app serves.
+
+| Parameter | Canonical value |
+|---|---|
+| Order cutoff | 18:00 (6 PM) day before delivery (D-1), local time |
+| Delivery window | 06:00–10:00 (target majority of drops before 09:00) |
+| Minimum order value | ₹1,000 |
+| Delivery / handling fee | ₹50 flat per order, waived for orders ≥ ₹4,000 |
+| Buyer credit terms | Pay-on-delivery (or prepaid) for a buyer's first 4 orders; then net-7, per-buyer exposure cap ₹25,000, auto-suspend supply at 10 days overdue |
+| OTP lockout | 1 hour per phone after 5 failed attempts |
+| Freshness SLA | Promise <48h harvest→door; internal target <36h median |
+| Farmer share | Target 65% of platform price, hard floor 60% |
+| Farmer price rule | `farmer_price = platform_price × 0.65` (floor 0.60) |
+| Pilot cohort | 1 FPO, 25–50 farmers, 15–25 HoReCa buyers, 2 frozen crops |
+| Go/no-go gates | ≥70% weekly buyer repeat, ≥95% fulfilment, ≥60% documented farmer share |
+
+### 2.2 Operational configuration
+
+Operational context for the pilot. Any numeric value here that also appears in §2.1 is governed by §2.1.
+
 | Parameter | Value | Rationale |
 |---|---|---|
 | Geography | Surat city + one FPO catchment in Surat district (single hub) | Beachhead; founder can physically be at the hub every morning |
@@ -32,8 +58,9 @@ This document is the go-live sequence for the Surat pilot and the expansion play
 | Farmers | **25–50** via the FPO | Enough supply for 2 crops without over-promising offtake |
 | Buyers | **15–25** HoReCa (mix: ~10 restaurants, 3 hotels, 3 caterers, 2–4 cloud kitchens) | Matches founder-led sales capacity of 5 visits/day ([04-GTM-SALES-MARKETING.md](04-GTM-SALES-MARKETING.md)) |
 | Crops | **2** (frozen at T0.6) | Grading charts, price feeds and quality disputes are per-crop work; 2 is the max we can run well |
-| Delivery windows | 05:30–09:30 daily (HoReCa prep window), 6 days/week (hub closed one fixed weekday) | Matches restaurant procurement rhythm from mandi-shadow data |
-| Order cutoff | 18:00 previous day (app/WhatsApp), late orders best-effort | Gives FPO evening harvest instruction time |
+| Delivery window | 06:00–10:00 daily, target majority of drops before 09:00 (HoReCa prep window); 6 days/week (hub closed one fixed weekday) — per §2.1 | Matches restaurant procurement rhythm from mandi-shadow data |
+| Order cutoff | 18:00 (D-1) via app/WhatsApp, late orders best-effort — per §2.1 | Gives FPO evening harvest instruction time |
+| Minimum order value | ₹1,000 — per §2.1 | Keeps per-drop economics viable for asset-light 3PL |
 | Logistics | 3PL per-trip, insulated vehicle; no owned assets | Golden Rule 4 |
 | Pilot duration before gate review | **8 weeks** of live trading (after the dry-run week) | Enough weekly cohorts to measure repeat rate honestly |
 

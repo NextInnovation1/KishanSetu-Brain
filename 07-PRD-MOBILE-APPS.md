@@ -132,6 +132,8 @@ S-01 Splash → S-02 Language → S-03 Login → S-04 OTP → (new user) S-05 Ro
                                             └→ (existing user) F-01 or B-01
 ```
 
+**S-06 Update required** is not part of this linear flow — it is a guard: raised at launch (from S-01) when the build is below `min_supported_version`, or over any screen the moment an API returns `426`.
+
 ### S-01 Splash
 
 - **Purpose:** brand beat + session check. **Max 1.5 s.**
@@ -189,9 +191,9 @@ S-01 Splash → S-02 Language → S-03 Login → S-04 OTP → (new user) S-05 Ro
 | `otp.resend` | Resend code | कोड दोबारा भेजें |
 | `otp.resend_wait` | Resend in {s}s | {s} सेकंड में दोबारा भेजें |
 | `otp.err_wrong` | Wrong code. Try again. | ग़लत कोड। फिर से डालें। |
-| `otp.err_locked` | Too many tries. Wait 15 minutes. | बहुत कोशिशें हो गईं। 15 मिनट बाद कोशिश करें। |
+| `otp.err_locked` | Too many tries. Wait 1 hour. | बहुत कोशिशें हो गईं। 1 घंटे बाद कोशिश करें। |
 
-- **Data/API:** `POST /auth/otp/verify {phone, otp}` → `{token, user}` for existing users; for new users the API returns `404 user_not_found` variant and the client proceeds to S-05, then calls verify again with `{phone, otp, role, name?}` (exact contract in [06-PRD-BACKEND.md](06-PRD-BACKEND.md)). 5 wrong attempts → server locks 15 min.
+- **Data/API:** `POST /auth/otp/verify {phone, otp}`. Existing user → `200 {token, user}` (route to role home). New (unregistered) phone → `200 {signup_required: true, signup_token}` — verification succeeded but **no account exists yet and none is created here**; the client carries `signup_token` forward to S-05 and completes registration there via `POST /auth/signup`. The client never re-calls verify with role/name. 5 wrong attempts → server locks that **phone for 1 hour** (`otp.err_locked`). Exact contract in [06-PRD-BACKEND.md](06-PRD-BACKEND.md).
 - **Android extra (permitted divergence):** SMS Retriever API auto-fills the code. iOS uses the system OTP AutoFill from Messages.
 - **States:** wrong code shakes boxes + error; locked state disables input with countdown.
 - **Edge cases:** dev OTP `123456` in dev builds only — release builds must strip it; app backgrounded during entry keeps state 5 min.
@@ -215,17 +217,40 @@ S-01 Splash → S-02 Language → S-03 Login → S-04 OTP → (new user) S-05 Ro
 | `role.biz_address` | Delivery address | डिलीवरी का पता |
 | `role.cta` | Start | शुरू करें |
 
-- **Data/API:** completes `POST /auth/otp/verify {phone, otp, role, name}`; buyer basics via `PATCH /buyer-profiles/me {business_name, business_type, address}` immediately after ([06-PRD-BACKEND.md](06-PRD-BACKEND.md)).
-- **States:** submit failure keeps entered data; OTP expiry during this screen → back to S-04 with `otp.err_wrong`-style message and re-request.
-- **Edge cases:** buyer accounts start **pending activation** (ops vets B2B accounts) — buyer lands on B-01 with the pending banner (see B-01); farmer accounts are active immediately, FPO/village linkage is done later by ops.
+- **Data/API:** registers the account via `POST /auth/signup {signup_token, role, name?}` → `{token, user}`, using the `signup_token` minted by S-04's verify (no OTP is re-sent or re-verified on this screen). For buyers, business basics are saved immediately after — with the new session — via `PATCH /buyer-profiles/me {business_name, business_type, address}` ([06-PRD-BACKEND.md](06-PRD-BACKEND.md)).
+- **States:** submit failure keeps entered data; `signup_token` expired/invalid (or signup returns 4xx for it) → route back to S-04 to re-verify (re-request OTP), with the picked role and entered name preserved locally so the farmer/buyer re-enters nothing.
+- **Edge cases:** buyer accounts start **pending activation** (`users.status = pending`; ops vets B2B accounts) — buyer lands on B-01 with the pending banner (see B-01); farmer accounts are active immediately, FPO/village/hub linkage is done later by ops (see [09](09-PRD-OPS-DASHBOARD.md)/[14](14-OPS-PLAYBOOK.md)) — until linked, a farmer cannot list (see F-01/F-02 "not linked to a hub").
 - **Acceptance:** farmer can complete signup with zero typing (skip name); buyer cannot proceed without business name + address; role is absent from every subsequent settings screen.
+
+---
+
+### S-06 Update required (force update / soft nudge)
+
+- **Purpose:** keep every live client above the server's `min_supported_version` so backend/app contract drift can never strand a user on a broken build. **Identical on Android and iOS** — same trigger, same states, same copy, same store-redirect behavior (parity contract §2; only the store target differs — Play Store vs. App Store — which is a permitted platform-convention divergence).
+- **Trigger:** two entry points — (1) **at app launch** (post-splash, non-blocking on S-01) the client compares its build version to the cached `min_supported_version` for its platform; (2) **any API response `426` / `{error: "upgrade_required"}`** from any screen immediately routes here. Both resolve to the same screen.
+- **Layout:** full-screen blocking view (no bottom nav, no back/dismiss) — illustration, `update.title`, `update.body`, one primary **Update now** button that deep-links to the platform store listing (`market://` / App Store URL from `GET /config`, with an https store fallback). No "later"/skip control — this state is a hard gate.
+- **Soft nudge (non-blocking):** when the client is **exactly one minor version above** `min_supported_version` (i.e. one release from being cut off), show a dismissible top banner `update.soft_nudge` on Home (F-01/B-01) instead of the blocking screen; tapping it opens the store. Dismiss persists for the session only.
+- **Copy:**
+
+| key | EN | HI |
+|---|---|---|
+| `update.title` | Please update KisanSetu | किसानसेतु अपडेट करें |
+| `update.body` | This version is no longer supported. Update to keep ordering and selling. | यह वर्ज़न अब नहीं चलेगा। ख़रीदने-बेचने के लिए अपडेट करें। |
+| `update.cta` | Update now | अभी अपडेट करें |
+| `update.soft_nudge` | A new version is ready — update soon. | नया वर्ज़न आ गया है — जल्द अपडेट करें। |
+| `update.store_unavailable` | Couldn't open the store. Search "KisanSetu" in your app store. | स्टोर नहीं खुला। अपने ऐप स्टोर में "KisanSetu" खोजें। |
+
+- **Data/API:** `min_supported_version` (per platform: `min_supported_version_android` / `min_supported_version_ios`) and store URLs come from `GET /config`; the last-fetched values are cached so the launch check and the blocking screen's copy work **offline** (a client already known to be below minimum shows the gate even with no network). A live `426` is authoritative and overrides the cached comparison.
+- **States:** blocking (default) with store button; offline blocking → same screen, `update.body` still shown from cache, store button attempts the store deep-link and falls back to `update.store_unavailable` if it can't open; soft-nudge banner variant (non-blocking). This screen deliberately has no loading/empty state — it renders from cached config instantly.
+- **Edge cases:** store deep-link failure (no store app / restricted device) → `update.store_unavailable` toast, screen stays; a `426` received mid-flow (e.g. during checkout) discards the in-progress action and routes here — the server rejected it anyway; config that hasn't been fetched yet on a first run treats the client as up-to-date (fail-open) until the first `GET /config`, after which the gate applies.
+- **Acceptance:** a build below `min_supported_version` cannot reach any authenticated screen on either platform; the blocking copy renders in the selected language with no network; the soft-nudge appears at exactly one version above minimum and never blocks; store button opens the correct platform store.
 
 ---
 
 ### F-01 Farmer Home
 
 - **Purpose:** answer "क्या भाव है?" in 3 seconds and put **Sell** one thumb away.
-- **Layout (top→bottom):** greeting row (avatar → P-01, `home.greeting`), date; **price cards list** — one card per beachhead produce: produce photo, local name large + EN subtitle, reference market price struck through (`मंडी ₹28` — "mandi" appears in the HI/India copy only), **farmer price in leaf green, biggest number on the card** (`आपको मिलेगा ₹24/किलो`), A/B prices as forest/amber chips; sticky bottom **फ़सल बेचें / Sell produce** button (full-width, ≥56dp tall).
+- **Layout (top→bottom):** greeting row (avatar → P-01, `home.greeting`), date; **optional "not linked to a hub yet" banner** (`home.not_linked` + a call-support button; shown only when the farmer has no assigned hub — see States); **price cards list** — one card per beachhead produce: produce photo, local name large + EN subtitle, reference market price struck through (`मंडी ₹28` — "mandi" appears in the HI/India copy only), **farmer price in leaf green, biggest number on the card** (`आपको मिलेगा ₹24/किलो`), A/B prices as forest/amber chips; sticky bottom **फ़सल बेचें / Sell produce** button (full-width, ≥56dp tall).
 - **Copy:**
 
 | key | EN | HI |
@@ -239,9 +264,10 @@ S-01 Splash → S-02 Language → S-03 Login → S-04 OTP → (new user) S-05 Ro
 | `home.sell_cta` | Sell produce | फ़सल बेचें |
 | `home.prices_stale` | Yesterday's prices — new prices coming soon | कल के भाव — नए भाव जल्द आएँगे |
 | `home.empty` | Prices will appear here soon | भाव जल्द यहाँ दिखेंगे |
+| `home.not_linked` | Not linked to a hub yet — call us | हब से जुड़ना बाकी है — हमें फ़ोन करें |
 
-- **Data/API:** `GET /prices/today` → `[{produce_id, name_en, name_hi, name_gu, reference_market_price, farmer_price_a, farmer_price_b, currency, unit, date}]`. `farmer_price_*` is what the farmer receives per kg — the take rate is already netted out server-side, so the green number is always literally true. (Backend note: the scaffold's `mandi_price_per_kg` must become `reference_market_price`, and farmer-facing prices must be added to the feed — requirement logged in [06-PRD-BACKEND.md](06-PRD-BACKEND.md).)
-- **States:** loading skeleton of 3 cards; empty → `home.empty`; stale → muted cards + `home.prices_stale`; offline → cached prices + `common.asof` stamp; Sell stays enabled offline only in v1.1 (queue), disabled with toast at MVP.
+- **Data/API:** `GET /prices/today` → `[{produce_id, name_en, name_hi, name_gu, reference_market_price, farmer_price_a, farmer_price_b, currency, unit, date}]`. `farmer_price_*` is what the farmer receives per kg — the take rate is already netted out server-side, so the green number is always literally true. Hub-linkage status is read from `GET /me` — a farmer with no assigned hub renders the not-linked banner (ops-side hub linking is handled in [09](09-PRD-OPS-DASHBOARD.md)/[14](14-OPS-PLAYBOOK.md)). (Backend note: the scaffold's `mandi_price_per_kg` must become `reference_market_price`, and farmer-facing prices must be added to the feed — requirement logged in [06-PRD-BACKEND.md](06-PRD-BACKEND.md).)
+- **States:** loading skeleton of 3 cards; empty → `home.empty`; stale → muted cards + `home.prices_stale`; offline → cached prices + `common.asof` stamp; **not linked** (no hub assigned per `GET /me`) → persistent `home.not_linked` banner with a call-support button (`tel:` from `GET /config`) above the price list — prices still render, but starting a listing surfaces the same block at F-02 submit; Sell stays enabled offline only in v1.1 (queue), disabled with toast at MVP.
 - **Edge cases:** greeting without name (name skipped) → "नमस्ते 🙏" form without `{name}`; >6 produce items scroll, Sell button stays sticky.
 - **Acceptance:** price comparison (struck market price + green farmer price) visible without scrolling for the first 2 produce items on a 5" screen; Sell reachable with one thumb; TalkBack reads "Tomato. Market price 28 rupees, struck out. You get 24 rupees per kilo."
 
@@ -265,9 +291,11 @@ S-01 Splash → S-02 Language → S-03 Login → S-04 OTP → (new user) S-05 Ro
 | `listing.success_title` | Done ✓ | हो गया ✓ |
 | `listing.success_body` | Bring your produce to the {hub} hub tomorrow morning | कल सुबह फ़सल {hub} हब पर ले आएँ |
 | `listing.err_no_price` | Today's price isn't out yet — you'll see the final rate after grading | आज का भाव अभी नहीं आया — पक्की रक़म ग्रेड के बाद दिखेगी |
+| `listing.err_no_hub` | Not linked to a hub yet — call us | हब से जुड़ना बाकी है — हमें फ़ोन करें |
+| `listing.err_no_hub_cta` | Call us | हमें फ़ोन करें |
 
-- **Data/API:** produce grid from `GET /produce` (+ cached photos bundled for beachhead crops); estimate computed **server-side** via `GET /listings/estimate?produce_id&qty_kg` → `{low, high, currency}` (range = qty × farmer_price_b … qty × farmer_price_a); submit `POST /listings {produce_id, qty_kg, harvest_date}` → 201.
-- **States:** estimate loading → shimmer on the number only; no price today → `listing.err_no_price` replaces the estimate, submit still allowed; submit error → stays on step 3 with retry, data intact; offline at submit → MVP blocks with toast, v1.1 queues (see §8) and shows success variant "will send when online / नेट आने पर भेज देंगे".
+- **Data/API:** produce grid from `GET /produce` (+ cached photos bundled for beachhead crops); estimate computed **server-side** via `GET /listings/estimate?produce_id&qty_kg` → `{low, high, currency}` (range = qty × farmer_price_b … qty × farmer_price_a); submit `POST /listings {produce_id, qty_kg, harvest_date}` → 201. A farmer who self-signed up outside a demo day has no hub assigned, so the submit can return **`409 profile_incomplete`** — the account exists but isn't yet linked to a hub (ops-side linking handled in [09](09-PRD-OPS-DASHBOARD.md)/[14](14-OPS-PLAYBOOK.md)).
+- **States:** estimate loading → shimmer on the number only; no price today → `listing.err_no_price` replaces the estimate, submit still allowed; **not linked to a hub** (`409 profile_incomplete` on submit) → blocking error card on step 3 with `listing.err_no_hub` + a `listing.err_no_hub_cta` call-support button (`tel:` from `GET /config`); entered produce/qty/date preserved, no retry-submit (calling ops is the only unblock); submit error (other) → stays on step 3 with retry, data intact; offline at submit → MVP blocks with toast, v1.1 queues (see §8) and shows success variant "will send when online / नेट आने पर भेज देंगे".
 - **Edge cases:** qty bounds 5–2,000 kg (server-validated too); double-tap submit debounced (client idempotency key `client_ref` on the POST); back from step 3 preserves steps 1–2; success screen auto-returns to F-01 after 3 s or on tap.
 - **Acceptance:** entire flow with stepper only (no keyboard) is possible; a listing created here appears in F-03 as नई/Posted within one refresh; estimated range always brackets the eventual payout for correct grading (spot-checked weekly against real payouts).
 
@@ -296,7 +324,7 @@ S-01 Splash → S-02 Language → S-03 Login → S-04 OTP → (new user) S-05 Ro
 ### F-04 Payments
 
 - **Purpose:** the farmer's ledger — every rupee, with proof. This screen is the retention feature.
-- **Layout:** header tile: `इस महीने / This month` + big tabular-nums sum in leaf green. List rows: **amount (big, leaf green)**, date, `UPI • UTR {utr}`, status `पैसा आ गया ✓ / Paid ✓`. Tap row → detail sheet: linked listing (produce, qty, grade), order date, UTR copyable.
+- **Layout:** header tile: `इस महीने / This month` + big tabular-nums sum in leaf green. List rows: **amount (big, leaf green)**, date, `UPI • UTR {utr}`, status `पैसा आ गया ✓ / Paid ✓`. Tap row → detail sheet: linked listing (produce, qty, grade), payout date, UTR copyable.
 - **Copy:**
 
 | key | EN | HI |
@@ -307,9 +335,9 @@ S-01 Splash → S-02 Language → S-03 Login → S-04 OTP → (new user) S-05 Ro
 | `payments.utr` | UPI • UTR {utr} | UPI • UTR {utr} |
 | `payments.empty` | Your payments will show here | आपका पैसा यहाँ दिखेगा |
 
-- **Data/API:** `GET /payments` (server scopes to payee); each row `{amount, currency, created_at, utr, status, order_id}`.
+- **Data/API:** `GET /payments` (server scopes to payee); each row `{amount, currency, created_at, utr, status, listing_id}`. A farmer payout is tied to the **listing** that was graded and sold (not to a buyer order) — the detail sheet resolves `listing_id` to its produce/qty/grade.
 - **States:** skeleton rows; empty; offline cache + as-of.
-- **Edge cases:** payout pending (initiated, no UTR yet) → row shows `…` clock chip, no UTR — copy `भेज रहे हैं / Sending…`; multiple payouts same day listed separately (one per order).
+- **Edge cases:** payout pending (initiated, no UTR yet) → row shows `…` clock chip, no UTR — copy `भेज रहे हैं / Sending…`; multiple payouts same day listed separately (one per listing).
 - **Acceptance:** month total equals the sum of visible rows (server-computed, client-verified in QA); UTR copy works on both platforms; VoiceOver reads amounts before dates.
 
 ---
@@ -317,7 +345,7 @@ S-01 Splash → S-02 Language → S-03 Login → S-04 OTP → (new user) S-05 Ro
 ### B-01 Buyer Catalog
 
 - **Purpose:** tonight's order in under a minute; prices that prove themselves against the market rate.
-- **Layout:** top bar: title + cart icon with count badge; **delivery-context strip**: "Ordering for delivery {date}" (see cutoff logic in B-02); optional pending-activation banner; product cards: produce photo, EN name + local name subtitle, **freshness badge** (`Within 48h of harvest`), market price struck through, per-grade rows — `Grade A` chip (forest) ₹a/kg, `Grade B` chip (amber) ₹b/kg — each with qty stepper (kg, 5 kg increments) and Add.
+- **Layout:** top bar: title + cart icon with count badge; **delivery-context strip**: "Ordering for delivery {date}" (see cutoff logic in B-02); optional pending-activation banner; product cards: produce photo, EN name + local name subtitle, **freshness badge** (`Within 48h of harvest`), market price struck through, per-grade rows — `Grade A` chip (forest) ₹a/kg, `Grade B` chip (amber) ₹b/kg — each with qty stepper (kg, 5 kg increments) and Add. **Availability:** a card whose `available_qty` is zero (`availability: sold_out`) renders muted with a `catalog.sold_out` label and its steppers + Add disabled; a card that is running low (`availability: low`) shows a `catalog.low_stock` chip with the stepper still enabled but capped at `available_qty`.
 - **Copy:**
 
 | key | EN | HI |
@@ -327,24 +355,27 @@ S-01 Splash → S-02 Language → S-03 Login → S-04 OTP → (new user) S-05 Ro
 | `catalog.market_price` | Market ₹{x} | बाज़ार भाव ₹{x} |
 | `catalog.per_kg` | /kg | /किलो |
 | `catalog.add` | Add | जोड़ें |
+| `catalog.sold_out` | Sold out today | आज उपलब्ध नहीं |
+| `catalog.low_stock` | Only a little left | थोड़ा बचा है |
 | `catalog.pending_banner` | Account under review — ordering unlocks after our call. | खाता जाँच में है — हमारे कॉल के बाद ऑर्डर चालू होगा। |
 | `catalog.empty` | Today's catalog is being prepared. Check back shortly. | आज का कैटलॉग तैयार हो रहा है। थोड़ी देर में देखें। |
 
-- **Data/API:** `GET /prices/today` (buyer view uses `platform_price_a/b` — the buyer-pays price) joined client-side with `GET /produce`. Cart is client-local until order placement.
-- **States:** skeletons; empty (`catalog.empty` — before daily price publication); offline → cached catalog, Add disabled; **pending activation** → catalog browsable, steppers disabled, banner shown.
-- **Edge cases:** produce without a published price today is hidden (not shown at ₹0); quantities capped at 500 kg/line (server re-validates); buyer language switched to HI renders this screen in HI (parity of i18n across roles).
-- **Acceptance:** market-price strike-through + our price render on every card; add-to-cart updates the badge instantly; pending buyers can browse but never reach B-02 checkout.
+- **Data/API:** `GET /catalog` → the buyer catalog, one entry per available produce: `[{produce_id, name_en, name_hi, name_gu, photo, reference_market_price, platform_price_a, platform_price_b, currency, unit, available_qty, availability}]`, where `availability ∈ available | low | sold_out` is **server-derived** from `available_qty` (thresholds are server-owned). The buyer-pays prices (`platform_price_a/b`) and the market reference come pre-joined, so the client does **not** build the catalog from `/prices/today` + `/produce`. Account state (`users.status`) is read from `GET /me` to decide whether to show the pending-activation banner and disable steppers. Cart is client-local until order placement.
+- **States:** skeletons; empty (`catalog.empty` — before the daily catalog is published); offline → cached catalog, Add disabled; **pending activation** (`users.status = pending`) → catalog browsable, steppers disabled, banner shown; **sold-out / low** per card (from `availability`) → sold-out cards muted with steppers disabled, low cards flagged with `catalog.low_stock` and capped at `available_qty`.
+- **Edge cases:** produce the server omits from `GET /catalog` isn't shown at all; produce that is present but out of stock shows the `catalog.sold_out` card (never hidden as ₹0); quantities capped at the lesser of 500 kg/line and `available_qty` (server re-validates); buyer language switched to HI renders this screen in HI (parity of i18n across roles).
+- **Acceptance:** market-price strike-through + our price render on every purchasable card; a zero-`available_qty` produce shows the sold-out state with its stepper disabled; add-to-cart updates the badge instantly; pending buyers can browse but never reach B-02 checkout.
 
 ### B-02 Cart
 
 - **Purpose:** review, set delivery, place order — no payment step.
-- **Layout:** line items (produce, grade chip, qty stepper, line total, remove); delivery date field (date picker, min = tomorrow, or day-after if past cutoff); delivery address (prefilled from buyer profile, editable); totals block: Subtotal / Delivery fee / **Total** (all server-quoted); invoice note; primary button.
+- **Layout:** line items (produce, grade chip, qty stepper, line total, remove); delivery date field (date picker, min = tomorrow, or day-after if past cutoff), with the delivery-window helper `cart.delivery_window` (window from `config.delivery_window`, e.g. 06:00–10:00); delivery address (prefilled from buyer profile, editable); totals block: Subtotal / Delivery fee / **Total** (all server-quoted; delivery fee shows ₹0 when the order qualifies for the waiver); invoice note; primary button.
 - **Copy:**
 
 | key | EN | HI |
 |---|---|---|
 | `cart.title` | Cart | कार्ट |
 | `cart.delivery_date` | Delivery date | डिलीवरी की तारीख़ |
+| `cart.delivery_window` | Delivery {start}–{end} | डिलीवरी {start}–{end} |
 | `cart.address` | Delivery address | डिलीवरी का पता |
 | `cart.subtotal` | Subtotal | जोड़ |
 | `cart.delivery_fee` | Delivery fee | डिलीवरी शुल्क |
@@ -358,9 +389,9 @@ S-01 Splash → S-02 Language → S-03 Login → S-04 OTP → (new user) S-05 Ro
 | `cart.success_title` | Order placed ✓ | ऑर्डर हो गया ✓ |
 | `cart.success_body` | We'll confirm shortly. Track it in Orders. | जल्द पक्का करेंगे। Orders में देखें। |
 
-- **Data/API:** totals quoted via `POST /orders/quote {items, delivery_date}` → `{subtotal, delivery_fee, total, currency}` (server-priced; client never multiplies); place via `POST /orders {items:[{produce_id, grade, qty_kg}], delivery_date, delivery_address, client_ref}` → 201 with order. Region config (`min_order_value`, `order_cutoff_local_time` — **default 21:00, ₹500**, validated in Phase 0) from `GET /config`.
+- **Data/API:** totals quoted via `POST /orders/quote {items, delivery_date}` → `{subtotal, delivery_fee, total, currency}` (server-priced; client never multiplies); place via `POST /orders {items:[{produce_id, grade, qty_kg}], delivery_date, delivery_address, client_ref}` → 201 with order. **Pilot params come from `GET /config` and are never hardcoded:** `order_cutoff_local_time` (18:00 — an order placed after cutoff on day D can only take delivery on D+2, i.e. cutoff is 18:00 on D-1 for next-day delivery), `delivery_window` (06:00–10:00), `min_order_value` (₹1,000), `delivery_fee` (₹50) and `delivery_fee_waiver_threshold` (₹4,000, at/above which delivery is free). Any value shown to the buyer is rendered from these config values (example display values: cutoff 18:00, minimum ₹1,000); the server re-validates all of them on quote and place.
 - **States:** quote loading → totals shimmer; quote/placement failure → retry keeping cart; offline → place disabled; price drift between add and place → `cart.price_changed` dialog with Accept / Back.
-- **Edge cases:** below min order → button disabled + `cart.min_order`; past cutoff → date picker min shifts, `cart.cutoff_note` shows; duplicate submit prevented by `client_ref` idempotency; item availability is best-effort (allocation is ops-side) — order may be confirmed partially, communicated via order status + ops call, not in cart.
+- **Edge cases:** below min order (`config.min_order_value`) → button disabled + `cart.min_order` (₹{v} filled from config, e.g. ₹1,000); past cutoff (`config.order_cutoff_local_time`, e.g. 18:00) → date picker min shifts, `cart.cutoff_note` shows with `{time}` from config; delivery fee waived at/above `config.delivery_fee_waiver_threshold` → quote returns `delivery_fee: 0`; a **pending buyer** whose stale session reaches placement is server-rejected **`403 account_pending`** → the app surfaces it gracefully as the `catalog.pending_banner` message and routes back to B-01 (no raw error, no created order); duplicate submit prevented by `client_ref` idempotency; item availability is best-effort (allocation is ops-side) — order may be confirmed partially, communicated via order status + ops call, not in cart.
 - **Acceptance:** placing an order twice rapidly creates exactly one order; totals on the success screen match `GET /orders/:id` exactly; cart survives app kill (persisted locally).
 
 ### B-03 Orders
@@ -494,6 +525,7 @@ Common properties on every event: `platform, app_version, os_version, language, 
 | `logged_out` | — | P-01 confirm |
 | `api_error` | `endpoint, status_code` | Any non-2xx |
 | `offline_banner_shown` | `screen_id` | Banner appears |
+| `update_required_shown` | `min_version, current_version, blocking` | S-06 blocking screen shown, or soft-nudge banner shown (`blocking=false`) |
 | `push_opened` (v1.1) | `type, target_screen` | Notification tap |
 
 North-star product funnels: farmer **sell funnel** (`sell_started → sell_submitted`, target ≥80% completion) and buyer **order funnel** (`catalog_item_added → order_submitted`, target ≥60%); plus weekly active farmers listing and buyer repeat-order rate feeding the pilot go/no-go in [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md).
@@ -503,7 +535,7 @@ North-star product funnels: farmer **sell funnel** (`sell_started → sell_submi
 | # | Question | Decision taken here | Owner / deadline |
 |---|---|---|---|
 | 1 | One account = one role, or role switching? | One role per account at MVP; switch via support call | Founder, PRD approval |
-| 2 | Order cutoff time & minimum order value | 21:00 local / ₹500, both server-configured via `GET /config`; validate against real HoReCa behavior | Founder, end of Phase 0 (T0.2 interview data) |
+| 2 | Order cutoff time & minimum order value | 18:00 (D-1) cutoff / ₹1,000 minimum / ₹50 delivery fee (waived ≥₹4,000) / 06:00–10:00 delivery window — all server-configured via `GET /config`; validate against real HoReCa behavior | Founder, end of Phase 0 (T0.2 interview data) |
 | 3 | Farmer-facing price = net farmer price (take rate pre-netted) | Yes — the green number must be literally what the farmer receives; requires `farmer_price_a/b` in the price feed | Backend PRD ([06-PRD-BACKEND.md](06-PRD-BACKEND.md)), before build |
 | 4 | Buyer self-serve vs ops-activated | Ops-activated (pending banner); B2B sales-led, prevents junk accounts | Founder, PRD approval |
 | 5 | Third-party analytics SDK | No at MVP — own `POST /events` endpoint | Revisit at v1.1 if querying becomes painful |

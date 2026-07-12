@@ -21,12 +21,13 @@ This is the standard operating procedure for running one KisanSetu hub day. It i
 | Time | Action | SOP |
 |---|---|---|
 | 18:00 (D-1) | Set tomorrow's prices; publish price feed + WhatsApp broadcasts | §5 |
-| 18:00 (D-1) | Order cutoff; allocation run (listings → order_items) | §4.5 |
-| 19:00 (D-1) | Harvest instructions to FPO/farmers (what to harvest, how many kg, harvest early morning not previous afternoon) | §2 |
+| 18:00 (D-1) | Order cutoff; supply check → orders **confirmed with provisional quantities** communicated to buyers by 19:30 (no binding allocation yet) | §4.1–4.2 |
+| 19:00 (D-1) | Harvest instructions to FPO/farmers (what to harvest, how many kg — capped at demand +15% per §4.6; harvest early morning not previous afternoon) | §4.3 |
 | 05:00–07:30 | Farmer produce arrives at hub: intake → weigh → grade → payout → crate/QR → staging | §2–3, §7 |
 | 06:30 | Price sanity check vs live reference data; correct only if reference moved >10% | §5.4 |
+| 06:30–07:15 | **Binding allocation run**: graded listings → order_items → order_allocations; crate serials linked to allocations at morning staging; buyers told of any change from provisional | §4.4–4.5 |
 | 07:30 | 3PL vehicle loads; dispatch scan (`dispatch_ts`) | §2.5 |
-| 05:30–09:30 | Deliveries (buyer prep window); `delivered_ts` per drop | §8 |
+| 06:00–10:00 | Deliveries (canonical window, [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md) §2.1; target majority of drops before 09:00); `delivered_ts` per drop | §8 |
 | 10:00 | Exceptions log: disputes, shortfalls, fallback events entered in dashboard | §8–9 |
 | 18:30 | 15-min stand-up: founder + Ops Lead (week 1–2 daily, then Mon/Thu) | — |
 | Monday 18:00 | Weekly metrics ritual (60 min) | §10 |
@@ -52,17 +53,27 @@ The hub is the FPO's existing collection point. KisanSetu adds: a stamped scale,
    - Illustrative (tomato, to be replaced by the frozen crops' charts): **A** = 80–120 g, uniform red-ripe (stage 5–6), firm, zero cuts/cracks, ≤5% blemish surface; **B** = 60–150 g, stage 4–6, minor blemish ≤15%, slight softness OK; **REJECT** = cracked, rotting, pest-holed, or overripe-soft.
 2. Grader sorts into A / B / reject piles, weighs each, records `graded_qty` per grade on the listing (status `posted → graded`).
 3. Rejects: returned to the farmer on the spot (they keep it, sell it locally, or FPO composts). Reject % recorded. Reject rate >20% for a farmer twice in a week ⇒ Ops Lead conversation, retraining against the chart, before it becomes a dispute pattern (see [16-RISKS-MITIGATIONS.md](16-RISKS-MITIGATIONS.md) R6).
-4. **Grading photo**: one photo per farmer-per-crop-per-day of the graded piles next to the chart, uploaded on the listing. This photo is the evidence base for any downstream buyer dispute — 10 seconds now saves an hour of he-said-she-said later.
+4. **Grading photo (dispute evidence, required from day 1):** one photo per farmer-per-crop-per-day of the graded piles next to the laminated chart, taken on the hub Android device at Station 3 and **uploaded on the listing via the grade endpoint** ([06-PRD-BACKEND.md](06-PRD-BACKEND.md) — the grade call carries a minimal local-disk photo path in the MVP, not a full media pipeline). This photo is the evidence base for any downstream buyer dispute (§8.3) — 10 seconds now saves an hour of he-said-she-said later.
+   - **Manual fallback:** if the upload fails (no signal / app down), the photo is still taken and filed to a dated folder on the hub device named by listing ID (`YYYY-MM-DD/<listing_id>/`), and linked to the listing when connectivity returns. Grading never waits on the upload.
 
 ### 2.4 Station 4 — Crate + QR tag
 1. Graded produce goes into KisanSetu crates: one grade per crate, never mixed. Fill to the crop's max-fill line (printed on chart; overfilled crates crush the bottom layer — a freshness promise killed by physics).
-2. Each crate gets a **QR label** (thermal sticker into the label holder): QR encodes the allocation ID; printed human-readable line: crop, grade (A in forest green band, B in amber band per [10-DESIGN-SYSTEM.md](10-DESIGN-SYSTEM.md)), kg, harvest date, farmer first name + village, hub code.
-3. Scanning the QR at tagging writes `hub_in_ts`. On paper-fallback days: handwritten crate card #F2 with the same fields, timestamps included.
+2. Each crate gets a **QR label** (thermal sticker into the label holder): QR encodes the **`listing_id` + the crate's serial number** (the serial embossed on the crate, §3) — **not** an allocation ID. At tagging time the binding allocation has not necessarily run yet (it is a morning step, §4.4), so the crate is identified by which graded listing it came from; the crate is bound to its `order_allocation` later, at morning staging (§4.5). Printed human-readable line: crop, grade (A in forest green band, B in amber band per [10-DESIGN-SYSTEM.md](10-DESIGN-SYSTEM.md)), kg, harvest date, farmer first name + village, hub code.
+3. Scanning the QR at tagging writes `hub_in_ts`. On paper-fallback days: handwritten crate card #F2 with the same fields (listing ID + crate serial), timestamps included.
 
 ### 2.5 Station 5 — Dispatch
 1. Crates staged by delivery route (route sheet from the allocation run, §4.5). Load in reverse-drop order.
 2. Driver + Ops Lead count crates against the route sheet, both sign. QR batch-scan at loading writes `dispatch_ts`.
 3. Cold discipline at pilot scale: pre-dawn operation + insulated vehicle/insulated boxes with ice packs for leafy crops (see §6.3). Ops Lead records vehicle departure temp check (fridge thermometer in one crate, photo) — crude but honest instrumentation until volumes justify reefer.
+
+### 2.6 Self-signup farmer linking (before a farmer can list or reach Station 1)
+A farmer signed up in person on a demo day is linked to this hub then and there (`hub_id` set by ops). But a farmer who **self-signs-up in the app without a `hub_id`** — word-of-mouth, a referral, anyone outside a demo day — must be vetted before they can list:
+1. Unlinked signups land in the **"Partners / unlinked farmers" worklist** in the ops dashboard ([09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md)).
+2. Ops **calls the farmer**, verifies they are a member of a partner FPO (or otherwise eligible per the partner MoU), captures village + registered VPA, and answers questions.
+3. Ops **sets the farmer's `hub_id`.** Only then does the farmer become a listable partner; until then the app shows "pending verification" and blocks listing.
+4. Farmers who cannot be verified (not an FPO member, outside serviceable villages) are marked declined with a reason — no silent limbo.
+
+This keeps every kg traceable to a known, hub-linked farmer and stops off-hub produce entering the traceability spine.
 
 **Hygiene & safety (posted at hub):** no smoking/paan at the grading table; hands washed before grading shift; crates washed weekly (rota on the wall); floor swept between crop lots; first-aid box; scale area dry.
 
@@ -81,12 +92,37 @@ The hub is the FPO's existing collection point. KisanSetu adds: a stamped scale,
 
 ---
 
-## 4. Order-to-allocation (evening cycle)
-1. **18:00 cutoff**: buyer orders in from app/web/WhatsApp. WhatsApp orders entered into the dashboard by field sales before 18:30 (order source recorded as `whatsapp`).
-2. **Supply check**: open listings (kg by crop) vs ordered kg. Shortfall ⇒ allocation priority: (1) buyers by longest standing weekly volume, (2) partial-fill everyone above 80% rather than zero-fill anyone; affected buyers get a WhatsApp by 19:30 with the confirmed quantities — surprise at the door is forbidden.
-3. **Allocation run** (dashboard, [09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md)): listings→order_items matched by crop + grade + kg; creates `order_allocations` (the traceability spine). Manual override always available.
-4. Orders move `placed → confirmed`; buyers get confirmation with delivery window.
-5. Harvest instructions to FPO WhatsApp group by 19:00: per-crop kg to harvest **tomorrow morning** (harvest-at-dawn is what makes <36h median achievable — produce harvested the previous afternoon starts the clock 12h in the hole).
+## 4. Order-to-allocation (two-phase: evening provisional → morning binding)
+
+The allocation is deliberately split. In the **evening** we can only match orders against *ungraded* open listings, so evening quantities are a **provisional supply match**, not a commitment of specific crates. The **binding** allocation runs the next **morning**, once produce is actually weighed and graded — only then do real `order_allocations` rows exist. This split is what lets us pay farmers on graded weight (§7) and still promise buyers exact quantities without owning inventory (Golden Rule 4).
+
+### 4.1 Evening order cutoff (18:00 D-1)
+Buyer orders in from app/web/WhatsApp. WhatsApp orders entered into the dashboard by field sales before 18:30 (order source recorded as `whatsapp`).
+
+### 4.2 Evening supply check & provisional confirm (→19:30 D-1)
+1. **Supply match, not allocation:** open listings (kg by crop) vs ordered kg. Because listings are still ungraded, this is a *provisional* match — **no `order_allocations` are created yet**.
+2. Shortfall ⇒ provisional priority: (1) buyers by longest standing weekly volume, (2) partial-fill everyone above 80% rather than zero-fill anyone.
+3. Orders move `placed → confirmed` **with provisional quantities**; buyers get confirmation with delivery window, and affected buyers get a WhatsApp by 19:30 with the **provisional** quantities — surprise at the door is forbidden, and these numbers are stated as "subject to morning grading."
+
+### 4.3 Harvest instructions (19:00 D-1)
+Per-crop kg to harvest, sent to the FPO WhatsApp group: harvest **tomorrow morning** (harvest-at-dawn is what makes <36h median achievable — produce harvested the previous afternoon starts the clock 12h in the hole). Quantities are **capped at confirmed demand + a 15% buffer** per crop (over-supply protocol, §4.6).
+
+### 4.4 Morning binding allocation run (06:30–07:15 D0)
+1. Once produce is graded (§2.3), the **binding allocation run** (dashboard, [09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md)) matches **graded** listings → `order_items` by crop + grade + kg and creates `order_allocations` (the traceability spine). Priority mirrors §4.2 (standing weekly volume, then partial-fill >80% over zero-fill anyone).
+2. Manual override always available.
+3. Any buyer whose confirmed provisional quantity changes after grading is messaged **before dispatch** — no silent short-ships.
+
+### 4.5 Morning staging: crate → allocation link + route sheet
+Each graded crate (labelled at Station 4 with `listing_id` + crate serial, §2.4) is linked to its `order_allocation` at staging — this is the moment the physical crate joins the traceability spine. The dashboard then emits the **route sheet** (crates by delivery route, reverse-drop order) used at dispatch (§2.5).
+
+### 4.6 Over-supply protocol (inventory-risk guardrail — Golden Rule 4)
+Farmers are paid at grading for **all** graded kg (§7), allocated or not, and walk-ins are accepted (§2.1) — so an over-supply morning would leave KisanSetu holding paid-for perishables with no buyer, exactly the inventory risk Golden Rule 4 forbids. Guardrails, in order:
+1. **Cap the harvest ask.** Harvest instructions (§4.3) never exceed **confirmed demand + a 15% buffer** per crop. The buffer covers reject/shrinkage and small buyer top-ups; it is a firm cap, not a suggestion. The FPO is told plainly that harvesting beyond the cap is at the farmer's own risk and is **not** an implied purchase commitment.
+2. **Grade the allocated kg first.** Intake and grading (§2.2–2.3) prioritise listings tied to confirmed demand; buffer and walk-in produce is graded after, so a long morning still covers committed orders first.
+3. **Clear surplus same-day at cost.** Graded kg above allocation is pushed the same morning through the discounted **surplus channel** — standing caterer / quick-commerce buyers and FPO buy-back — at (or near) the **farmer price**, i.e. at cost, to move it before the freshness clock runs down. This is the §8.4 B-grade rescue channel widened to over-supply.
+4. **Book the residual.** Any graded kg still unsold at end of day is written off to the **`surplus_loss`** ledger line (distinct from `quality_loss`, §8.4). Weekly `surplus_loss` **> 2% of the week's GMV** triggers a supply-planning review in the Monday ritual (§10) — the fix is a tighter demand forecast and buffer, not owning more inventory.
+
+In practice this keeps us **asset-light**: the cap + grade-priority + same-day clearance mean the platform almost never carries produce overnight, and when it does the loss is small, **named**, and actively reviewed rather than buried in shrinkage.
 
 ---
 
@@ -100,13 +136,28 @@ The hub is the FPO's existing collection point. KisanSetu adds: a stamped scale,
 2. Yesterday's realized buyer acceptance (did anyone push back on price? fill rate at price).
 3. FPO field signal on harvest volumes coming (glut/scarcity 48h ahead).
 
-**Setting the price (entered into `price_feed`: `reference_market_price`, `platform_price_a`, `platform_price_b` per produce per day):**
+**Setting the price** — **five** columns are entered into `price_feed` per produce per day ([06-PRD-BACKEND.md](06-PRD-BACKEND.md)): `reference_market_price`, `platform_price_a`, `platform_price_b`, `farmer_price_a`, `farmer_price_b`. Ops enters **all five** (09's Prices screen surfaces every column) — the `platform_price_*` values are what buyers pay, the `farmer_price_*` values are what farmers are paid at grading (§7). Rules:
 - `reference_market_price` = today's mandi modal price for the standard grade.
 - `platform_price_a` = reference × **1.10–1.20** (graded, traceable, delivered A-produce carries a premium — validated in Phase 0 interviews).
 - `platform_price_b` = reference × **0.90–1.00**.
-- **Farmer-share check (hard constraint):** computed farmer payout rate ÷ platform price must be **≥60%** at these prices after take rate. If the multiplier math breaks the 60% floor, fix the price, not the promise.
-- **Take-rate check:** implied blended take rate stays in the 8–12% band ([03-BUSINESS-MODEL.md](03-BUSINESS-MODEL.md)). Below 6% = we are buying revenue; flag in the weekly ritual.
+- `farmer_price_a` = `platform_price_a` × **0.65** (the 65% farmer-share target).
+- `farmer_price_b` = `platform_price_b` × **0.65**.
+- **Rounding:** round each farmer price to the nearest **₹0.25/kg** (clean numbers on the payout slip and price board). Never round *down* through the floor — see the next line.
+- **Farmer-share check (hard constraint):** each `farmer_price_x` ÷ `platform_price_x` **targets 65%** and must **never fall below the 60% floor** after rounding. If rounding or the multiplier math would break 60%, lift the farmer price — fix the price, not the promise.
+- **Take-rate check:** with farmers on ~65% of platform price the gross spread is ~35%; after 3PL, crates and shrinkage the implied **blended net take must land in the 8–12% band** ([03-BUSINESS-MODEL.md](03-BUSINESS-MODEL.md)). Below 6% = we are buying revenue; above 12% = we are squeezing one side — flag either in the weekly ritual.
 - Movement damper: platform price moves ≤10% day-over-day unless reference moved more — HoReCa buyers value stability over squeezing the last rupee (interview finding to re-verify in Phase 0).
+
+**Worked example (tomato):**
+
+| `price_feed` column | Rule | Value |
+|---|---|---|
+| `reference_market_price` | mandi modal | ₹20.00/kg |
+| `platform_price_a` | ref × 1.15 | ₹23.00/kg |
+| `platform_price_b` | ref × 1.00 | ₹20.00/kg |
+| `farmer_price_a` | 23.00 × 0.65 = 14.95 → nearest ₹0.25 | **₹14.95 → ₹15.00/kg** |
+| `farmer_price_b` | 20.00 × 0.65 = 13.00 (already on grid) | **₹13.00/kg** |
+
+Farmer share here is 15.00 ÷ 23.00 = **65%** on A and 13.00 ÷ 20.00 = **65%** on B — both on target, clear of the 60% floor.
 
 **Publish:** price feed saved in dashboard → app price cards update → 19:00 WhatsApp broadcasts (farmer list: tomorrow's KisanSetu price vs mandi price, in HI/GU; buyer list: tomorrow's catalog prices A/B).
 
@@ -134,7 +185,7 @@ Driver late >20 min at hub ⇒ Ops Lead calls vendor dispatcher; >45 min ⇒ act
 ---
 
 ## 7. Farmer payout SOP (the moment that builds or breaks trust)
-1. **Trigger:** grading complete at intake (§2.3) — payout is initiated **before the truck leaves**, same visit. Farmer payout = Σ(graded kg × grade payout rate for the day). Payout rates derive from the day's `price_feed` minus take rate; shown on the app home screen and the hub price board.
+1. **Trigger:** grading complete at intake (§2.3) — payout is initiated **before the truck leaves**, same visit. Farmer payout = Σ(graded kg × the day's farmer price for that grade). The payout rates are the `farmer_price_a` / `farmer_price_b` set in the day's `price_feed` (§5) — no per-hub recomputation; shown on the app home screen and the hub price board.
 2. **Rail:** instant UPI to the farmer's registered VPA via Razorpay payout API ([06-PRD-BACKEND.md](06-PRD-BACKEND.md) `payments`, type `farmer_payout`); UTR recorded.
 3. **THE PRINTED SLIP** (thermal, 2 copies — farmer + hub file; this slip is also the marketing asset per [04-GTM-SALES-MARKETING.md](04-GTM-SALES-MARKETING.md)). Exact fields:
    - KisanSetu header + hub code + date/time
@@ -145,7 +196,7 @@ Driver late >20 min at hub ⇒ Ops Lead calls vendor dispatcher; >45 min ⇒ act
    - "आपका हिस्सा / Your share of buyer price: **Z%**"
    - Total ₹, UPI UTR, ops signature line
 4. **Failure handling:** UPI failure → one retry after re-verifying VPA → if rail down, NEFT same day from ops device; farmer told exactly when money lands before leaving the hub. **Never** "we'll sort it tomorrow." Cash is not used (no cash float at the hub — audit + safety).
-5. Payout slips filed daily; the weekly farmer-share metric (M3) is computed from these slips — the documented in "≥60% documented".
+5. Payout slips filed daily; the weekly farmer-share metric (M3) is computed from these slips — this is what makes the farmer-share promise (**65% target, 60% floor**) a documented number rather than a claim.
 
 ---
 
@@ -189,7 +240,9 @@ Driver late >20 min at hub ⇒ Ops Lead calls vendor dispatcher; >45 min ⇒ act
 3. 2-hour buyer claim window; platform absorbs unclear dispute losses during pilot.
 4. Insulated-vehicle + ice-pack standard (not reefer) at pilot volumes, with a stated trigger to upgrade.
 5. Crate deposit ₹350 enforced only after 3 deliveries' grace.
+6. Two-phase allocation: the evening confirms **provisional** quantities against ungraded listings; the **binding** allocation runs next morning against graded listings (§4). Farmer share set at **65% target / 60% floor** (§5).
+7. Over-supply guardrail: harvest capped at demand **+15%**, surplus cleared same-day at cost, residual booked to **`surplus_loss`** and reviewed weekly (§4.6) — we never carry inventory overnight (Golden Rule 4).
 
 Open question (owner: Ops Lead hire + founder, by end of pilot week 2): whether the FPO's own staff or a KisanSetu-paid grader does Station 3 long-term — MoU allows either; the grading-consistency data from weeks 1–2 decides.
 
-_Change log: v1.0 (July 2026) — initial playbook, pre-pilot._
+_Change log: v1.0 (July 2026) — initial playbook, pre-pilot. v1.1 (July 2026) — two-phase allocation aligned across §1/§4 (evening provisional match → morning binding allocation against graded listings); §2.4 crate QR encodes `listing_id` + crate serial, allocation linked at morning staging (§4.5); §2.3.4 grading-photo SOP confirmed (grade endpoint + dated-folder fallback); new §2.6 self-signup farmer linking; new §4.6 over-supply protocol (`surplus_loss`); §5 farmer-price rules + worked example; farmer share set to 65% target / 60% floor throughout._

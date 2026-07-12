@@ -111,7 +111,7 @@ Numbered list `01–05`, one line each. Keys `step{n}_t` / `step{n}_d`:
 |---|---|---|
 | 01 | **List** — The farmer lists tomorrow's harvest — crop and quantity — on the app or through FPO staff. | **लिस्ट करें** — किसान कल की फ़सल ऐप से या FPO स्टाफ़ के ज़रिए लिस्ट करता है — कौन-सी फ़सल, कितनी। |
 | 02 | **Aggregate & grade** — The nearest FPO hub collects and weighs, sorts into A/B tiers and tags every crate to its farm. | **इकट्ठा और ग्रेड** — नज़दीकी FPO हब पर तौल होती है, A/B ग्रेड बनते हैं, और हर क्रेट पर उसके खेत का टैग लगता है। |
-| 03 | **Order** — Kitchens order by 8 pm for next-day delivery, at prices locked for the week. | **ऑर्डर करें** — किचन रात 8 बजे तक ऑर्डर करते हैं, अगले दिन डिलीवरी — हफ़्ते भर के पक्के दाम पर। |
+| 03 | **Order** — Kitchens order by 6 PM, delivered fresh next morning — at transparent daily prices: you see tomorrow's rate the evening before, and we cap day-to-day swings (≤10%) so you can plan food costs. | **ऑर्डर करें** — किचन शाम 6 बजे तक ऑर्डर करते हैं, अगली सुबह ताज़ा डिलीवरी — रोज़ाना पारदर्शी दाम पर: कल का रेट आपको एक शाम पहले दिख जाता है, और दिन-प्रतिदिन के उतार-चढ़ाव को हम सीमित रखते हैं (≤10%) ताकि आप खाने की लागत की योजना बना सकें। |
 | 04 | **Deliver fresh** — Cold-chain vans move crates hub-to-door within 24–48 hours of harvest. | **ताज़ा डिलीवरी** — कोल्ड-चेन गाड़ियाँ कटाई के 24–48 घंटे के अंदर क्रेट पहुँचा देती हैं। |
 | 05 | **Instant pay** — The farmer is paid by UPI at pickup — not 30 days later. | **तुरंत पैसा** — पिकअप पर ही किसान को UPI से पैसा — 30 दिन बाद नहीं। |
 
@@ -119,7 +119,7 @@ Numbered list `01–05`, one line each. Keys `step{n}_t` / `step{n}_d`:
 
 Benefit lists (check icon + title + one-liner). Farmer section headline: EN "Your harvest. Your price. Your money — today." / HI "आपकी फ़सल। आपका दाम। आपका पैसा — आज ही।" Benefits (keys `farmers_b1..b4`): 60–70% of the final price; UPI payment at pickup; Live fair prices (see what kitchens pay today); Confirmed pre-orders (harvest what's already sold). CTA `farmers_cta`: "Join as a farmer" / "किसान बनकर जुड़ें" → `#contact` with `data-prefill-role="farmer"`.
 
-Buyer section headline: EN "One vendor. Graded, traceable, every morning." / HI "एक ही वेंडर। ग्रेडेड और ट्रेस होने वाली उपज, हर सुबह।" Benefits (keys `buyers_b1..b5`): A/B quality tiers; Farm-to-fork traceability (every crate carries its farm, farmer, harvest date); One vendor, one invoice (single tax invoice weekly); Stable pricing (weekly locked rates vs daily swings); 24–48 hour freshness ("Cut today near {exampleVillage}, in your prep line tomorrow"). CTA `buyers_cta`: "Order for your kitchen" / "अपने किचन के लिए मंगाएँ".
+Buyer section headline: EN "One vendor. Graded, traceable, every morning." / HI "एक ही वेंडर। ग्रेडेड और ट्रेस होने वाली उपज, हर सुबह।" Benefits (keys `buyers_b1..b5`): A/B quality tiers; Farm-to-fork traceability (every crate carries its farm, farmer, harvest date); One vendor, one invoice (single tax invoice weekly); Predictable pricing (transparent daily rates against the market reference, day-to-day swings capped ≤10% so you can plan food costs — a fixed 7-day locked rate is available only on the paid Priority plan); 24–48 hour freshness ("Cut today near {exampleVillage}, in your prep line tomorrow"). CTA `buyers_cta`: "Order for your kitchen" / "अपने किचन के लिए मंगाएँ".
 
 ### 5.5 Impact strip
 
@@ -253,6 +253,7 @@ Techniques: system font stacks only (serif display = Iowan Old Style/Palatino/Ge
 6. **Analytics:** all 8 events fire with exact names/props above, verified in Plausible dashboard.
 7. **Performance:** all §10 gates pass on a throttled Moto G4 profile in Lighthouse CI before deploy.
 8. **Golden-rule check:** no "Surat", "₹", "+91", or "mandi" hardcoded outside `region.js`/`strings.js` (grep test in CI); farmer-share and freshness numbers appear and are cited.
+9. **Commercial-terms provenance:** all commercial terms shown on the site (prices, order cutoff, delivery window, minimum order, fees) match the canonical pilot parameters table in `13-LAUNCH-PLAN.md` §2 — no number appears on the website that isn't sourced from there. In particular, the site describes daily pricing with ≤10% day-over-day damping (not a weekly lock) and a 6 PM (18:00) order cutoff; any "weekly locked rate" language is reserved for describing the paid Priority plan only.
 
 ## 13. Phased rollout
 
