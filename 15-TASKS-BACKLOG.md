@@ -41,12 +41,15 @@ _KisanSetu Brain · July 2026 · Owner: Alpesh (founder; owner defaults to found
 | T1.8 | [ ] | App icons + wordmark finals (contract designer) | Vector wordmark, adaptive Android icon, iOS icon set, favicon; passes trademark decision from T0.5 | M |
 | T1.9 | [ ] | Printed matter designed | Payout slip (fields per [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §7.3), buyer invoice, A2 grade-chart template, buyer mini grade card, fallback forms #F1–#F6 | M |
 
-## T2 · Backend (Node.js 20 + Express + PostgreSQL 16) — ALL GATED ON T1.7
+## T2 · Backend (TypeScript + Express + PostgreSQL 16, Drizzle ORM) — ALL GATED ON T1.7
+
+_Stack per [20-CODE-ARCHITECTURE.md](20-CODE-ARCHITECTURE.md) §1: TypeScript (strict), Drizzle ORM `v1.0.0-rc.4` + `drizzle-kit`, `pg`, `zod`. MVC layering + API-key/AES crypto copied from Fancall._
 
 | ID | St | Task | Acceptance criteria | Size |
 |---|---|---|---|---|
-| T2.1 | [G] | Scaffold review vs approved PRD | Existing `KisanSetu-Backend` audited against [06-PRD-BACKEND.md](06-PRD-BACKEND.md); adopt/refactor/discard memo; repo baseline tagged | M |
-| T2.2 | [G] | Schema v1 migration set | All PRD tables (users, fpos, farmer_profiles, buyer_profiles, produce, price_feed, listings, orders, order_items, order_allocations, payments, leads) with region→hub→farm hierarchy, currency field, E.164 phones, timezone-aware timestamps; migrations run clean on Postgres 16 (docker :5433) | M |
+| T2.0 | [G] | TypeScript project setup | `tsconfig` strict, ESM, `tsx` dev + build; Drizzle client (`db/index.ts`), `drizzle.config.ts`, `pg` pool; folder layout per 20 §1.2; lint + `npm audit` in CI | S |
+| T2.1 | [G] | Scaffold review vs approved PRD | Existing `KisanSetu-Backend` (plain-JS scaffold) audited against [06-PRD-BACKEND.md](06-PRD-BACKEND.md); **note: scaffold is JS/raw-pg → rewrite to TS+Drizzle**; adopt/refactor/discard memo; repo baseline tagged | M |
+| T2.2 | [G] | Schema v1 in Drizzle + migrations | All PRD tables (users, fpos, hubs, regions/region_settings, farmer_profiles, buyer_profiles, produce, price_feed, listings, orders, order_items, order_allocations, payments, disputes, leads, app_events, store_metrics, metrics_daily, market_settings, target_cities, countries/states/cities) as Drizzle schema in `db/schema/*` with region→hub→farm hierarchy, currency, E.164 phones, tz-aware timestamps; `drizzle-kit generate` + `migrate` run clean on Postgres 16 (docker :5433) | M |
 | T2.3 | [G] | Auth: phone OTP + JWT + role guards | OTP request/verify endpoints; dev OTP 123456; JWT with role claims; farmer/buyer/ops guards tested | M |
 | T2.4 | [G] | Produce catalog + daily price feed API | Multilingual produce names; `price_feed` upsert per produce/day with `reference_market_price`, `platform_price_a/b`; validation per [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §5 constraints | M |
 | T2.5 | [G] | Listings lifecycle API | posted→graded→allocated→closed transitions with role rules; graded_qty per grade; grading photo attachment | M |

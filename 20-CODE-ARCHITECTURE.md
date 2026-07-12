@@ -20,53 +20,66 @@ This doc is the canonical spec of those patterns. Where it refines an earlier PR
 
 ---
 
-## 1. Backend — MVC (Node.js + Express, Fancall v3 pattern)
+## 1. Backend — MVC in **TypeScript** with **Drizzle ORM** (Fancall v3 layering, modern stack)
 
-### 1.1 Stack (matches Fancall-Backend)
-Node.js 20 · Express · PostgreSQL · **Knex (migrations + query builder) + Objection.js (models/ORM layer)** · `jsonwebtoken` (JWT) · `bcryptjs` (hashing) · `cryptlib` (AES envelope) · `node-input-validator` (validation) · `winston` + `morgan` (logging) · `i18n` (localization) · `swagger-jsdoc`/`swagger-ui-express` (API docs).
+**Founder decision (12 Jul 2026):** the backend is written in **TypeScript** (not plain JS), and the data layer is **Drizzle ORM `v1.0.0-rc.4`** — NOT Knex+Objection. We keep Fancall's proven MVC *layering, request lifecycle, response envelope, and API-key/AES crypto*, but the language is TS and the persistence layer is Drizzle. This is the outcome of the 2026 ORM review (Objection.js is frozen — no release since Sep 2024, its author moved on; Drizzle is TS-first, actively maintained, and best-fit for our analytics-heavy SQL). Everything below reflects this.
 
-> **PRD refinement:** [06-PRD-BACKEND.md](06-PRD-BACKEND.md) originally said "no ORM, raw `pg`". Per the founder's "same as Fancall" directive, the canonical data layer is **Knex + Objection.js** (Fancall's proven stack) — 06 §3 non-goals updated accordingly. Raw `pg` is no longer the rule; Objection models + Knex migrations are.
+### 1.1 Stack (canonical)
+**TypeScript 5.x (ESM, `tsx` for dev, `tsc`/`tsup` build)** · Node.js 20 · Express · PostgreSQL 16 · **Drizzle ORM `v1.0.0-rc.4`** (`drizzle-orm`) + **`drizzle-kit`** (schema → SQL migrations) + **`pg`** (node-postgres driver) · `zod` (validation — pairs natively with Drizzle via `drizzle-zod`) · `jsonwebtoken` (JWT) · `bcryptjs` (hashing) · a small AES helper (`node:crypto`, Fancall's `cryptlib` scheme — §5) · `pino` (logging; `pino-http` for access logs) · `i18n` · `swagger-jsdoc`/`swagger-ui-express` (API docs).
 
-### 1.2 Folder structure (copy this layout)
+> Version note: as of mid-2026 Drizzle's stable `latest` tag is `0.45.x` and **v1 is in release-candidate (`1.0.0-rc.4`, published 2026-06-27)**. The founder has chosen to build on **rc.4** and track v1 to GA. Pin the exact RC in `package.json` (`"drizzle-orm": "1.0.0-rc.4"`, `"drizzle-kit": "1.0.0-rc.4"`) and bump deliberately; re-pin to the stable `1.0.0` the moment it ships. `zod` is used instead of `node-input-validator` because Drizzle + `drizzle-zod` generate request/row schemas from the table definitions (one source of truth, full type inference).
+
+### 1.2 Folder structure (TypeScript + Drizzle)
 ```
-app.js                  – Express bootstrap: middleware chain, mounts routes
-knexfile.js             – Knex config (development/staging/production), migrations dir
-config/                 – database.js (Knex+Objection init), constants.js (codes, roles, prefixes)
-routes/                 – versioned + encrypted route group; index.js top router
-controllers/            – THIN HTTP layer: parse req → call service → set req.rData → next()
-services/               – business logic; returns { data, statusCode, status, message }
-repository/             – data-access wrappers over models (AbstractRepository base)
-models/                 – Objection models + AppModel base (soft-delete + timestamps)
-middleware/             – auth guards, ResponseMiddleware, ErrorHandlerMiddleware, rateLimit
-validators/             – node-input-validator schemas
-helpers/                – helper.js (crypto: encryptData/decryptedData/encryptOtp), logger.js
-errors/                 – Errors class (extends Error; static factories per HTTP code)
-migrations/ seeds/      – Knex migration + seed files
+src/
+  app.ts                – Express bootstrap: middleware chain, mounts routes
+  server.ts             – http listen / graceful shutdown
+  config/               – env.ts (typed env via zod), constants.ts (codes, roles, prefixes)
+  db/
+    index.ts            – drizzle(pg pool) client, exported typed `db`
+    schema/             – Drizzle table definitions (users.ts, listings.ts, orders.ts, …) — THE schema source of truth
+    migrations/         – drizzle-kit-generated SQL migrations (+ meta/)
+    seed.ts             – seed script (targeted + Surat market row, produce, price feed)
+  routes/               – versioned route group; index.ts top router
+  controllers/          – THIN HTTP layer: parse req → call service → set res locals → next()
+  services/             – business logic; returns { data, statusCode, status, message }
+  repositories/         – data-access: typed Drizzle queries per aggregate (BaseRepository generic)
+  middleware/           – auth guards, responseMiddleware, errorHandler, rateLimit, apiKey, decryptBody
+  validators/           – zod schemas (many derived from db/schema via drizzle-zod)
+  helpers/              – crypto.ts (encryptData/decryptedData/encryptOtp), logger.ts
+  errors/               – AppError class (extends Error; static factories per HTTP code)
+  types/                – shared TS types / augmentations (Express Request, JWT payload)
+drizzle.config.ts       – drizzle-kit config (schema path, out dir, dialect: 'postgresql', dbCredentials)
+tsconfig.json · package.json
 ```
+- **No `models/` folder.** Drizzle has no active-record model classes — the `db/schema/*` table definitions ARE the schema, and typed queries live in `repositories/`. Soft-delete + timestamps are plain columns (`deleted_at timestamptz`, `created_at`/`updated_at` with DB defaults + an `updated_at` touch in the repository base), not ORM lifecycle hooks.
+- **Migrations = `drizzle-kit generate` (schema diff → SQL) then `drizzle-kit migrate`.** The geo + market-targeting tables from the scaffold's raw `002–005.sql` are re-expressed as Drizzle schema; `drizzle-kit` emits the equivalent SQL. The raw `.sql` scaffold files remain the reference for column shape when authoring the schema.
 
-### 1.3 Request lifecycle (the MVC spine)
+### 1.3 Request lifecycle (the MVC spine — unchanged from Fancall except the DB layer)
 ```
 Request
- → global middleware (morgan, cors, i18n, body parsers incl. text for ciphertext)
+ → global middleware (pino-http, cors, i18n, body parsers incl. text for ciphertext)
  → API-KEY middleware (§5.1)  → BODY-DECRYPT middleware (§5.2)  → rate limit
- → route file:  [auth guard?] → ErrorHandlerMiddleware(controllerFn) → ResponseMiddleware
- → controller (thin) → service (business logic) → repository → Objection model → Postgres
- ← controller sets req.rData / req.rCode / req.rStatus / req.msg, calls next()
- ← ResponseMiddleware builds { message, status, data } envelope, ENCRYPTS it (§5.3), res.json()
+ → route file:  [auth guard?] → errorHandler(controllerFn) → responseMiddleware
+ → controller (thin) → service (business logic) → repository → Drizzle query → Postgres
+ ← controller sets res.locals.data / statusCode / status / msg, calls next()
+ ← responseMiddleware builds { message, status, data } envelope, ENCRYPTS it (§5.3), res.json()
 ```
 
 ### 1.4 The contracts to copy exactly
-- **Controllers never call `res.json`** and never manage transactions. They set `req.rData/rCode/rStatus/msg` and `next()`, or `throw new Errors(code, message)`.
-- **`ErrorHandlerMiddleware(handler)`** wraps every controller: opens a Knex transaction, commits on success, **rolls back on throw**, maps `ex.statusCode||500`, delegates to ResponseMiddleware. (KisanSetu keeps this exact wrapper.)
+- **Controllers never call `res.json`** and never manage transactions. They set the response locals and `next()`, or `throw new AppError(code, message)`.
+- **`errorHandler(handler)`** wraps every controller: runs the handler inside a **Drizzle transaction** (`db.transaction(async (tx) => …)`), commits on success, **rolls back on throw**, maps `err.statusCode ?? 500`, delegates to `responseMiddleware`. (Same wrapper role as Fancall's Knex-transaction version — the mechanism is identical, the driver is Drizzle.)
 - **Uniform response envelope** (same shape for success and error, only the code differs): `{ message, status, data }` → AES-encrypted on the wire (§5.3).
-- **`Errors` class** (`errors/index.js`): static factories `notFoundError`(404), `validationError`(422), `UnauthorizedError`(401), `forbidden`(403), `conflictError`(409), `invalidRequestError`(400), `serverError`(500) — each logs on construction.
-- **`AppModel` base**: Objection soft-delete (`deleted_at`) + auto `created_at`/`updated_at` hooks; feature models extend it.
-- **Naming:** controllers/services camelCase (`authController.js`), models/repositories PascalCase (`UsersModel.js`), routes dotted (`auth.route.js`).
+- **`AppError` class** (`errors/`): static factories `notFound`(404), `validation`(422), `unauthorized`(401), `forbidden`(403), `conflict`(409), `badRequest`(400), `server`(500) — each logs on construction. Typed.
+- **`BaseRepository` generic**: wraps a Drizzle table, provides `findById`, soft-delete-aware `list`, `create`, `update` (auto-stamps `updated_at`), and `softDelete` (sets `deleted_at`). Feature repositories extend it with typed Drizzle queries. This replaces Fancall's Objection `AppModel`.
+- **Naming:** files kebab or camel (`auth.controller.ts`, `auth.service.ts`, `user.repository.ts`, `users.ts` schema), routes dotted (`auth.route.ts`). Types PascalCase.
 
 ### 1.5 KisanSetu deltas from Fancall (deliberate)
+- **TypeScript, not JavaScript**; **Drizzle, not Knex+Objection** (this section).
 - Drop the `/api/api/v3` double-prefix accident → clean single `/api/v3` (or unversioned `/api` until a v2 exists).
 - Roles are the KisanSetu set (`farmer`/`buyer`/`ops`, [06-PRD-BACKEND.md](06-PRD-BACKEND.md)), not Fancall's numeric fan/celebrity/brand.
 - One monolith, no socket.io/RabbitMQ/Agora at MVP ([11-ARCHITECTURE.md](11-ARCHITECTURE.md) non-goals stand).
+- The hard analytics/allocation SQL (SLA `percentile_cont` medians, farmer-share %, greedy listing→order-item allocation) is written with Drizzle's SQL builder or `sql`-tagged raw for full control — Drizzle keeps you at SQL level, which suits these queries.
 
 ---
 
@@ -205,7 +218,7 @@ The **mechanism** is copied verbatim; only key-storage and token-storage are har
 ## 7. Open questions (founder to ratify)
 | # | Question | Recommendation | Owner / deadline |
 |---|---|---|---|
-| 1 | Backend data layer: Knex+Objection (Fancall) vs raw `pg` (old 06 PRD) | **Knex+Objection** (copy Fancall) — 06 §3 updated | Founder, PRD approval |
+| 1 | Backend language + data layer | **RESOLVED (founder, 12 Jul 2026): TypeScript + Drizzle ORM `v1.0.0-rc.4`** (not JS, not Knex+Objection). Copy Fancall's MVC layering only. §1 rewritten; 06/11 updated. | Closed |
 | 2 | Mobile UI tech: Compose/SwiftUI (07 PRD) vs XML/UIKit (Fancall) | **Compose + SwiftUI**, copy Fancall's layers below the View | Founder, PRD approval |
 | 3 | Mobile state holder: LiveData/Bindable (Fancall) vs StateFlow/@Published | **StateFlow + @Published** (modern, parity-friendly) | Founder, PRD approval |
 | 4 | Secrets hardening (§5.4) — accept the hardened storage? | Yes — mechanism copied, storage hardened | Founder, PRD approval |

@@ -47,7 +47,7 @@ Full definitions with violation examples live in [00-GOLDEN-RULES.md](00-GOLDEN-
 | [17-FUNDRAISE-FINANCE.md](17-FUNDRAISE-FINANCE.md) | Burn plan, raise narrative, milestones-to-money mapping. | Founder, investors |
 | [18-LEGAL-COMPLIANCE.md](18-LEGAL-COMPLIANCE.md) | Incorporation, FSSAI, GST, APMC rules, FPO/buyer agreements, trademark, data protection. | Founder, CA |
 | [19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md) | CMS/Analytics module of the Console: who sold what, who bought what, app downloads, active users, trend graphs, CSV export. | Founder, ops lead, web dev |
-| [20-CODE-ARCHITECTURE.md](20-CODE-ARCHITECTURE.md) | Canonical code patterns copied from the founder's Fancall apps: backend MVC (Knex+Objection), Android/iOS MVVM, the API-key + AES encode/decode security mechanism. | Every dev, before writing code |
+| [20-CODE-ARCHITECTURE.md](20-CODE-ARCHITECTURE.md) | Canonical code patterns: backend MVC in **TypeScript + Drizzle ORM** (Fancall layering), Android/iOS MVVM (Fancall), and the API-key + AES encode/decode security mechanism. | Every dev, before writing code |
 
 ## Reading order for a new team member
 
