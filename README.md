@@ -90,3 +90,4 @@ Full definitions with violation examples live in [00-GOLDEN-RULES.md](00-GOLDEN-
 - **Domain terms are region-agnostic** in schemas and specs (`reference_market_price`, never `mandi_price`); India-specific words appear only in India UI copy. See rule 2.
 - **No TBDs without an owner and a deadline.**
 - Older draft docs at `~/Desktop/KisanSetu-Docs/` (PLAN.md, TASKS.md, ARCHITECTURE.md, DESIGN.md) are historical input. Where they conflict with this Brain (e.g. Surat-only framing), **this Brain wins.**
+# KishanSetu-Brain
