@@ -59,16 +59,18 @@ _Figures verified against live sources in July 2026 unless labeled otherwise. Fo
 | Implication | The median supplier is a **smallholder who cannot individually fill a truck or negotiate with a buyer** — aggregation is structurally necessary | — |
 
 This is why the FPO (Farmer Producer Organisation) is the load-bearing partner in our model:
-- **~10,000+ FPOs** exist under the central government's "10,000 FPOs" formation scheme (launched 2020, ₹6,865 Cr budget) plus older NABARD/SFAC-promoted ones. Gujarat has an active FPO ecosystem including in Surat district. **Phase 0 task: map and meet the 5–10 FPOs within 50 km of Surat; sign 1 pilot MoU.**
+- **~10,000+ FPOs** exist under the central government's "10,000 FPOs" formation scheme (launched 2020, ₹6,865 Cr budget) plus older NABARD/SFAC-promoted ones. Gujarat has an active FPO ecosystem including in Surat district. **Phase 0 task: map the 5–10 FPOs within 50 km of Surat, meet 2+; sign 1 pilot MoU.**
 - FPOs already do the physical work (aggregation, sometimes grading) but chronically lack **demand linkage and software** — exactly the two things we bring. This is also the fallback business ([03-BUSINESS-MODEL.md](03-BUSINESS-MODEL.md): FPO procurement SaaS) if marketplace validation fails.
 - Smartphone penetration among farm households is high enough for an app-based flow (UPI usage in rural India has exploded; see §7), but the UX must assume low digital literacy — hence the farmer-flow design constraints in [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md) (max 2 actions/screen, picture grids, Hindi-first).
+
+---
 
 ## 5. Demand side: the HoReCa beachhead
 
 - Surat: ~7M+ metro population, one of India's fastest-growing cities, with a dense restaurant/caterer/cloud-kitchen economy (diamond & textile industry canteens included) and tier-2 cost structure.
 - Target buyer profile at launch: mid-size restaurants, caterers, cloud kitchens, small hotel kitchens buying **₹1,500–5,000/day** of fresh produce — big enough to matter, small enough to switch without a procurement committee.
 - Later buyer types (post-pilot gates only): modern retail (local supermarket chains), food processors, institutional kitchens.
-- **Phase 0 instrument:** 10 structured interviews (5 restaurants, 2 hotels, 2 caterers, 1 cloud kitchen). Kill/pivot criterion: **<3 of 10 willing to switch → pivot to FPO-SaaS-first wedge.** Interview guide lives in [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md).
+- **Phase 0 instrument:** 10 structured interviews (5 restaurants, 2 hotels, 2 caterers, 1 cloud kitchen). Kill/pivot criterion: **<3 of 10 willing to switch → pivot to FPO-SaaS-first wedge.** Interview script and willingness-to-switch rubric live in [04-GTM-SALES-MARKETING.md](04-GTM-SALES-MARKETING.md) (§2.2 buyer script, §2.4 rubric).
 
 ---
 
@@ -87,7 +89,7 @@ This is why the FPO (Farmer Producer Organisation) is the load-bearing partner i
 
 ### 6.2 The graveyard — dead players as thesis proof
 
-All of these were **asset-heavy B2B2C fresh** models. Their common cause of death — capex + inventory risk + consumer discounts — is precisely what golden rules 4 (ASSET-LIGHT) and 6 (B2B) prohibit.
+All of these were **asset-heavy** models, most with a consumer (B2B2C/D2C) leg. Their common cause of death — capex + inventory risk + consumer discounts — is precisely what golden rules 4 (ASSET-LIGHT) and 6 (B2B) prohibit.
 
 | Player | Model | Outcome |
 |---|---|---|
@@ -170,7 +172,7 @@ A market fits KisanSetu when all four hold:
 For any candidate market: `Opportunity ≈ national F&V consumption value × urban food-service share (10–25%) × addressable-city fraction`. Applied directionally: Indonesia and Vietnam each plausibly hold a **$3–8B B2B fresh procurement pool** (F&V markets in the tens of billions × ~20% food-service share), Kenya/Nigeria smaller pools ($0.5–2B) but with the highest farmer-share uplift potential, LATAM candidates in between — i.e., **each top candidate is a meaningful fraction of the Indian SAM**, and collectively they exceed it. That is enough to justify day-1 region abstraction (cheap) without justifying any near-term entry spend (expensive). **Rule: re-verify all of §9 with in-country data before any entry decision; owner: founder; trigger: Stage 4 of the expansion ladder in [01-VISION-MISSION.md](01-VISION-MISSION.md).**
 
 ### 9.4 What global entry will look like (constraint, not plan)
-Same model, new instances: local farmer-org partner (co-op/HTX/FPO-analog) + local 3PL cold chain + local payment provider behind the abstract payout interface + local language pack. No owned assets, no B2C, same two metrics. If a market can't support the two metrics, we don't enter it.
+Same model, new instances: local farmer-org partner (co-op/HTX/FPO-analog) + local 3PL cold chain + local payment provider behind the abstract payout interface (India's instance is fixed: Razorpay — see [06-PRD-BACKEND.md](06-PRD-BACKEND.md)) + local language pack. No owned assets, no B2C, same two metrics. If a market can't support the two metrics, we don't enter it.
 
 ---
 

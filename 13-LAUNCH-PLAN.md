@@ -15,9 +15,9 @@ This document is the go-live sequence for the Surat pilot and the expansion play
 | P3 | 2 beachhead crops frozen | Decision memo naming the 2 crops, chosen from interview demand data | T0.6 |
 | P4 | Unit economics replaced with real numbers | ₹2,000 AOV / 10% take rate placeholders replaced by interview + trial-route data in [03-BUSINESS-MODEL.md](03-BUSINESS-MODEL.md) | T0.9 |
 | P5 | Legal minimum in place | Pvt Ltd incorporated; FSSAI + GST applied for (registration number or ARN in hand); Gujarat APMC position documented by CA/advocate | [18-LEGAL-COMPLIANCE.md](18-LEGAL-COMPLIANCE.md) |
-| P6 | PRDs approved & MVP accepted | Founder sign-off on 06/07/08/09 PRDs; MVP acceptance tests green per [12-DEVELOPMENT-PLAN.md](12-DEVELOPMENT-PLAN.md) | Dev gate |
+| P6 | PRDs approved & MVP accepted | Founder sign-off on 06/07/08/09/10/19 PRDs; MVP acceptance tests green per [12-DEVELOPMENT-PLAN.md](12-DEVELOPMENT-PLAN.md) | Dev gate |
 | P7 | Ops readiness | Hub SOP rehearsed once with FPO staff; 3PL per-trip contract signed after 2 trial routes; 60 crates + QR labels on site; stamped weighing scale at hub | [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) |
-| P8 | Manual fallback kit printed | Paper intake forms, payout slips, WhatsApp broadcast templates, laminated grade charts — the software-down kit of [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §9 | T6.7 |
+| P8 | Manual fallback kit printed | Paper intake forms, payout slips, WhatsApp order-log forms, laminated grade charts — the software-down kit of [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §9 | T1.9 |
 
 **One deliberate exception:** P6 (software) may lag P1–P5. If validation is done and buyers are hungry, we launch on WhatsApp + paper and let software catch up. The reverse is never allowed — software readiness never substitutes for demand validation.
 
@@ -30,7 +30,7 @@ This document is the go-live sequence for the Surat pilot and the expansion play
 **This table is the single source of truth for KisanSetu's core pilot operating numbers (CEO-set).** Read it before quoting any of these values anywhere:
 
 - **(a)** These are the authoritative canonical values. Where any other document states a different number for a parameter below, **this table wins** and the other document is wrong until reconciled.
-- **(b)** The docs that carry operational promises — **03-BUSINESS-MODEL, 04-GTM-SALES-MARKETING, 05, 07, 08, 14-OPS-PLAYBOOK, and 18-LEGAL-COMPLIANCE** — must reference or match this table exactly (no restating a conflicting cutoff time, delivery window, minimum order, fee, credit term, SLA, or farmer-share number).
+- **(b)** The docs that carry operational promises — **03-BUSINESS-MODEL.md, 04-GTM-SALES-MARKETING.md, 05-PRODUCT-OVERVIEW.md, 07-PRD-MOBILE-APPS.md, 08-PRD-WEBSITE.md, 14-OPS-PLAYBOOK.md, and 18-LEGAL-COMPLIANCE.md** — must reference or match this table exactly (no restating a conflicting cutoff time, delivery window, minimum order, fee, credit term, SLA, or farmer-share number).
 - **(c)** The app's `GET /config` values in [06-PRD-BACKEND.md](06-PRD-BACKEND.md) are **seeded FROM this table, per region** (region → config), not hand-set in the client. Changing a value here is the only sanctioned way to change what the app serves.
 
 | Parameter | Canonical value |
@@ -106,7 +106,7 @@ Every crate carries the four timestamps on its allocation record (`harvest_ts �
 Codified triggers — fall back immediately, no debugging in the delivery window:
 - App/API down or unusable at the hub for >10 minutes during intake (06:00–10:00) ⇒ paper intake forms + WhatsApp photos to the ops number.
 - Buyer can't order in the app ⇒ take the order on WhatsApp Business, ops enters it into the dashboard (or the paper order log) before cutoff.
-- Payout API failure ⇒ manual UPI from the ops phone against the printed slip; NEFT same-day if UPI rail itself is down. Farmer is paid **on pickup day, no exceptions** — this promise is the brand.
+- Payout API (Razorpay UPI — the fixed India PSP, [06-PRD-BACKEND.md](06-PRD-BACKEND.md) §6.8) failure ⇒ manual UPI from the ops phone against the printed slip; NEFT same-day if UPI rail itself is down. Farmer is paid **on pickup day, no exceptions** — this promise is the brand.
 - Dashboard down for allocation ⇒ allocate on the printed allocation board (whiteboard photo to WhatsApp group is the record).
 
 Every fallback event is logged (time, cause, duration, orders affected) and backfilled into the system within 24h. Fallback frequency is itself a week-ritual metric — if we're falling back >2×/week in week 4+, that's a software defect review, not an ops heroics story.

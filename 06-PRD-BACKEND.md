@@ -1,6 +1,6 @@
 # 06 — PRD: Backend API & Database
 
-**Doc owner:** Founder (Alpesh) · **Status:** Draft for founder approval · **Last updated:** 2026-07-12
+**Doc owner:** Founder (Alpesh) · **Status:** Draft for founder approval · **Last updated:** 2026-07-14
 **Siblings:** `00-GOLDEN-RULES.md` (rules this doc must obey) · `05-PRODUCT-OVERVIEW.md` (what the clients do) · `07-PRD-MOBILE-APPS.md`, `08-PRD-WEBSITE.md`, `09-PRD-OPS-DASHBOARD.md`, `19-PRD-CMS-ANALYTICS.md` (the consumers of this API — the ops dashboard and the CMS/analytics module are the two modules of the single KisanSetu Console) · `11-ARCHITECTURE.md` (system-level rationale) · `14-OPS-PLAYBOOK.md` (the human procedures these endpoints digitize).
 
 > Golden rule #3: PLAN BEFORE CODE. This PRD supersedes the scaffold at `~/Desktop/KisanSetu-Backend` (including `migrations/001_init.sql`, which uses `mandi_price_per_kg` and has no region layer — both are corrected here). When development resumes, the scaffold is reviewed against THIS document, not the other way around.
@@ -14,7 +14,7 @@ One backend serves everything: farmer app, buyer app (Android + iOS), marketing 
 1. **Freshness** — every allocation carries the timestamp chain `harvest_ts → hub_in_ts → dispatch_ts → delivered_ts`, so median harvest→door hours is a SQL query, not an estimate.
 2. **Farmer share** — the daily price feed stores both what the buyer pays (`platform_price_a/b`) and what the farmer receives (`farmer_price_a/b`), so farmer-share % is computed from records, not claimed.
 
-Global-first, Surat-first (Golden rule #2): every table that touches money, language, time, or geography is region-scoped from day 1. Launching country #2 must be a data insert, not a migration (see `11-ARCHITECTURE.md` §7).
+Global-first, Surat-first (Golden rule #2): every table that touches money, language, time, or geography is region-scoped from day 1. Launching country #2 must be a data insert, not a migration (see `11-ARCHITECTURE.md` §6).
 
 ## 2. Users & jobs-to-be-done
 
@@ -30,19 +30,19 @@ Global-first, Surat-first (Golden rule #2): every table that touches money, lang
 ## 3. Scope (in) / Non-goals (out)
 
 ### In (MVP)
-Auth (phone OTP → JWT), users + role profiles (buyers start `pending`, ops-activated), region/FPO/hub hierarchy, region settings + client bootstrap config (`GET /config`), produce catalog with pluggable translations, daily price feed, listings + grading (with one evidence photo via a storage interface) + splits, orders + server-side pricing + cart quote (`POST /orders/quote`) + two-phase allocation (evening supply-check confirm / morning binding allocation) + traceability, buyer credit enforcement, buyer quality disputes + credit notes, payments (farmer payout + buyer invoice; manual UTR entry at MVP, Razorpay UPI behind a provider interface), leads, ops report endpoints (incl. receivables aging), CMS/analytics report endpoints (R7–R14 + nightly `metrics_daily` rollup + manual `store_metrics` entry — consumed by `19-PRD-CMS-ANALYTICS.md`), market targeting (geo reference reads G1–G3 + CMS-managed serviceable cities M7–M10 + the `city_not_serviceable` order guard, §6.13 — screen C-6 in `19-PRD-CMS-ANALYTICS.md`), SLA timestamp instrumentation, batch app instrumentation (`POST /events` — **stored** to `app_events`, §6.11 S4), rate limiting, audit events, seed + migration tooling.
+Auth (phone OTP → JWT), users + role profiles (buyers start `pending`, ops-activated), region/FPO/hub hierarchy, region settings + client bootstrap config (`GET /config`), produce catalog with pluggable translations, daily price feed, listings + grading (with one evidence photo via a storage interface) + splits, orders + server-side pricing + cart quote (`POST /orders/quote`) + two-phase allocation (evening supply-check confirm / morning binding allocation) + traceability, buyer credit enforcement, buyer quality disputes + credit notes, payments (farmer payout + buyer invoice; manual UTR entry at MVP, Razorpay UPI — the fixed PSP, §6.8 — behind a provider interface), leads, ops report endpoints (incl. receivables aging), CMS/analytics report endpoints (R7–R13 + nightly `metrics_daily` rollup + manual `store_metrics` entry — consumed by `19-PRD-CMS-ANALYTICS.md`; R14 audited CSV export is Phase 2 / CMS v1.1, §10), market targeting (geo reference reads G1–G3 + CMS-managed serviceable cities M7–M10 + the `city_not_serviceable` order guard, §6.13 — screen C-6 in `19-PRD-CMS-ANALYTICS.md`), SLA timestamp instrumentation, batch app instrumentation (`POST /events` — **stored** to `app_events`, §6.11 S4), rate limiting, audit events, seed + migration tooling.
 
 ### NON-GOALS (explicit, with reasons)
 
 | We will NOT build | Why not (at MVP) |
 |---|---|
 | **GraphQL** | Four first-party clients we control, all needing the same ~8 aggregates. REST with purpose-built endpoints is simpler to cache, rate-limit, log, and debug. GraphQL adds a resolver layer, N+1 discipline, and tooling for zero product benefit at 25 buyers. |
-| **Microservices / Kubernetes** | One pilot city, one dev (founder). A modular monolith deploys in minutes and keeps every transaction in one Postgres. Split only when a module has independent scaling or team boundaries (`11-ARCHITECTURE.md` §8). |
+| **Microservices / Kubernetes** | One pilot city, one dev (founder). A modular monolith deploys in minutes and keeps every transaction in one Postgres. Split only when a module has independent scaling or team boundaries (`11-ARCHITECTURE.md` §2). |
 | **Sequelize / TypeORM / Prisma** | **Language = TypeScript; data layer = Drizzle ORM `v1.0.0-rc.4`** + `drizzle-kit` migrations + `pg` (founder decision 12 Jul 2026 — [20-CODE-ARCHITECTURE.md](20-CODE-ARCHITECTURE.md) §1). Drizzle is TS-first, SQL-level (no active-record model classes) and keeps the hard queries (allocation matching, SLA `percentile_cont` medians, farmer-share) at SQL where we want them — schema lives in `db/schema/*`, migrations are `drizzle-kit`-generated. This supersedes BOTH the original "raw `pg`, numbered `.sql`" plan AND the interim Knex+Objection plan (Objection is frozen — no release since Sep 2024). The DDL blocks in §5 are the logical schema spec; they are implemented as Drizzle table definitions and `drizzle-kit` emits the SQL. Prisma (schema-DSL + codegen, weak on our window-function analytics), Sequelize (legacy), and TypeORM (decorator-heavy) are the ones explicitly out. |
 | **Redis / any second datastore** | Sessions are stateless JWTs; rate limiting is in-process (single instance); queues don't exist yet. Postgres does caching-adjacent jobs (e.g. `otp_codes` table) fine at this scale. Add Redis only when we run >1 API instance AND need shared rate-limit/queue state. |
 | **Event bus / message queue** | Order volume at pilot is tens/day. Side effects (WhatsApp, push) run inline with retry, or from a 1-minute cron sweep. |
 | **Search engine (Elastic etc.)** | Catalog is <100 produce items; `ILIKE` is enough. |
-| **File/object storage service** | Invoice PDFs are Phase 2 (post-pilot); the S3-compatible bucket is Phase 2. When added: bucket behind a `storage.js` interface; never DB blobs. **Exception (revised):** ONE grading-evidence photo path ships at MVP — the same `storage.js` interface with a **local-disk** instance at pilot (see §6.6 L6), because that photo is the evidence base for disputes (§6.12). No hosted object storage until Phase 2; only the local-disk driver. |
+| **File/object storage service** | Invoice PDFs are Phase 2 (post-pilot); the S3-compatible bucket is Phase 2. When added: bucket behind a `storage.ts` interface; never DB blobs. **Exception (revised):** ONE grading-evidence photo path ships at MVP — the same `storage.ts` interface with a **local-disk** instance at pilot (see §6.6 L6), because that photo is the evidence base for disputes (§6.12). No hosted object storage until Phase 2; only the local-disk driver. |
 | **Websockets / server push** | Ops dashboard polls every 30 s; apps poll on foreground + FCM/APNs nudges later. |
 | **Multi-currency conversion** | Currency is a *field* everywhere (global-first), but each region operates in exactly one currency. No FX, ever, until a region demands it. |
 | **Self-service admin/permissions UI** | Roles are fixed (`farmer`,`buyer`,`ops`); ops users are inserted by migration/seed at pilot. |
@@ -56,7 +56,7 @@ Auth (phone OTP → JWT), users + role profiles (buyers start `pending`, ops-act
 - **Money**: `numeric(12,2)` + `currency char(3)` (ISO 4217) on every money-bearing table. INR at launch; the column is what makes country #2 an insert.
 - **Naming**: `reference_market_price`, never `mandi_price`. "Mandi" may appear only in UI copy for India (see `10-DESIGN-SYSTEM.md` voice rules).
 - **Geography**: `regions → hubs → farms(farmer_profiles)` hierarchy. Every price, order, and listing resolves to a region.
-- **Tax**: `tax_scheme` per region; computation is a per-region module (`tax/in_gst.js` first instance). No GST columns in generic tables — tax lines live on the order.
+- **Tax**: `tax_scheme` per region; computation is a per-region module (`tax/in_gst.ts` first instance). No GST columns in generic tables — tax lines live on the order.
 - **i18n**: produce names in a `produce_names` translation table keyed by BCP-47 lang code — adding a language is inserts, not `ALTER TABLE`. App UI strings live in the clients (`07-PRD-MOBILE-APPS.md`), not the API.
 - **API style**: REST, JSON, `snake_case`, plural nouns, `Authorization: Bearer <jwt>`. Dev API on `:4000`, dev Postgres in Docker on `:5433`, dev OTP `123456` (env `DEV_OTP`, hard-disabled when `NODE_ENV=production`).
 
@@ -216,7 +216,7 @@ CREATE TABLE listings (
   graded_at         timestamptz,
   harvest_ts        timestamptz,               -- set at grading; COPIED onto each order_allocation at allocation (§6.3/§6.7)
   hub_in_ts         timestamptz,               -- set at grading (weigh-in); COPIED onto order_allocation at allocation
-  photo_ref         text,                      -- storage.js key of the grading-evidence photo (one per farmer-crop-day; §6.6 L6)
+  photo_ref         text,                      -- storage.ts key of the grading-evidence photo (one per farmer-crop-day; §6.6 L6)
   parent_listing_id uuid REFERENCES listings(id),  -- set on the B-part of a graded split
   created_at        timestamptz NOT NULL DEFAULT now()
 );
@@ -281,7 +281,7 @@ CREATE TABLE disputes (
   order_allocation_id uuid NOT NULL REFERENCES order_allocations(id),
   buyer_id            uuid NOT NULL REFERENCES users(id),   -- denormalized for aging/lookup
   reason              text NOT NULL,            -- 'spoiled','short_weight','wrong_grade','wrong_item','other'
-  photo_ref           text,                     -- storage.js key of buyer-supplied evidence photo
+  photo_ref           text,                     -- storage.ts key of buyer-supplied evidence photo
   claimed_at          timestamptz NOT NULL DEFAULT now(),   -- must be within 2 h of delivered_ts (ops-enforced)
   resolution          text CHECK (resolution IN ('credit','replacement','rejected')),  -- null = open
   amount              numeric(12,2) CHECK (amount IS NULL OR amount >= 0),  -- credit magnitude when resolution='credit'
@@ -572,7 +572,7 @@ Base URL dev: `http://localhost:4000/v1`. All responses JSON `snake_case`. Auth 
 // 200
 { "request_id": "7f0c...", "expires_in_s": 300, "resend_after_s": 30 }
 ```
-Behavior: 6-digit code, 5-min TTL, sha256+pepper stored. Dev mode (`NODE_ENV!=production` and `DEV_OTP` set): code is `123456`, no SMS sent. Prod SMS provider behind `sms.js` interface (MSG91 first instance; Twilio for non-India regions). Errors: `429 rate_limited` (see §8), `400 validation_failed` (non-E.164).
+Behavior: 6-digit code, 5-min TTL, sha256+pepper stored. Dev mode (`NODE_ENV!=production` and `DEV_OTP` set): code is `123456`, no SMS sent. Prod SMS provider behind `sms.ts` interface (MSG91 first instance; Twilio for non-India regions). Errors: `429 rate_limited` (see §8), `400 validation_failed` (non-E.164).
 
 **A2**:
 ```json
@@ -591,7 +591,7 @@ Errors: `401 otp_invalid` (attempts++; 5 wrong = code dead), `401 otp_expired`.
 ```json
 // POST /auth/signup
 { "signup_token": "eyJ...", "name": "Ramesh Patel", "role": "farmer",
-  "language": "hi", "region_code": "IN-GJ-SURAT" }
+  "language": "hi", "region_code": "IN-GJ-SURAT", "city_id": 57996 }
 // 201 → same shape as A2 success
 ```
 `role` ∈ {`farmer`,`buyer`} only — `ops` users are created by seed/admin insert, never self-signup. **Status at creation:** `farmer` → `active`; `buyer` → `pending` (a pending buyer can sign in and browse but CANNOT place orders until ops activates — see §6.3 U10 and §6.7 `account_pending`). The A3 `201` body is the same shape as A2 success and carries `user.status`, so the client can route a new buyer straight to a "your account is under review" state. Farmer must then complete `PATCH /farmer-profiles/me` before posting listings (enforced with `409 conflict_state`, code `profile_incomplete`).
@@ -709,7 +709,7 @@ Validation: `harvest_date` ≥ today and ≤ today+7 (region tz); default in app
 ```
 Side effects: `harvest_ts` **and** `hub_in_ts` are **stored on the listing at grading** (`harvest_ts` = harvest_date at 06:00 region tz unless ops overrides; `hub_in_ts` = supplied weigh-in time); farmer notified ("आपकी फ़सल ग्रेड हो गई — A: 70 kg"). These two timestamps are later **copied onto each `order_allocation`** when the morning allocation is created (§6.7) — grading is where the freshness chain begins. Grading a listing whose farmer has no published farmer price today → `422 price_unavailable`.
 
-**Grading-evidence photo (MVP, revised non-goal in §3):** the optional `photo` part is written through a `storage.js` interface — `put(key, bytes) → ref` / `url(ref)` — whose **only** MVP driver is **local disk** (pilot runs single-instance). Key is deterministic: `grade/{harvest_date}/{farmer_id}/{produce_code}.jpg` → **one photo per farmer-per-crop-per-day** (a re-grade overwrites). `listings.photo_ref` stores the returned key. This photo is the evidence base for disputes (§6.12); Phase 2 swaps the driver for the S3-compatible bucket with no call-site changes. Photo is optional so grading never blocks on a missing camera.
+**Grading-evidence photo (MVP, revised non-goal in §3):** the optional `photo` part is written through a `storage.ts` interface — `put(key, bytes) → ref` / `url(ref)` — whose **only** MVP driver is **local disk** (pilot runs single-instance). Key is deterministic: `grade/{harvest_date}/{farmer_id}/{produce_code}.jpg` → **one photo per farmer-per-crop-per-day** (a re-grade overwrites). `listings.photo_ref` stores the returned key. This photo is the evidence base for disputes (§6.12); Phase 2 swaps the driver for the S3-compatible bucket with no call-site changes. Photo is optional so grading never blocks on a missing camera.
 
 **Listing expiry (lifecycle sweep):** a listing still `posted` at the **end of `harvest_date + 1 day` (region tz)** is a no-show. A daily cron sweep (runs 00:15 region tz) sets such rows to `status='closed'` with audit action `listing_closed` / `detail.reason='expired_no_show'`; no payout row is created. To stop stale rows from inflating supply, `available_qty` (§6.7 O1) **excludes any `posted` listing once its `harvest_date` 12:00 (region tz) has passed** — i.e. exclusion begins the same day, before the overnight sweep formally closes it. Expiring/expired listings surface on the ops **Today** screen (`09-PRD-OPS-DASHBOARD.md`) so a hub can chase or reopen them. This keeps `available_qty` truthful and frees the farmer's 10-open-listings budget (L1 cap).
 
@@ -739,8 +739,7 @@ Side effects: `harvest_ts` **and** `hub_in_ts` are **stored on the listing at gr
     "reference_market_price": 32.00,
     "grades": [
       { "grade": "A", "unit_price": 30.00, "available_qty": 240, "stock_flag": "in_stock", "freshness_hint_h": 24 },
-      { "grade": "B", "unit_price": 24.00, "available_qty": 12,  "stock_flag": "low",      "freshness_hint_h": 24 },
-      { "grade": "B2","unit_price": 0.00,  "available_qty": 0,   "stock_flag": "sold_out", "freshness_hint_h": 24 } ] } ] }
+      { "grade": "B", "unit_price": 24.00, "available_qty": 12,  "stock_flag": "low",      "freshness_hint_h": 24 } ] } ] }
 ```
 `available_qty` = Σ graded, unallocated listing qty at active hubs + Σ posted qty for the target harvest window (flagged `includes_posted: true` so ops over-promise risk is visible), **excluding expired/expiring listings per the §6.6 expiry rule**. `stock_flag`: `sold_out` when `available_qty = 0`, `low` when `0 < available_qty ≤ region low-stock threshold` (default 20 units — a `region_settings`-adjacent constant), else `in_stock`. Zero-availability rows still render (buyers see the price range) but are non-orderable client-side.
 
@@ -763,12 +762,12 @@ Side effects: `harvest_ts` **and** `hub_in_ts` are **stored on the listing at gr
 // O2: POST /orders   (buyer, Idempotency-Key recommended)
 { "delivery_date": "2026-11-08", "delivery_address": "Hotel Gateway, Ring Road, Surat",
   "items": [ { "produce_id": "…", "grade": "A", "qty": 25 },
-             { "produce_id": "…", "grade": "B", "qty": 10 } ] }
+             { "produce_id": "…", "grade": "B", "qty": 15 } ] }
 // 201
 { "id": "…", "status": "placed", "delivery_date": "2026-11-08", "currency": "INR",
   "items": [ { "id": "…", "produce_code": "tomato", "grade": "A", "qty": 25,
                "unit_price": 30.00, "line_total": 750.00 } ],
-  "subtotal": 990.00, "delivery_fee": 50.00, "tax_amount": 0.00, "total": 1040.00 }
+  "subtotal": 1110.00, "delivery_fee": 50.00, "tax_amount": 0.00, "total": 1160.00 }
 ```
 Pricing is 100% server-side from the published price row for `delivery_date` (fallback: latest published date ≤ delivery_date; none → `422 price_unavailable`). All monetary rules read `region_settings` (§5):
 
@@ -804,6 +803,8 @@ Because allocations are created in the morning against already-graded listings, 
 
 ### 6.8 Payments & payouts
 
+> **Payment gateway — FIXED (founder, 14 Jul 2026): Razorpay.** All provider-executed money movement goes through Razorpay — farmer UPI payouts (M5), provider webhooks (M6), and buyer-side online collection if/when it starts (Q2). No other PSP will be evaluated or integrated. The `payments/provider.ts` interface remains (Golden Rule #2 — Razorpay is the India instance), but the India instance is fixed. Engineering rules + per-surface anchors: `21-AI-EXECUTION-PLAYBOOK.md` §10.
+
 | # | Method & path | Role | Purpose |
 |---|---|---|---|
 | M1 | `GET /payments?mine=true&type=farmer_payout` | farmer | Payout history (amount, date, UTR) |
@@ -820,7 +821,7 @@ Because allocations are created in the morning against already-graded listings, 
 { "id": "…", "type": "farmer_payout", "payee_user_id": "…", "listing_id": "…",
   "currency": "INR", "amount": 1470.00, "status": "pending", "provider": "manual" }
 ```
-Rules: one payout per listing (`409 duplicate`); listing must be `graded`/`allocated`/`closed` with `graded_qty`. M4 sets `paid` + `utr` + `paid_at` and notifies the farmer ("पैसा भेज दिया गया — ₹1,470, UTR …"). M5/M6 (Phase 2) go through `payments/provider.js` interface: `createPayout(payment) → {provider_ref}`, webhook maps provider states → `processing/paid/failed`; `failed` returns to the ops worklist with `failure_reason`. Webhook auth: Razorpay signature header verified; unverified → 401 and alert log.
+Rules: one payout per listing (`409 duplicate`); listing must be `graded`/`allocated`/`closed` with `graded_qty`. M4 sets `paid` + `utr` + `paid_at` and notifies the farmer ("पैसा भेज दिया गया — ₹1,470, UTR …"). M5/M6 (Phase 2) go through the `payments/provider.ts` interface: `createPayout(payment) → {provider_ref}`, webhook maps provider states → `processing/paid/failed`; `failed` returns to the ops worklist with `failure_reason`. Webhook auth: Razorpay signature header verified; unverified → 401 and alert log.
 
 **Buyer-side payment rows.** A `buyer_invoice` row is created automatically at `delivered` (§6.7) with `due_date` per the buyer's credit terms; ops records collection with M4 `mark_paid {utr}` (Q2's net-7 path). A `credit_note` row (§6.12) is a negative-adjustment against a specific `order_id` (and its `dispute_id`): it reduces that buyer's outstanding balance used by the credit-hold / receivables-aging logic. Both types are visible to ops in M2 worklists (`type=buyer_invoice` / `type=credit_note`); the buyer sees the net of invoice − credit notes on the order detail.
 
@@ -1005,7 +1006,7 @@ Buyer quality claims against a delivered order. Digitizes `14-OPS-PLAYBOOK.md` �
 ```json
 // X1: POST /orders/:id/disputes   (buyer) — Content-Type: multipart/form-data
 //   field "data": { "order_allocation_id": "…", "reason": "spoiled" }
-//   field "photo": optional evidence image (stored via storage.js, §6.6)
+//   field "photo": optional evidence image (stored via storage.ts, §6.6)
 // 201
 { "id": "…", "order_allocation_id": "…", "reason": "spoiled", "status": "open",
   "claimed_at": "2026-11-07T09:40:00Z", "photo_ref": "dispute/…/…jpg" }
@@ -1131,8 +1132,8 @@ M7 rules: `open_orders` = orders not yet `delivered`/`cancelled` whose buyer's `
 
 | Phase | Contents |
 |---|---|
-| **MVP (pilot)** | Everything in §6 with `provider='manual'` payouts, dev/MSG91 OTP, **one local-disk grading/dispute evidence photo via `storage.js`**, no invoice PDFs. WhatsApp/push nudges optional (manual broadcast acceptable — `14-OPS-PLAYBOOK.md`). **CMS module MVP**: stored `app_events` (S4), 00:30 `metrics_daily` rollup, R7–R12, R13 basics (DAU graph, platform split), manual weekly `store_metrics` entry (S5). **Market targeting MVP** (§6.13): geo reads G1–G3, markets M7–M10, `GET /config` `serviceable` flag, `city_not_serviceable` order guard, seeded targeted+Surat — launch geography depends on it (C-6 core in `19-PRD-CMS-ANALYTICS.md`). |
-| **Phase 2 (live pilot hardening)** | Razorpay UPI payouts (M5/M6), WhatsApp Business templates (order confirmed, out for delivery, payout done, daily price broadcast), FCM/APNs push, invoice PDF (`GET /orders/:id/invoice.pdf`), **swap `storage.js` from local-disk to the S3-compatible bucket** (grading/dispute photos migrate transparently) + buyer-facing listing photo gallery. **CMS v1.1**: R14 audited CSV export (moved up from Phase 3), WAU/MAU graph polish, W1/W4 retention cohorts on R13, C-6 demand-signals strip (`demand_signals` on M7, §6.13). |
+| **MVP (pilot)** | Everything in §6 with `provider='manual'` payouts, dev/MSG91 OTP, **one local-disk grading/dispute evidence photo via `storage.ts`**, no invoice PDFs. WhatsApp/push nudges optional (manual broadcast acceptable — `14-OPS-PLAYBOOK.md`). **CMS module MVP**: stored `app_events` (S4), 00:30 `metrics_daily` rollup, R7–R12, R13 basics (DAU graph, platform split), manual weekly `store_metrics` entry (S5). **Market targeting MVP** (§6.13): geo reads G1–G3, markets M7–M10, `GET /config` `serviceable` flag, `city_not_serviceable` order guard, seeded targeted+Surat — launch geography depends on it (C-6 core in `19-PRD-CMS-ANALYTICS.md`). |
+| **Phase 2 (live pilot hardening)** | Razorpay UPI payouts (M5/M6), WhatsApp Business templates (order confirmed, out for delivery, payout done, daily price broadcast), FCM/APNs push, invoice PDF (`GET /orders/:id/invoice.pdf`), **swap `storage.ts` from local-disk to the S3-compatible bucket** (grading/dispute photos migrate transparently) + buyer-facing listing photo gallery. **CMS v1.1**: R14 audited CSV export (moved up from Phase 3), WAU/MAU graph polish, W1/W4 retention cohorts on R13, C-6 demand-signals strip (`demand_signals` on M7, §6.13). |
 | **Phase 3 (scale-up)** | Buyer subscription flags + priority allocation, standing orders (repeat weekly), FPO-SaaS endpoints (hub-scoped ops accounts), managed Postgres + PITR. **CMS v2**: Play/App Store API auto-sync into `store_metrics` (retires S5 manual entry, `source='api'`), per-screen console permissions, alerting, auto-provision a region from country defaults when a city is activated in auto mode (§6.13). |
 
 CMS phase mapping: the phases named **MVP / v1.1 / v2** in `19-PRD-CMS-ANALYTICS.md` land in this table's **MVP / Phase 2 / Phase 3** rows respectively.
@@ -1146,7 +1147,7 @@ Emitted as structured `pino` log events (`event:` field) and derivable from tabl
 | # | Question | Provisional decision in this PRD | Owner | Deadline |
 |---|---|---|---|---|
 | Q1 | Farmer payout timing: on grading (before produce sells) vs on pickup/dispatch? | Payout row created at grading; ops triggers payment at pickup per `14-OPS-PLAYBOOK.md` SOP | Founder | Phase 0 exit (FPO MoU) |
-| Q2 | Does the buyer pay COD/credit terms/prepaid? | Invoice on delivery, net-7 collection recorded via M4 `buyer_invoice` mark-paid; no payment gateway on buyer side at MVP | Founder | Phase 0 buyer interviews |
+| Q2 | Does the buyer pay COD/credit terms/prepaid? | Invoice on delivery, net-7 collection recorded via M4 `buyer_invoice` mark-paid; no payment gateway on buyer side at MVP — when buyer-side online collection starts, it is Razorpay (fixed, §6.8) | Founder | Phase 0 buyer interviews |
 | Q3 | India tax module: is delivery/handling fee GST-liable when bundled with exempt fresh produce? | v1 computes `tax_amount = 0`; module boundary exists so changing it is one file | Founder + CA | Before first real invoice |
 | Q4 | Single grade pair (A/B) globally, or per-region grade sets? | A/B fixed enum at MVP; revisit only if a region demands it (schema change contained to CHECK constraints) | Founder | Country #2 onboarding |
 | Q5 | OTP SMS provider for non-WhatsApp farmers vs missed-call auth | SMS OTP via MSG91; missed-call auth rejected for MVP (extra vendor, marginal gain) | Founder | Phase 2 |

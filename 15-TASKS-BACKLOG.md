@@ -31,7 +31,7 @@ _KisanSetu Brain · July 2026 · Owner: Alpesh (founder; owner defaults to found
 
 | ID | St | Task | Acceptance criteria | Size |
 |---|---|---|---|---|
-| T1.1 | [x] | Brain corpus written (README, 00–19) | All 21 files exist in `/KisanSetu-Brain/`, mutually consistent with the shared brief; PRDs contain purpose/scope/non-goals/spec/edge-cases/AC/rollout/metrics | L |
+| T1.1 | [x] | Brain corpus written (README, 00–21) | All 23 files (README + 00–21) exist in `/KisanSetu-Brain/`, mutually consistent with the shared brief; PRDs contain purpose/scope/non-goals/spec/edge-cases/AC/rollout/metrics | L |
 | T1.2 | [x] | Design system defined | [10-DESIGN-SYSTEM.md](10-DESIGN-SYSTEM.md) + `design/design-board.html`: palette, type, spacing, components, grade-chip rules | M |
 | T1.3 | [x] | Farmer app UX flow (Hindi-first, low-literacy) | Screen list + flows in [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md); max 2 actions/screen, ≥48dp targets honored | M |
 | T1.4 | [x] | Buyer app UX flow (professional B2B) | Screen list + flows incl. traceability view in [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md) | M |
@@ -55,10 +55,10 @@ _Stack per [20-CODE-ARCHITECTURE.md](20-CODE-ARCHITECTURE.md) §1: TypeScript (s
 | T2.5 | [G] | Listings lifecycle API | posted→graded→allocated→closed transitions with role rules; graded_qty per grade; grading photo attachment | M |
 | T2.6 | [G] | Orders + allocation + traceability API | Order totals computed server-side; allocation creates order_allocations; trace endpoint returns farm/farmer/village/harvest + timestamps for an order_item | L |
 | T2.7 | [G] | Freshness SLA fields + report | `harvest_ts, hub_in_ts, dispatch_ts, delivered_ts` on allocations; SLA report query (median/p90 by crop, route, week) matches metric M4 definition | M |
-| T2.8 | [G] | Payments: payout + invoice records | farmer_payout & buyer_invoice records with UTR; payout slip data endpoint (all §7.3 slip fields) | M |
+| T2.8 | [G] | Payments: payout + invoice records | farmer_payout & buyer_invoice records with UTR; payout slip data endpoint (all [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §7.3 slip fields) | M |
 | T2.9 | [G] | Leads endpoint | POST /leads validated + stored; feeds website form | S |
 | T2.10 | [G] | Real OTP SMS gateway (MSG91/Twilio) | OTP delivered to real numbers; rate limiting; dev stub retained behind env flag | M |
-| T2.11 | [G] | Razorpay UPI payout integration | Payout provider interface (abstracted per global-first rule) with Razorpay instance; sandbox payout with UTR captured; failure→retry→NEFT-flag flow per SOP | L |
+| T2.11 | [G] | Razorpay UPI payout integration | Payout provider interface (abstracted per global-first rule) with Razorpay as the **FIXED** PSP (founder, 14 Jul 2026 — no other PSP evaluated or integrated; [06-PRD-BACKEND.md](06-PRD-BACKEND.md) §6.8, [21-AI-EXECUTION-PLAYBOOK.md](21-AI-EXECUTION-PLAYBOOK.md) §10); sandbox payout with UTR captured; failure→retry→NEFT-flag flow per SOP | L |
 | T2.12 | [G] | WhatsApp Business API integration | Order confirmations (buyer), daily price broadcast (farmer + buyer lists), opt-in recorded per [18-LEGAL-COMPLIANCE.md](18-LEGAL-COMPLIANCE.md) §9 | L |
 | T2.13 | [G] | Ops endpoints | Grading queue views; allocation suggestions (match by crop/grade/qty with priority rules of [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §4.2) | M |
 | T2.14 | [G] | Invoice PDF generation | One consolidated invoice per delivery: exempt bill-of-supply lines + taxable delivery/handling line per [18-LEGAL-COMPLIANCE.md](18-LEGAL-COMPLIANCE.md) §4 | M |
@@ -108,14 +108,14 @@ _Stack per [20-CODE-ARCHITECTURE.md](20-CODE-ARCHITECTURE.md) §1: TypeScript (s
 | ID | St | Task | Acceptance criteria | Size |
 |---|---|---|---|---|
 | T6.1 | [ ] | Hub SOP finalized + grade charts produced | [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §2 rehearsed once with FPO staff; A2 photo charts printed for both frozen crops | M |
-| T6.2 | [ ] | 3PL selection: 3 quotes, 2 trial routes, per-trip contract | Scorecard per §6.1; both trials passed per §6.2; contract signed; vendor #2 warm | M |
+| T6.2 | [ ] | 3PL selection: 3 quotes, 2 trial routes, per-trip contract | Scorecard per [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §6.1; both trials passed per §6.2; contract signed; vendor #2 warm | M |
 | T6.3 | [ ] | Crates + QR sourcing | 60 serialized crates, label holders, thermal printer + labels on site; rotation + deposit rule in buyer agreement | S |
 | T6.4 | [ ] | Onboard 25–50 farmers (FPO demo day) | Attendance sheet; VPAs verified with ₹1 test payout; consent forms (T0.10) signed | M |
 | T6.5 | [ ] | Onboard 15–25 buyers | Signed one-page buyer agreements; standing delivery-day preferences recorded; sample-crate demo done per buyer | L |
-| T6.6 | [ ] | Daily price-setting SOP live | 5 consecutive rehearsal evenings done per §5; both founder and Ops Lead have run it solo | S |
+| T6.6 | [ ] | Daily price-setting SOP live | 5 consecutive rehearsal evenings done per [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §5; both founder and Ops Lead have run it solo | S |
 | T6.7 | [ ] | Dry-run week executed | All 5 drill days passed per [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md) §3 pass conditions; fallback kit #F1–#F6 printed and used in the D3 drill | M |
 | T6.8 | [ ] | Weekly metrics ritual + tracking sheet | `ops/metrics-weekly.xlsx` template with M1–M8 formulas; first ritual run on dry-run data | S |
-| T6.9 | [ ] | Ops Lead hired (month 2) | Hire can run §2–§8 solo after one supervised week; payout + price SOPs cross-trained | M |
+| T6.9 | [ ] | Ops Lead hired (month 2) | Hire can run [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §2–§8 solo after one supervised week; payout + price SOPs cross-trained | M |
 | T6.10 | [ ] | Weekly store-metrics entry (starts when apps are live on store tracks) | Every week: downloads from Play Console + App Store Connect entered into `store_metrics` (source=manual, entered_by recorded) as part of the T6.8 weekly ritual; store-API auto-sync stays a v2 non-goal per [19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md) | S |
 
 ## T7 · Marketing & sales (from launch; per [04-GTM-SALES-MARKETING.md](04-GTM-SALES-MARKETING.md))
@@ -142,4 +142,4 @@ _Stack per [20-CODE-ARCHITECTURE.md](20-CODE-ARCHITECTURE.md) §1: TypeScript (s
 ---
 
 ## Reading order for a new contributor
-[00-GOLDEN-RULES.md](00-GOLDEN-RULES.md) → [05-PRODUCT-OVERVIEW.md](05-PRODUCT-OVERVIEW.md) → your workstream's PRD → [12-DEVELOPMENT-PLAN.md](12-DEVELOPMENT-PLAN.md) → this backlog. Nothing in T2–T5 starts before T1.7 exists in writing.
+[00-GOLDEN-RULES.md](00-GOLDEN-RULES.md) → [05-PRODUCT-OVERVIEW.md](05-PRODUCT-OVERVIEW.md) → your workstream's PRD → [12-DEVELOPMENT-PLAN.md](12-DEVELOPMENT-PLAN.md) → [21-AI-EXECUTION-PLAYBOOK.md](21-AI-EXECUTION-PLAYBOOK.md) → this backlog. Nothing in T2–T5 starts before T1.7 exists in writing.

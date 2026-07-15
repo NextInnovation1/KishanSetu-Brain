@@ -1,6 +1,6 @@
 # 19 — PRD: CMS / Analytics module (KisanSetu Console)
 
-**Doc owner:** Founder (Alpesh) · **Status:** Draft for founder approval · **Last updated:** 2026-07-12
+**Doc owner:** Founder (Alpesh) · **Status:** Draft for founder approval · **Last updated:** 2026-07-14
 **Siblings:** `09-PRD-OPS-DASHBOARD.md` (the other module of the same console — one login, one codebase, one API) · `06-PRD-BACKEND.md` (every screen here maps to endpoints defined there — this doc continues its R-series with R7–R14 + S5, amends S4, and consumes the geo/markets surface G1–G3 + M7–M10 of its §6.13) · `10-DESIGN-SYSTEM.md` (stat tile §6.4, tokens) · `18-LEGAL-COMPLIANCE.md` (§10 data protection) · `14-OPS-PLAYBOOK.md` (weekly metrics ritual).
 **Gate:** every build task from this PRD is `[G]` gated on T1.7 founder PRD approval (Golden Rule 3) — same as everything else in the Brain.
 
@@ -8,7 +8,7 @@
 
 ## 1. Purpose
 
-The ops module (`09-PRD-OPS-DASHBOARD.md`) runs **today**: grade, allocate, deliver, pay. This module answers **what happened and where is it going** — who sold what, who bought what, how many people downloaded and use the apps, whether the two golden metrics (freshness, farmer share — Golden Rule 5) are trending the right way — and decides **where KisanSetu is live**: launch geography is CMS configuration, not code (C-6 Markets, Golden Rule 2). It is the founder's Friday ritual, the investor-update generator, and the early-warning system for buyer churn (Golden Rule 6: buyer repeat-rate is the retention metric that matters).
+The ops module (`09-PRD-OPS-DASHBOARD.md`) runs **today**: grade, allocate, deliver, pay. This module answers **what happened and where is it going** — who sold what, who bought what, how many people downloaded and use the apps, whether the two golden metrics (freshness, farmer share — Golden Rule 5) are trending the right way — and decides **where KisanSetu is live**: launch geography is CMS configuration, not code (C-6 Markets, Golden Rule 2). It is the founder's Monday metrics ritual (`14-OPS-PLAYBOOK.md` §10), the investor-update generator, and the early-warning system for buyer churn (Golden Rule 6: buyer repeat-rate is the retention metric that matters).
 
 **Product decision (canon):** there is ONE internal web app — the **KisanSetu Console** — with two modules sharing one OTP login, one vanilla-JS codebase, and one API. This doc specifies the CMS/Analytics module: six screens, C-1 through C-6. Any `role='ops'` user sees both modules at MVP (pilot team = founder + Ops Lead); per-screen permissions are a v2 non-goal. English-only at MVP, like the ops module. Desktop-first, fully usable at 768 px. No native app.
 
@@ -18,7 +18,7 @@ Same reality constraint as the sibling: analytics must never block operations. G
 
 | User | Context | Jobs |
 |---|---|---|
-| Founder | Laptop, Friday ritual + before investor calls | C-1 trends, C-3 buyer health, C-5 export for updates; C-6 market activation when expanding (occasional, founder-only in practice) |
+| Founder | Laptop, Monday metrics ritual + before investor calls | C-1 trends, C-3 buyer health, C-5 export for updates; C-6 market activation when expanding (occasional, founder-only in practice) |
 | Ops lead | Laptop at hub, weekly | C-2 farmer follow-ups (inactive farmers, data-quality flags), weekly downloads entry on C-4 |
 | Field sales (read) | Phone browser | C-3 buyer list before a visit (repeat-rate, outstanding) |
 
@@ -34,7 +34,7 @@ Same reality constraint as the sibling: analytics must never block operations. G
 | Per-screen permissions | Pilot team is 2–3 trusted staff; all `role='ops'` see both modules. Role editor is a v2 item, same as in `09-PRD-OPS-DASHBOARD.md` §3. |
 | Chart library / CDN anything | Site performance budget + CSP posture (no third-party origins). One hand-rolled SVG chart helper (§8) — line + bar, ~150 lines, design-system tokens. |
 | Realtime / websockets | Nightly rollup + a visible Refresh button. Analytics that is 24 h old is fine; analytics that breaks is not. |
-| Farmer/buyer-facing analytics | This console is internal staff only. Buyer-facing analytics is a Phase 3 idea in `07-PRD-MOBILE-APPS.md` territory, not here. |
+| Farmer/buyer-facing analytics | This console is internal staff only. Buyer-facing analytics is a v2 idea in `07-PRD-MOBILE-APPS.md` territory, not here. |
 | BI suite / SQL explorer | Five fixed screens + CSV export. Real BI waits for real volume. |
 
 ## 4. Information architecture & the week in the life
@@ -43,8 +43,8 @@ The console header gains a module switcher: **Ops | Analytics**. Analytics left 
 
 | When | Who | Screen | Action |
 |---|---|---|---|
-| Friday AM | Founder | **C-1** | Metrics ritual: GMV/orders/DAU trend, farmer-share % vs 60% target; paste numbers into weekly update. |
-| Friday AM | Founder | **C-3** | Sort by last order desc → who hasn't reordered in 14 days → call list for field sales. |
+| Monday 18:00 | Founder | **C-1** | Metrics ritual: GMV/orders/DAU trend, farmer-share % vs 60% target; paste numbers into weekly update. |
+| Monday 18:00 | Founder | **C-3** | Sort by last order desc → who hasn't reordered in 14 days → call list for field sales. |
 | Monday | Ops lead | **C-4** | Enter last week's downloads from Play Console + App Store Connect (2 numbers each). |
 | Monthly | Ops lead | **C-2** | Data-quality sweep: farmers with no-shows or dispute-traced crates → FPO conversation. |
 | Before investor call | Founder | **C-5** | Export metrics CSV for the date range; the export itself is audited. |
@@ -191,7 +191,7 @@ Markets — where we are live                                        [Refresh]
 
 - **Mode switch:** Targeted | Auto. Flipping to **Auto** demands a typed confirmation — the user must type `AUTO` ("this opens ordering worldwide") before M8 fires; the typed guard is client-side, the audit (`targeting_mode_changed`) is server-side and unconditional. Flipping back to Targeted is a plain confirm — previously activated cities simply become binding again. The change takes effect on the next request (`city_is_serviceable()` is read per request — no restart, no deploy).
 - **Cascade picker:** Country → State → City, search-as-you-type on the city field (G3 `search=`, min 2 chars, paginated). Activate writes M9 (`{city_id, notes?}`, audit `city_activated`); an already-active city surfaces the `409 duplicate` inline; re-activating a previously deactivated city resumes it with a fresh `activated_at`. In auto mode the picker and list render read-only with the note "auto mode: every city is serviceable".
-- **Active-cities list:** name/state/country, `activated_at`, `open_orders` (from M7), notes, Deactivate action → M10 (soft: `active=false` + `deactivated_at`, audit `city_deactivated`). **Deactivation guard:** a city with open orders shows a warning **listing those orders** (from `open_orders` + a deep-link into the ops Orders board) and requires an explicit confirm; deactivation NEVER cancels existing orders — they proceed to delivery; only NEW orders are blocked (`city_not_serviceable`) from that moment. A serviceable-but-unprovisioned city (no region yet) carries an amber "not provisioned — create region + prices per 14-OPS-PLAYBOOK.md" chip.
+- **Active-cities list:** name/state/country, `activated_at`, `open_orders` (from M7), notes, Deactivate action → M10 (soft: `active=false` + `deactivated_at`, audit `city_deactivated`). **Deactivation guard:** a city with open orders shows a warning **listing those orders** (from `open_orders` + a deep-link into the ops Orders board) and requires an explicit confirm; deactivation NEVER cancels existing orders — they proceed to delivery; only NEW orders are blocked (`city_not_serviceable`) from that moment. A serviceable-but-unprovisioned city (no region yet) carries an amber "not provisioned — create region + prices" chip (manual ops step at MVP, `06-PRD-BACKEND.md` §6.13).
 - **Demand-signals strip (v1.1, read-only):** top 10 non-serviceable cities by leads + signups in the last 30 days (M7 `demand_signals`) — the founder's where-to-expand-next view. Signups/leads are never blocked, so this data always exists.
 - **States:** loading skeleton; targeted mode with zero active cities = red banner "No city is live — ordering is OFF everywhere" (legal state, loudly flagged); auto mode = list + picker in the read-only info state; G3 search with no match = "no city found — check the state"; error = banner + Retry keeping picker state.
 - **Edge cases:** deactivating the only active city in targeted mode → same open-orders warning plus the zero-cities red banner after confirm; mode flipped to auto while the deactivation dialog is open → M10 still succeeds (the row is kept for a later return to targeted, non-binding meanwhile); double-activate race between two ops users → second gets the `409 duplicate` inline; deactivation never touches signups/leads — they keep flowing into the demand strip.
@@ -259,6 +259,6 @@ These screens expose farmer and buyer operational data to internal staff — cov
 | # | Question | Provisional decision | Owner | Deadline |
 |---|---|---|---|---|
 | Q1 | Who enters weekly store downloads, and which day? | Ops lead, Mondays, from Play Console + App Store Connect; founder covers until hire | Founder | Pilot week 1 |
-| Q2 | Retention cohorts at MVP or v1.1? | v1.1 (canon: "v1.1 if heavy" — it is heavy: cohort SQL + a matrix component) | Founder | v1.1 planning |
+| Q2 | Retention cohorts at MVP or v1.1? | v1.1 (it is heavy: cohort SQL + a matrix component) | Founder | v1.1 planning |
 | Q3 | GMV gross vs net of credit notes | Gross, credit notes itemized separately (§5) — silent netting hides dispute cost | Founder | T1.7 approval |
 | Q4 | Store-metrics write path + S4 amendment adoption into `06-PRD-BACKEND.md` | Resolved — adopted as S5 `PUT /store-metrics/:date` in 06 (rev 2026-07-12) | Founder | Done |

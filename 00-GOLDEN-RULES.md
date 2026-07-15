@@ -34,14 +34,14 @@ These six rules are the constitution of KisanSetu. Every document in this Brain,
 **Why it exists:** The smallholder→HoReCa gap is not an Indian quirk; it exists across Southeast Asia, Africa and LATAM (see [02-MARKET-RESEARCH.md](02-MARKET-RESEARCH.md), Global section). Retrofitting i18n, multi-currency and tax abstraction into an India-hardcoded codebase is a rewrite. Conversely, "global" without a beachhead is how startups die of vagueness — Surat gives us density, founder proximity, and a winnable first market.
 
 **In practice (the engineering checklist — every PRD must comply):**
-- **i18n from day 1:** all user-facing text in string tables; EN/HI/GU at launch; languages pluggable per region.
+- **i18n from day 1:** all user-facing text in string tables; EN/HI at launch, GU in v1.1 ([07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md)); languages pluggable per region.
 - **Currency abstracted:** INR at launch, but every money value carries a currency field in the data model. No `₹` hardcoded outside India UI copy.
 - **Phones:** E.164 everywhere (`+919876543210`), never 10-digit assumptions.
 - **Time:** timezone-aware timestamps (UTC storage, local display).
 - **Generic domain terms in the schema:** `reference_market_price`, not `mandi_price`. "Mandi" may appear only in UI copy for the India region. Same for tax: a per-region tax abstraction of which GST is the Indian instance.
 - **Geography as data:** region → hub → farm hierarchy in the data model, so a new city or country is configuration, not code.
 - **Launch geography is configuration, not code:** the CMS Markets screen ([19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md) C-6) decides where we are live; the codebase never hardcodes a city.
-- **Payment/messaging providers behind interfaces:** Razorpay-UPI and WhatsApp Business API are India instances of abstract payout/messaging providers.
+- **Payment/messaging providers behind interfaces:** Razorpay and WhatsApp Business API are India instances of abstract payment/messaging providers. **Razorpay is the fixed India PSP (founder decision, 2026-07-14):** farmer payouts (RazorpayX UPI) and buyer-side online collection (Razorpay checkout/payment links, when online collection starts) both run through Razorpay — no other PSP will be evaluated or integrated. The provider interface stays; the India instance is fixed.
 
 **And the Surat-first half:**
 - All Phase 0 validation, first crops, first FPO, first buyers: Surat only. See [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md).
@@ -151,3 +151,4 @@ These six rules are the constitution of KisanSetu. Every document in this Brain,
 
 **Changelog**
 - 2026-07-12 — v1.0. Initial six rules codified from founder decisions and verified market evidence (July 2026).
+- 2026-07-14 — Rule 2 amended: Razorpay recorded as the fixed India PSP (farmer payouts via RazorpayX UPI + buyer-side online collection; provider interface unchanged) per founder decision of 2026-07-14. Launch languages corrected to EN/HI with GU in v1.1, matching [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md).

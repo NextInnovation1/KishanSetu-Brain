@@ -1,7 +1,7 @@
 # 04 — GO-TO-MARKET, SALES & MARKETING
 
 _Doc owner: Alpesh (founder). Status: Draft v1.0 for founder approval. Last updated: 2026-07-12._
-_Reads with: 02-MARKET-RESEARCH.md (who the buyers are and why the lane is open), 03-BUSINESS-MODEL.md (pricing, contribution math that GTM must respect — especially route density), 08-PRD-WEBSITE.md (lead capture this plan feeds), 13-LAUNCH-PLAN.md (phase gates), 14-OPS-PLAYBOOK.md (demo-day and hub SOPs), 17-FUNDRAISE-FINANCE.md (marketing budget inside the burn)._
+_Reads with: 02-MARKET-RESEARCH.md (who the buyers are and why the lane is open), 03-BUSINESS-MODEL.md (pricing, contribution math that GTM must respect — especially route density), 08-PRD-WEBSITE.md (lead capture this plan feeds), 13-LAUNCH-PLAN.md (phase gates), 14-OPS-PLAYBOOK.md (hub and payout SOPs), 17-FUNDRAISE-FINANCE.md (marketing budget inside the burn)._
 
 **Operating principle (Golden Rule 6): this is a B2B, sales-led business. Ads support sales; they never replace it.** The founder selling with a sample crate is the strategy, not a stopgap until "real marketing" starts.
 
@@ -110,7 +110,7 @@ Close on a **specific first order**, never on "think about it." If no order: get
 
 ### 4.3 Trial & funnel targets
 
-Trial terms: first delivery fee waived, no minimum on order #1, no lock-in, reject-at-door right. Funnel targets (reviewed weekly): visit→demo 60%, demo→trial 40%, trial→active (≥4 orders in 2 weeks) 50%. That's ~5 new active buyers per 25 visits — one week of walking. At those rates founder-led sales alone reaches the M4 target of 25 active buyers (03 §7) with ads contributing on top.
+Trial terms: first delivery fee waived, no minimum on order #1, no lock-in, reject-at-door right. Funnel targets (reviewed weekly): visit→demo 60%, demo→trial 40%, trial→active (≥4 orders in 2 weeks) 50%. That's ~3 new active buyers per 25 visits — one week of walking. At those rates founder-led sales alone reaches the M4 target of 25 active buyers (03 §7) with ads contributing on top.
 
 ## 5. Post-launch advertisement plan (supports sales, per-channel budgets)
 
@@ -120,13 +120,13 @@ Total paid + tools budget inside the ₹2.5–4L/mo burn (17-FUNDRAISE-FINANCE.m
 
 - Business profile + verified catalog of the live SKUs with grade tiers.
 - **Daily price broadcast, 06:45**, to opted-in buyers and leads. Format (exact template):
-  > *KisanSetu — आज के दाम / Today's prices (Sat 12 Jul)*
+  > *KisanSetu — आज के दाम / Today's prices (Sun 12 Jul)*
   > Tomato A ₹40 · B ₹34 (market ref ₹46)
   > Palak A ₹46 · B ₹38 (market ref ₹52)
   > Order by 4 pm → delivered before 7 am. Reply 1 to order, 2 for a callback.
 - Quick replies for: today's prices, place order, delivery status, QA complaint (photo → same-day credit).
 - Click-to-chat number on the website, price card, invoice, and van signage.
-- Post-MVP this runs on the WhatsApp Business API (06-PRD-BACKEND.md T2.10); during pilot it's the founder's phone + WhatsApp Business app — acceptable manual backend (14-OPS-PLAYBOOK.md).
+- Post-MVP this runs on the WhatsApp Business API (15-TASKS-BACKLOG.md T2.12); during pilot it's the founder's phone + WhatsApp Business app — acceptable manual backend (14-OPS-PLAYBOOK.md).
 
 ### 5.2 Google Business Profile + local SEO (₹0, founder time)
 
@@ -139,12 +139,12 @@ Total paid + tools budget inside the ₹2.5–4L/mo burn (17-FUNDRAISE-FINANCE.m
 - Structure: 1 campaign, 2 ad sets. **Ad set A (70%):** lead-gen forms, Surat 15 km radius, interests: restaurant management, HoReCa, food service, catering; age 24–55. **Ad set B (30%):** retargeting website visitors + WhatsApp-click custom audience.
 - Creative: 15-sec reel of crate packing at the hub with on-screen harvest timestamp; carousel "market ref price vs our price"; the payout-slip photo ad ("this is what the farmer got"). All creatives carry one of the two public numbers.
 - Lead form fields: name, business name, area, phone (auto), top 3 items you buy daily.
-- Targets: CPL ₹150–250 → 60–130 leads/mo → (25% demo, 50% trial→active per §4.3) → **4–8 new active buyers/mo from paid**. Paid CAC ≈ ₹2,500–4,000; a base buyer contributes ~₹3,000/mo (15 orders × ₹200, 03 §4) → **payback ≈ 1 month**. Kill rule: pause any ad set with CPL >₹400 for 2 consecutive weeks.
+- Targets: CPL ₹150–250 → 60–130 leads/mo → (25% lead→demo assumed, then demo→trial 40% and trial→active 50% per §4.3) → **3–7 new active buyers/mo from paid**. Paid CAC ≈ ₹3,000–5,000; a base buyer contributes ~₹3,000/mo (15 orders × ₹200, 03 §4) → **payback ≈ 1–1.7 months**. Kill rule: pause any ad set with CPL >₹400 for 2 consecutive weeks.
 
 ### 5.4 Referral program (₹1,500 cost/referral, capped)
 
-- Offer: an active buyer whose referral completes 4 orders gets **one month of free delivery** (≈ 25 orders × ₹50 = ₹1,250–1,500 value). Referred buyer gets first-delivery-free trial terms.
-- Cap: 2 rewarded referrals/buyer/quarter. Tracked via `referred_by` on buyer profile (06-PRD-BACKEND.md). Restaurant owners talk to each other — this should become the #1 channel by M6; target ≥30% of new buyers via referral by then.
+- Offer: an active buyer whose referral completes 4 orders gets **one month of free delivery** (≈ 25 orders × ₹50 ≈ ₹1,250 value, within the ₹1,500 cap). Referred buyer gets first-delivery-free trial terms.
+- Cap: 2 rewarded referrals/buyer/quarter. Tracked during pilot via lead `source='referral'` (06-PRD-BACKEND.md `leads` table) plus referrer name in the CRM sheet. Restaurant owners talk to each other — this should become the #1 channel by M6; target ≥30% of new buyers via referral by then.
 
 ### 5.5 Trade associations & events (₹2–5k/mo)
 
@@ -154,8 +154,8 @@ Surat hotel & restaurant association meetings (ask for 10 minutes + sample crate
 
 Farmers are recruited **through the FPO's trust, never around it.** We do not poach non-member farmers in pilot; the FPO relationship is the channel and the moat.
 
-1. **Village demo days at the hub** (run-of-show in 14-OPS-PLAYBOOK.md): FPO convenes 25–50 members → live weigh + grade of one farmer's lot → **live UPI payout on the projector/phone, the money arriving is the demo** → printed slip handed over → app walkthrough on 3 shared phones (farmer flow, 07-PRD-MOBILE-APPS.md) → sign-up desk with FPO staff. Target: 25–50 farmers onboarded in 2 demo days (T6.4).
-2. **The payout slip is the advertisement.** Printed slip per pickup: farmer name, crop, kg, grade, reference market price (struck through), KisanSetu price, amount, UTR, time. Slips travel through villages by hand — deliberately designed as marketing collateral (template task T1.7).
+1. **Village demo days at the hub** (run-of-show in 13-LAUNCH-PLAN.md): FPO convenes 25–50 members → live weigh + grade of one farmer's lot → **live UPI payout on the projector/phone, the money arriving is the demo** → printed slip handed over → app walkthrough on 3 shared phones (farmer flow, 07-PRD-MOBILE-APPS.md) → sign-up desk with FPO staff. Target: 25–50 farmers onboarded in 2 demo days (T6.4).
+2. **The payout slip is the advertisement.** Printed slip per pickup: farmer name, crop, kg, grade, reference market price (struck through), KisanSetu price, amount, UTR, time. Slips travel through villages by hand — deliberately designed as marketing collateral (template task T1.9).
 3. **Consent-based payout reels**: 2/month, 30–60s, Gujarati/Hindi — real farmer, real slip, real UPI notification sound, no music-video gloss. Written consent form (18-LEGAL-COMPLIANCE.md), ₹500 courtesy payment to the featured farmer. Organic distribution: FPO WhatsApp groups, village groups, Instagram/YouTube Shorts. Never paid promotion on farmer-side content — trust content, not ads.
 4. **Price broadcast to farmers**: daily WhatsApp/SMS of tomorrow's platform prices for the 2 crops, so listing on KisanSetu becomes a morning habit (mirrors the app's Home price cards).
 
@@ -193,7 +193,7 @@ In the product, city #2 is **configuration, not code**: new region + hub records
 Selection criteria: smallholder share >70% of holdings; dense urban HoReCa; an instant-payment rail (VietQR, QRIS, M-Pesa — swapped behind the payment-provider interface); a producer-organization structure analogous to FPOs (agricultural cooperatives); import-independent local F&V supply.
 
 What stays constant (the global playbook): sample-crate founder-led sales, the two public numbers, payout-slip marketing, cluster-based route density rule, demo days via the producer organization, validation-before-build with the same interview scripts (translated).
-What swaps (all pre-abstracted per 03 §9 and the PRDs): currency, language packs (i18n string tables), payment provider, tax module, reference-price source, messaging channel (WhatsApp → Zalo in Vietnam / WhatsApp in Indonesia & Kenya), association equivalents. **No GTM asset may hardcode India**: templates keep `{{region}}`, `{{currency}}`, `{{reference_price_source}}` slots.
+What swaps (all pre-abstracted per 03 §9 and the PRDs): currency, language packs (i18n string tables), payment provider (interface per Rule 2 — the India instance is FIXED: Razorpay, for farmer UPI payouts and buyer-side collection when online collection starts; founder decision 2026-07-14, spec in 06-PRD-BACKEND.md §6.8), tax module, reference-price source, messaging channel (WhatsApp → Zalo in Vietnam / WhatsApp in Indonesia & Kenya), association equivalents. **No GTM asset may hardcode India**: templates keep `{{region}}`, `{{currency}}`, `{{reference_price_source}}` slots.
 
 ## 9. Metrics & instrumentation
 

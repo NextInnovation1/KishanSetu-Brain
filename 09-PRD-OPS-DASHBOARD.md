@@ -1,6 +1,6 @@
 # 09 — PRD: Ops Dashboard (internal)
 
-**Doc owner:** Founder (Alpesh) · **Status:** Draft for founder approval · **Last updated:** 2026-07-12
+**Doc owner:** Founder (Alpesh) · **Status:** Draft for founder approval · **Last updated:** 2026-07-14
 **Siblings:** `06-PRD-BACKEND.md` (every screen here maps to endpoints defined there — endpoint IDs like F2, L6, O11 refer to its §6 tables) · `14-OPS-PLAYBOOK.md` (the human SOPs this tool digitizes) · `10-DESIGN-SYSTEM.md` (palette/type) · `05-PRODUCT-OVERVIEW.md` · `19-PRD-CMS-ANALYTICS.md` (the Console's second module — see §1).
 
 ---
@@ -67,7 +67,7 @@ OTP flow via A1/A2 (`06-PRD-BACKEND.md`). If the verified user's role ≠ `ops` 
 **Acceptance:** ops user in ≤ 3 interactions; farmer/buyer token can never render any page (role checked client-side for UX and server-side for truth on every call).
 
 ### 5.2 Today (daily digest)
-Data: R1 `GET /reports/summary?date=today`. Cards: orders by status (placed/confirmed/out/delivered), kg posted vs graded, unallocated order items (red if > 0 after 06:30), pending payouts count + amount, fulfilment % yesterday, median freshness h (7-day), farmer share % (7-day). Each card links to its screen. Amber banner if today's prices are unpublished by 18:00 for tomorrow.
+Data: R1 `GET /reports/summary?date=today` + R2/R3 (7-day window) for the two golden-metric cards. Cards: orders by status (placed/confirmed/out/delivered), kg posted vs graded, unallocated order items (red if > 0 after 06:30), expiring/expired posted listings (the no-show chase queue — surfaced here per `06-PRD-BACKEND.md` §6.6 listing-expiry sweep), pending payouts count + amount, fulfilment % yesterday, median freshness h (7-day), farmer share % (7-day). Each card links to its screen. Amber banner if today's prices are unpublished by 18:00 for tomorrow.
 **Acceptance:** one glance answers "what's on fire?"; every number click-throughs to the working screen; loads < 2 s on hub 4G.
 
 ### 5.3 Prices (daily price setting) — the evening ritual
@@ -99,7 +99,7 @@ Data: L3 `GET /listings?hub_id=&status=posted&harvest_date=today`.
 
 - Filter chips: hub (default: user's last-used), harvest date (default today), produce.
 - Card per listing: farmer name + village + phone (tap-to-call), produce, posted qty, listing age. Sorted oldest-first.
-- Tap → grading form (L6): grade A/B big toggle, weighed qty numeric pad, optional split ("also graded: [B] [qty]"), reject-all path (L7 close with reason picker: spoiled / no-show / quality-fail).
+- Tap → grading form (L6): grade A/B big toggle, weighed qty numeric pad, optional split ("also graded: [B] [qty]"), optional grading-evidence photo (one camera capture, never blocks the grade — `06-PRD-BACKEND.md` §6.6 L6), reject-all path (L7 close with reason picker: spoiled / no-show / quality-fail).
 - On submit: card flips to a green "Graded — A 70 kg · B 30 kg" state with the farmer-notification confirmation; payout estimate shown.
 - Blocked state: if no published price for today (422 from L6), banner links to Prices screen.
 
@@ -142,8 +142,8 @@ Data: O4 by status columns: **Placed → Confirmed → Out for delivery → Deli
 ### 5.7 Payouts — the trust machine
 Data: M2 worklists in two tabs: **Farmer payouts** / **Buyer invoices**.
 
-- Farmer tab: graded listings without payout (join surfaced by backend as `payable_listings` in M2 response) → "Create payout" (M3) shows computed amount + formula (`70 kg × ₹21.00 (A, 7 Nov)`); pending payouts list → "Mark paid" (M4) with UTR field (required, min 12 chars) — MVP is manual UPI from the founder's business account per `14-OPS-PLAYBOOK.md`. Phase 2 swaps the button for "Pay via UPI" (M5) with the same list semantics.
-- Buyer tab: delivered orders' invoices, mark-paid with reference when collection lands (net-7 per `06-PRD-BACKEND.md` Q2).
+- Farmer tab: graded listings without payout (join the backend surfaces as `payable_listings` in the M2 response — **not yet defined in `06-PRD-BACKEND.md` §6.8; M2 there must add this field**) → "Create payout" (M3) shows computed amount + formula (`70 kg × ₹21.00 (A, 7 Nov)`); pending payouts list → "Mark paid" (M4) with UTR field (required, min 12 chars) — MVP is manual UPI from the founder's business account per `14-OPS-PLAYBOOK.md`. Phase 2 swaps the button for "Pay via UPI" (M5) with the same list semantics — executed via Razorpay (RazorpayX UPI payouts), the **fixed** payment gateway/PSP for India (founder decision, 2026-07-14; no other PSP will be evaluated or integrated — canonical decision in `21-AI-EXECUTION-PLAYBOOK.md` §10, backend spec in `06-PRD-BACKEND.md` §6.8). The abstract payout-provider interface stays per Golden rule #2 — Razorpay is its India instance.
+- Buyer tab: delivered orders' invoices, mark-paid with reference when collection lands (net-7 per `06-PRD-BACKEND.md` Q2); credit notes (`type=credit_note`) appear in the same worklist, netting against the buyer's invoices (`06-PRD-BACKEND.md` §6.8/§6.12).
 - Day-end strip: "Today: 14 payouts · ₹38,400 · avg 2.1 h grade→paid" (the payout-slip-as-advertisement metric — `04-GTM-SALES-MARKETING.md`).
 
 **Acceptance:** payout amount is never typed by a human — always server-computed; UTR mandatory to settle; double-payout impossible (409 surfaced as "already paid"); farmer sees the payment in their app (M1) the moment M4 succeeds; daily payout total reconciles against bank statement line-count in the weekly ritual.
@@ -153,7 +153,7 @@ Data: D2/D3. Table: name, E.164 phone (tap-to-call + WhatsApp deep link `wa.me/<
 **Acceptance:** lead from website form appears within one poll cycle (≤ 30 s); every status change audited; zero leads lost (total in UI = D2 total = rows in table, checked in weekly ritual).
 
 ### 5.9 Reports
-Data: R1/R2/R3. These operational report views (the M1–M8 metrics) stay in the OPS module; deep analytics — trend graphs, farmer/buyer drill-downs, app usage — live in the CMS/Analytics module (`19-PRD-CMS-ANALYTICS.md`).
+Data: R1/R2/R3. These operational report views (the M1–M8 pilot metrics, `13-LAUNCH-PLAN.md` §5) stay in the OPS module; deep analytics — trend graphs, farmer/buyer drill-downs, app usage — live in the CMS/Analytics module (`19-PRD-CMS-ANALYTICS.md`).
 - **SLA report:** date range picker (default last 7 days) → median + p90 harvest→door overall and per produce; breach list (> 48 h) with order links; incomplete-chain count with listing links ("fix your timestamps" queue). Big number styled green < 36 (target), amber 36–48 (promise), red > 48.
 - **Farmer share:** Σ payouts ÷ Σ delivered produce subtotal, overall + per produce + weekly trend table. Green ≥ 60%.
 - **Fulfilment:** ordered vs delivered kg, cancellation reasons histogram, buyer repeat rate (buyers with ≥ 2 delivered orders in window ÷ active buyers).
@@ -162,7 +162,7 @@ Data: R1/R2/R3. These operational report views (the M1–M8 metrics) stay in the
 **Acceptance:** the two golden metrics render on one screen without scrolling; numbers match hand-run SQL from `reports/weekly.sql` (same queries, by construction — the endpoints run those queries); date-range change < 1 s at pilot volumes.
 
 ### 5.10 Partners (admin)
-CRUD-lite for hubs, FPOs (U8/U9), user search + block (U5–U7), produce catalog + translations (P2), region settings view (read-only at MVP — new regions are seeded, `11-ARCHITECTURE.md` §7).
+CRUD-lite for hubs, FPOs (U8/U9), user search + block (U5–U7), produce catalog + translations (P2), region settings view (read-only at MVP — new regions are seeded, `11-ARCHITECTURE.md` §6).
 **Acceptance:** onboarding a new farmer at a demo day (create user via signup on their phone, then ops verifies profile + hub) takes < 2 minutes; blocking a user takes effect on their next API call.
 
 ## 6. Technical notes (binding for the build)

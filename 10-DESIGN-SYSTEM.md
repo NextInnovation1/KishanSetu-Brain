@@ -40,7 +40,7 @@ Source of truth is this table. Each platform mirrors it verbatim (naming per §8
 
 ### 2.3 Semantic mapping
 
-`success = leaf` (fills) / `leaf-deep` (text) · `warning = amber` · `danger = error` · `bg = cream` (light) / `night` (dark) · `surface = white` / `night-raised` · `text = ink` / `cream` · `text-secondary = stone-500` / `#9CB8A6` (cream at 60% over night, pre-mixed) · `border = stone-200` / `#24402F`.
+`success = leaf` (fills) / `leaf-deep` (text) · `warning = amber` · `danger = error` · `bg = cream` (light) / `night` (dark) · `surface = white` / `night-raised` · `text = ink` / `cream` · `text-secondary = stone-500` / `#9CB8A6` (muted green, 8.4:1 on `night`) · `border = stone-200` / `#24402F`.
 
 Dark mode ships on **iOS + Android + ops dashboard** (system-following). Website is light-only (`08-PRD-WEBSITE.md` non-goal).
 
@@ -102,7 +102,7 @@ Fluid: display `clamp(34px, 6vw, 48px)` serif; h2 `clamp(26px, 4vw, 34px)`; h3 2
 - **Secondary:** 1.5px `forest` outline, `forest` text, transparent fill.
 - **Destructive:** `error` fill, only in confirmation dialogs.
 - **Inputs:** 56 height, `r-sm`, 1px `stone-400` border → 2px `forest` on focus; error = 2px `error` + message below with icon. Compose `OutlinedTextField` ↔ SwiftUI `TextField` + `.textFieldStyle` custom.
-- **Steppers (kg quantity):** 56×56 `−`/`+` buttons flanking a 40sp tabular figure — farmers must never free-type weights (`07-PRD-MOBILE-APPS.md`).
+- **Steppers (kg quantity):** 56×56 `−`/`+` buttons flanking a 40sp tabular figure — the whole flow must work with steppers alone; direct numeric entry is available but never required (`07-PRD-MOBILE-APPS.md`).
 
 ## 6. The four core components
 
@@ -136,7 +136,8 @@ These four carry the whole product (per the design board). Each is built once pe
 | `graded` (A) | ग्रेड A · Grade A | `forest` / `cream` |
 | `graded` (B) | ग्रेड B · Grade B | `amber` / `ink` |
 | `allocated` | बिक गई · Sold | `leaf` 15% tint / `leaf-deep` |
-| `closed` | पूरी हुई · Closed | `stone-200` / `stone-500` |
+| `closed` | बंद · Closed | `stone-200` / `stone-500` |
+| `cancelled` | रद्द · Cancelled | `error` 10% tint / `error` |
 
 **Order states:** `placed` (outline) → `confirmed` (forest 10% tint/forest) → `out_for_delivery` (amber 15% tint/ink) → `delivered` (leaf 15% tint/leaf-deep) · `cancelled` (error 10% tint/error).
 
@@ -171,7 +172,7 @@ These four carry the whole product (per the design board). Each is built once pe
 1. **Max 2 actions per screen**; exactly one obvious primary button, full-width, bottom.
 2. **Touch targets ≥48dp/44pt**, primary actions 56; text body ≥18sp/20pt.
 3. **Icon + text always together.** Produce is chosen from a **picture grid**, never a dropdown or search field.
-4. **No hamburger menu.** Bottom nav, 3 tabs max (घर Home · मेरी फ़सल Listings · पैसे Payments).
+4. **No hamburger menu.** Bottom nav, 3 tabs max (घर Home · मेरी फ़सल My produce · पैसा Money).
 5. **Every money number shows the comparison:** reference market price struck through in `stone-400`, KisanSetu price in green. No naked prices.
 6. **Success screens celebrate plainly:** amount huge, where it went (UPI), when. "पैसा आ गया ✓ · ₹2,208 · 9:14 AM".
 7. **Never block on network:** listing posts queue offline and auto-send; the UI says so in one sentence.
@@ -200,7 +201,7 @@ These four carry the whole product (per the design board). Each is built once pe
 
 Material3 `colorScheme` mapping (Android): `primary=forest, onPrimary=cream, secondary=leaf-deep, tertiary=amber, error=error, background=cream, surface=white, onSurface=ink, outline=stone-400`; dark: `background=night, surface=night-raised, onSurface=cream, primary=leaf`. iOS mirrors via semantic Color extensions with light/dark variants in the asset catalog.
 
-**Governance:** this file is the single source of truth. Token change protocol: (1) edit this doc, (2) update `design/design-board.html`, (3) update all four mirrors **in the same cross-platform unit** (parity workflow, `12-DEVELOPMENT-PLAN.md` §4). A PR that changes a token in one platform only must be rejected in review.
+**Governance:** this file is the single source of truth. Token change protocol: (1) edit this doc, (2) update `design/design-board.html`, (3) update all four mirrors (website CSS, Console CSS, Android, iOS) **in the same cross-platform unit** (parity workflow, `12-DEVELOPMENT-PLAN.md` §3). A PR that changes a token in one platform only must be rejected in review.
 
 ## 9. Accessibility (non-negotiable, in Definition of Done)
 
@@ -223,7 +224,7 @@ Material3 `colorScheme` mapping (Android): `primary=forest, onPrimary=cream, sec
 - **Dynamic type / font scale:** layouts survive Android `fontScale 2.0` and iOS `.accessibility3` — money digits may wrap but never truncate or ellipsize; test cases in the parity checklist.
 - **Never color-alone:** grade shows the letter, deltas show the sign, errors show icon + text, chips carry labels.
 - **Screen readers:** every chip announces "स्थिति: ग्रेड A / Status: Grade A"; trace line announces as an ordered list with timestamps; struck-through prices announce "market price {x}, KisanSetu price {y}" (strikethrough alone is invisible to TalkBack/VoiceOver).
-- **Localization stress:** every component reviewed with HI strings (longer, taller script) and `lang`-correct fonts; +12% line-height rule (§3.1).
+- **Localization stress:** every component reviewed with HI strings (longer, taller script) and `lang`-correct fonts; +10–15% line-height rule (§3.1).
 
 ## 10. Voice & tone (with good/bad copy)
 
@@ -258,7 +259,7 @@ Payout slip (thermal 80mm + A5): forest header bar, bridge mark, farmer name/vil
 
 | # | Question | Decision taken here / owner | Deadline |
 |---|---|---|---|
-| Q1 | Wordmark + app icon final art | Contract designer (T1.6); interim = bridge SVG from website scaffold. Owner: Alpesh | Build week 3 |
+| Q1 | Wordmark + app icon final art | Contract designer (T1.8); interim = bridge SVG from website scaffold. Owner: Alpesh | Build week 3 |
 | Q2 | Produce imagery: photos vs illustrations in the picture grid | **Decided: real photos** (trust brand; illustrations read as toys to farmers). Shot at hub during Phase 0. Owner: Alpesh | Build week 4 |
 | Q3 | Gujarati type scale verification (Mukta metrics differ from Devanagari) | Test at GU-string integration. Owner: Alpesh | Before GU ships |
-| Q4 | Ops dashboard density tokens (24px chips, 13px body) | Sketched here; finalize in `09-PRD-OPS-DASHBOARD.md` wireframes (T1.5). Owner: Alpesh | Build week 2 |
+| Q4 | Ops dashboard density tokens (24px chips, 13px body) | Sketched here; finalize in `09-PRD-OPS-DASHBOARD.md` wireframes (T1.6). Owner: Alpesh | Build week 2 |

@@ -1,6 +1,6 @@
 # 03 — BUSINESS MODEL
 
-_Doc owner: Alpesh (founder). Status: Draft v1.0 for founder approval. Last updated: 2026-07-12._
+_Doc owner: Alpesh (founder). Status: Draft v1.0 for founder approval. Last updated: 2026-07-14._
 _Reads with: 02-MARKET-RESEARCH.md (market sizing & competitive wedge), 04-GTM-SALES-MARKETING.md (how we acquire the buyers this model depends on), 13-LAUNCH-PLAN.md (pilot gates), 14-OPS-PLAYBOOK.md (the physical flow these economics price), 16-RISKS-MITIGATIONS.md, 17-FUNDRAISE-FINANCE.md (burn & raise built on these numbers), 18-LEGAL-COMPLIANCE.md (APMC/GST/FSSAI constraints on pricing and invoicing)._
 
 ---
@@ -43,7 +43,7 @@ KisanSetu transacts as a **principal-lite reseller**: we buy from the farmer at 
 ### Stream 1 — Transaction take rate (the business)
 
 - Mechanics: ops sets `platform_price_a` / `platform_price_b` per produce per day in `price_feed` (see 06-PRD-BACKEND.md), anchored to `reference_market_price`. The farmer payout price and buyer price are both published; the spread net of chain costs is our take.
-- Pricing policy: buyer price for Grade A targets **parity to −5% vs their current vendor's landed price** (we win on grading, freshness, reliability, traceability — not on being cheapest; see 04-GTM-SALES-MARKETING.md §3). Grade B priced 12–18% below Grade A — sized for caterers/cloud kitchens where cosmetic perfection doesn't matter.
+- Pricing policy: buyer price for Grade A targets **parity to −5% vs their current vendor's landed price** (we win on grading, freshness, reliability, traceability — not on being cheapest; see 04-GTM-SALES-MARKETING.md §1). Grade B priced 12–18% below Grade A — sized for caterers/cloud kitchens where cosmetic perfection doesn't matter.
 - The farmer-share floor binds here: `farmer_payout / buyer_produce_price ≥ 0.60` is enforced as a check in the ops price-setting screen (09-PRD-OPS-DASHBOARD.md) and reported weekly.
 
 ### Stream 2 — Handling & delivery fee
@@ -89,20 +89,20 @@ KisanSetu transacts as a **principal-lite reseller**: we buy from the farmer at 
 | Payments + messaging | −15 | 0.8% | UPI payout cost, SMS/WhatsApp |
 | **Contribution per order** | **≈ 260** | **≈ 13% of billing** | before fixed costs |
 
-Conservative planning case (the number used everywhere else in the Brain): **₹200 contribution/order (~10% of GMV)** — i.e., the base case with a thinner route (7–8 drops, 3PL ≈ ₹340/drop). The headline "₹2,000 AOV, ~10% blended take, ~₹200/order" from the shared brief is this row.
+Conservative planning case (the number used everywhere else in the Brain): **₹200 contribution/order (~10% of GMV)** — i.e., the base case with a thinner route (8–9 drops, 3PL ≈ ₹340/drop). The headline "₹2,000 AOV, ~10% blended take, ~₹200/order" from the shared brief is this row.
 
 ### 4.2 What moves the number (sensitivity)
 
 | Lever | Bear | Base | Bull | Contribution/order |
 |---|---|---|---|---|
-| Drops per route (density) | 5 | 10 | 15 | ₹90 / ₹260 / ₹320 |
+| Drops per route (density) | 5 | 10 | 15 | −₹20 / ₹260 / ₹320 |
 | AOV (buyer mix) | ₹1,200 (small resto) | ₹2,000 | ₹4,500 (hotel/caterer) | ₹60 / ₹260 / ₹700+ |
 | Wastage | 5% | 2.5% | 1.5% | −₹50 / base / +₹20 |
 | Farmer share | 60% | 65% | 68% | +₹100 / base / −₹60 |
 
 Three rules fall out of this table and are binding on GTM and ops:
 
-1. **Route density is the whole game.** Below ~6 drops/route, orders are contribution-negative. GTM must sell in **geographic clusters** (04-GTM-SALES-MARKETING.md §4 targets one food-street/market area at a time), and ops must batch delivery windows (14-OPS-PLAYBOOK.md).
+1. **Route density is the whole game.** Below ~6 drops/route, orders are contribution-negative. GTM must sell in **geographic clusters** (04-GTM-SALES-MARKETING.md §3 targets one food-street/market area at a time), and ops must batch delivery windows (14-OPS-PLAYBOOK.md).
 2. **AOV mix matters more than take rate.** One hotel at ₹4,500 AOV ≈ 3 small restaurants in contribution but 1 drop instead of 3. Sales tiering in 04 reflects this.
 3. **Never buy margin from the farmer.** Improving contribution by cutting farmer share below 60% is prohibited (Rule 5); improve density and wastage instead.
 
@@ -139,7 +139,7 @@ Every cell below gets filled during Phase-0 (13-LAUNCH-PLAN.md; interview script
 
 Instant UPI payout to farmers + any credit to buyers = a float we finance.
 
-- Policy at launch: buyers pay **on delivery (UPI/link)** for their first 4 orders; vetted buyers then get **max 7-day credit**, per-buyer exposure cap **₹25,000**, auto-suspend at 10 days overdue (enforced in backend, 06-PRD-BACKEND.md).
+- Policy at launch: buyers pay **on delivery (UPI/link; buyer-side online collection, whenever it starts, is Razorpay — the fixed India PSP, see §9)** for their first 4 orders; vetted buyers then get **max 7-day credit**, per-buyer exposure cap **₹25,000**, auto-suspend at 10 days overdue (enforced in backend, 06-PRD-BACKEND.md).
 - Float math at city break-even scale (§7): ₹30L GMV/month with ~50% of GMV on 7-day terms ≈ **₹3.5–5L standing receivables float**, financed from bootstrap capital (17-FUNDRAISE-FINANCE.md §5 reserves this) and later from seed + Stream-5 invoice financing.
 - HoReCa habitually demands 15–30 day credit. We do **not** match it from our books; we hold the line at 7 days and route longer terms to the financing partner (Stream 5). Losing a buyer over credit terms is acceptable; becoming an unlicensed lender is not.
 
@@ -191,7 +191,7 @@ The P&L template of §4 is parameterized, not Surat-shaped. To price any new reg
 | Parameter | Surat instance | Abstraction in product |
 |---|---|---|
 | Currency | INR | `currency` field on all money columns |
-| Instant payout rail | UPI (Razorpay) | payment-provider interface (06-PRD-BACKEND.md) |
+| Instant payout rail | UPI via Razorpay — **fixed PSP** (founder, 14 Jul 2026) | payment-provider interface (06-PRD-BACKEND.md §6.8; `21-AI-EXECUTION-PLAYBOOK.md` §10) |
 | Reference price source | mandi (APMC) daily prices | `reference_market_price` in `price_feed` — never named "mandi" in schema |
 | Aggregator partner | FPO | `fpos` table = generic producer-organization entity (co-ops in Kenya/Vietnam, ejidos-adjacent structures in LATAM) |
 | Tax regime | GST | per-region tax abstraction |

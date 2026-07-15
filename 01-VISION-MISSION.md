@@ -16,7 +16,7 @@ The gap KisanSetu closes is universal: wherever smallholder farming meets urban 
 
 Every word is load-bearing:
 - **Bridge** — "setu" means bridge. We connect; we don't own the ends (rule 4, ASSET-LIGHT).
-- **Smallholder farmers** — ~86% of India's ~146–150M holdings are under 2 hectares; they are the supply side, reached through FPO partners, never bypassed.
+- **Smallholder farmers** — ~86% of India's ~146–150M holdings are under 2 hectares (Agriculture Census 2015–16; [02-MARKET-RESEARCH.md](02-MARKET-RESEARCH.md)); they are the supply side, reached through FPO partners, never bypassed.
 - **Food businesses** — B2B, sales-led (rule 6). HoReCa first, then modern retail and processors.
 - **Asset-light, tech-led** — partner FPO hubs + 3PL cold chain; our contribution is demand, software, grading standards, and data.
 - **48 hours / instantly / ≥60% / traceable** — the measurable promises. The first and third are THE TWO METRICS (rule 5); they are published, not just tracked.

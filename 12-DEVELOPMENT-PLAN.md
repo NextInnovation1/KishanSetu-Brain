@@ -2,13 +2,13 @@
 
 **What this is:** how development WILL run once un-paused. Development is currently **PAUSED** (Golden Rule #3, `00-GOLDEN-RULES.md`): no code until the founder approves the PRD corpus. This document is the operating manual for the build phase that follows approval.
 **Owner:** Alpesh (founder = solo dev + PM for the MVP) · **Status:** Draft for founder approval
-**Reads with:** `06-PRD-BACKEND.md`, `07-PRD-MOBILE-APPS.md`, `08-PRD-WEBSITE.md`, `09-PRD-OPS-DASHBOARD.md`, `10-DESIGN-SYSTEM.md`, `11-ARCHITECTURE.md`, `13-LAUNCH-PLAN.md`, `15-TASKS-BACKLOG.md`, `19-PRD-CMS-ANALYTICS.md`.
+**Reads with:** `06-PRD-BACKEND.md`, `07-PRD-MOBILE-APPS.md`, `08-PRD-WEBSITE.md`, `09-PRD-OPS-DASHBOARD.md`, `10-DESIGN-SYSTEM.md`, `11-ARCHITECTURE.md`, `13-LAUNCH-PLAN.md`, `15-TASKS-BACKLOG.md`, `19-PRD-CMS-ANALYTICS.md`, `21-AI-EXECUTION-PLAYBOOK.md` (AI-tooling companion to this plan).
 
 ---
 
 ## 1. Un-pause preconditions (all must be true before week 1)
 
-1. Founder has approved PRDs 05–11 + `19-PRD-CMS-ANALYTICS.md` and this plan (sign-off recorded in `README.md` change log).
+1. Founder has approved PRDs 05–11 + `19-PRD-CMS-ANALYTICS.md` and this plan (dated written "APPROVED" in each document header, per `00-GOLDEN-RULES.md` Rule 3 and gate T1.7 in `15-TASKS-BACKLOG.md`).
 2. Phase 0 gates met (`13-LAUNCH-PLAN.md`): ≥3/10 buyer interviews positive (else FPO-SaaS pivot re-plans everything), 1 FPO pilot MoU signed, 2 beachhead crops frozen, name/trademark check done.
 3. **Existing scaffolds are reviewed, not trusted:** code in `KisanSetu-Backend/`, `-Website/`, `-Android/`, `-iOS/` predates these PRDs. Week 1 includes a gap review of each scaffold against its PRD; keep what conforms, rewrite what doesn't. The PRDs win every conflict.
 4. Real unit economics from Phase 0 replace illustrative numbers anywhere they appear in UI copy (website receipt bars, price examples).
@@ -40,7 +40,7 @@ Rules:
 1. A unit is **one entry** in the tracker; it cannot be closed with only one platform done. There is no such thing as "Android shipped, iOS next sprint."
 2. Same branch name in both app repos: `feat/<unit-slug>` in `KisanSetu-Android` and `KisanSetu-iOS`; PRs cross-link.
 3. Build the *harder* platform's screen first when uncertain (usually the one the founder knows less well) — porting down is easier than discovering a constraint late.
-4. Strings are added to the shared string table spec (`07-PRD-MOBILE-APPS.md` appendix) first, then to `strings.xml` / `Localizable.strings` with **identical keys**.
+4. Strings are added to the master string table (`strings/master.csv`, `07-PRD-MOBILE-APPS.md` §2) first; `strings.xml` / `Localizable.strings` are **generated** from it with identical keys — never hand-edited.
 5. Every unit's PRs attach a **side-by-side screenshot grid**: (Android Pixel 6a, iPhone SE 3) × (light, dark) × each screen state. Generated from emulator/simulator, pasted in the PR description.
 
 **Parity checklist** (pasted into both PRs; every box checked or the unit isn't done):
@@ -72,7 +72,7 @@ Rules:
 | Repo | Contents | Deploy target |
 |---|---|---|
 | `KisanSetu-Brain` | This corpus — PRDs, design board, decisions. | — (docs) |
-| `KisanSetu-Backend` | Node 20 + Express API, SQL migrations, seed, smoke tests, **and the KisanSetu Console** (ops + CMS/analytics modules — one static vanilla-JS app served by the same Express instance at `/ops`) | API host |
+| `KisanSetu-Backend` | TypeScript + Express API on Node 20 (Drizzle ORM `v1.0.0-rc.4` + Postgres 16, `20-CODE-ARCHITECTURE.md` §1), Drizzle migrations, seed, smoke tests, **and the KisanSetu Console** (ops + CMS/analytics modules — one static vanilla-JS app served by the same Express instance at `/ops`) | API host |
 | `KisanSetu-Website` | Marketing site, vanilla JS, no build step | Static hosting |
 | `KisanSetu-Android` | Kotlin + Jetpack Compose + Material3 | Play Console |
 | `KisanSetu-iOS` | Swift 5 + SwiftUI, XcodeGen (`project.yml` in repo, `.xcodeproj` gitignored) | App Store Connect |
@@ -83,7 +83,7 @@ Conventions (all repos):
 
 - **Trunk-based:** `main` is protected and always deployable/buildable; short-lived branches `feat/<slug>`, `fix/<slug>`, `chore/<slug>`; merge via PR even solo (the PR is where checklists, screenshots and DoD live — it's the audit trail, not bureaucracy). Squash-merge; branch deleted after.
 - **Conventional commits:** `feat: farmer home price cards`, `fix(orders): compute totals from price_feed date of delivery`. Scope names match PRD section slugs where possible.
-- **Versioning:** apps use marketing version `0.MINOR.PATCH` — **Android `versionName` and iOS `MARKETING_VERSION` always identical** (parity extends to version numbers); build numbers auto-increment. Backend tags `api-v0.x.y` on deploy; migrations are append-only numbered SQL (`migrations/00N_*.sql`), never edited after merge.
+- **Versioning:** apps use marketing version `0.MINOR.PATCH` — **Android `versionName` and iOS `MARKETING_VERSION` always identical** (parity extends to version numbers); build numbers auto-increment. Backend tags `api-v0.x.y` on deploy; migrations are drizzle-kit-generated SQL (`drizzle-kit generate` → `src/db/migrations/`, `20-CODE-ARCHITECTURE.md` §1.2), append-only, never edited after merge.
 - **CI (GitHub Actions), minimum viable:** Backend — lint + migrations on fresh Postgres + smoke suite. Android — `assembleDebug` + unit tests. iOS — `xcodegen && xcodebuild build` on macOS runner. Website — HTML validation, i18n key-completeness check (every `data-i18n` key exists in every language), JS-size gate (<100KB), hardcoded-region grep.
 - **Secrets:** `.env` gitignored, `.env.example` committed and current; production secrets live only on the host. Dev OTP `123456` via `DEV_OTP` env, absent in staging/prod builds (enforced: server refuses to boot with `DEV_OTP` set when `NODE_ENV=production`).
 
@@ -98,6 +98,8 @@ Conventions (all repos):
 | WhatsApp | logged to console | Meta sandbox number | approved WABA number |
 | Data | seed script (2 crops, 5 farmers, 3 buyers, 7 days of price_feed) | seed + QA data, reset weekly | real; no test users |
 | Website | `python3 -m http.server` / any static server | preview deploys per PR (static host feature) | production domain |
+
+**Payments provider — FIXED (founder, 14 Jul 2026): Razorpay.** Farmer UPI payouts and buyer-side online collection (when it starts) go through Razorpay only — no other PSP is evaluated or integrated. The `payments/provider.ts` interface stays (Golden Rule #2: Razorpay is the India instance). Canonical decision: `06-PRD-BACKEND.md` §6.8; engineering rules: `21-AI-EXECUTION-PLAYBOOK.md` §10.
 
 Staging = **one cheap VM (≤₹1,000/mo) running docker-compose (api + postgres + caddy)** — exists from week 3 (first moment two clients need a shared API). Production infrastructure is **not** provisioned until the pilot needs real buyers on it (deployment posture: don't pay for cloud before customers — `11-ARCHITECTURE.md`); the staging VM is promoted or cloned in week 9. App builds are pointed at environments via build flavors (Android `dev/staging/prod` product flavors; iOS xcconfig per configuration) — never a hand-edited base URL.
 
@@ -148,7 +150,7 @@ Assumes: founder full-time (sales in mornings, code after), contract designer pa
 | Week | Milestone (exit criteria) |
 |---|---|
 | **W1** | Scaffold gap-review vs PRDs done; repos + CI skeletons up; **all third-party applications filed** (Play Console, Apple Developer, Razorpay KYC, WhatsApp Business verification, SMS DLT registration); **website v1 live on domain** with `/leads` stub captured to DB; backend: auth + users + migrations green |
-| **W2** | Backend: produce, price_feed, listings lifecycle done with smoke tests 1–2 green; ops dashboard wireframes (T1.5) approved |
+| **W2** | Backend: produce, price_feed, listings lifecycle done with smoke tests 1–2 green; ops dashboard wireframes (T1.6) approved |
 | **W3** | Backend: orders + allocations + payments stub + leads + `app_events` storage (S4 amendment — events stored, not just logged, so C-4 has history from the first app build; `19-PRD-CMS-ANALYTICS.md`); **API contract frozen** (breaking changes now require PRD amendment); smoke suite 1–5 green; staging VM live |
 | **W4** | **Ops dashboard usable end-to-end:** daily price setting, grading queue, allocation, delivery status, payout trigger — a full fake order-day run-through by founder on staging. *Gate A: the business could run on ops + WhatsApp alone from this point* |
 | **W5** | Mobile units: app shells, design-system components (4 core components both platforms), OTP login + role pick shipped to internal tracks (first Play internal + TestFlight builds); crash reporting live; Console CMS/Analytics module v1 usable on staging (C-1 overview, C-2 farmers, C-3 buyers, C-4 basics per `19-PRD-CMS-ANALYTICS.md`) |
@@ -156,7 +158,7 @@ Assumes: founder full-time (sales in mornings, code after), contract designer pa
 | **W7** | Farmer flow complete: My Listings (chips) + Payments; **field test #1 with 3 farmers at hub** → top-3 fixes; buyer Catalog + Cart underway |
 | **W8** | Buyer flow complete: Catalog, Cart, Orders timeline, Order Detail with trace line; buyer field test with 2 kitchens; TestFlight external submitted; **code freeze for integrations** |
 | **W9** | Integrations: Razorpay payout (test→live pending KYC), real SMS OTP, FCM/APNs pushes, WhatsApp order confirmations + price broadcast; website `/leads` → prod API + analytics verified; prod environment promoted; farmer field test #2 |
-| **W10** | Hardening + **pilot dry run (T6.7): 5 orders end-to-end** — real crates, real hub, staged buyers, full manual fallback rehearsed; P0/P1 zero; release candidates tagged. *Gate B: go/no-go for pilot week 1 (`13-LAUNCH-PLAN.md`)* |
+| **W10** | Hardening + **pilot dry-run week (T6.7): all 5 drill days per `13-LAUNCH-PLAN.md` §3, incl. the full 5-order day** — real crates, real hub, staged buyers, full manual fallback rehearsed; P0/P1 zero; release candidates tagged. *Gate B: go/no-go for pilot week 1 (`13-LAUNCH-PLAN.md`)* |
 
 If W8 slips >1 week: cut scope, not parity — drop WhatsApp broadcast and invoice PDFs from MVP before ever shipping one platform ahead of the other.
 
@@ -179,7 +181,7 @@ Units completed vs planned · parity defects caught in review (target: caught in
 
 | # | Question | Decision taken here / owner | Deadline |
 |---|---|---|---|
-| Q1 | Ops dashboard: plain JS vs React (T3.5 left it open) | **Decided: plain vanilla JS** — same skills as website, no build step, ~10 screens of tables and forms doesn't justify a framework; revisit only if it exceeds ~3k lines | — |
+| Q1 | Ops dashboard: plain JS vs React (now founder-fixed as vanilla JS in `09-PRD-OPS-DASHBOARD.md` NON-GOALS) | **Decided: plain vanilla JS** — same skills as website, no build step, ~10 screens of tables and forms doesn't justify a framework; revisit only if it exceeds ~3k lines | — |
 | Q2 | Crash reporting: Crashlytics vs Sentry | Pick W5; leaning Sentry (works identically on both platforms + backend, self-hostable later). Owner: Alpesh | W5 |
 | Q3 | GU strings at MVP or post-pilot | **Decided: keys + machine-draft GU shipped behind review flag; human-reviewed GU before pilot week 1** (Surat farmers are Gujarati-first). Owner: Alpesh + FPO staff reviewer | W9 |
 | Q4 | macOS CI runner cost for iOS | GitHub-hosted macOS minutes for MVP; local `xcodebuild` acceptable fallback for a solo dev. Owner: Alpesh | W1 |

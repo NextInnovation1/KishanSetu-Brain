@@ -1,6 +1,6 @@
 # 17 — FUNDRAISE & FINANCE
 
-_Doc owner: Alpesh (founder). Status: Draft v1.0 for founder approval. Last updated: 2026-07-12._
+_Doc owner: Alpesh (founder). Status: Draft v1.0 for founder approval. Last updated: 2026-07-14._
 _Reads with: 02-MARKET-RESEARCH.md (the market story investors buy), 03-BUSINESS-MODEL.md (unit economics & break-even the raise is priced on), 04-GTM-SALES-MARKETING.md (the sales engine that produces the metrics), 13-LAUNCH-PLAN.md (pilot gates = raise gates), 16-RISKS-MITIGATIONS.md (the risk answers for diligence), 18-LEGAL-COMPLIANCE.md (corporate hygiene the data room proves)._
 
 ---
@@ -15,7 +15,7 @@ Define how KisanSetu is financed from today (planning stage, zero revenue) throu
 
 | Stage | When | Amount | Source | Buys |
 |---|---|---|---|---|
-| **Bootstrap** | Now → M6 | ₹18–25L total (₹16–22L opex + ₹3–5L working-capital float) | Founder savings + friends & family (simple SAFE-style note or plain equity at nominal valuation; keep it clean — no complex instruments pre-seed) | Phase-0 validation → MVP build → pilot → the metrics in §3 |
+| **Bootstrap** | Now → M6 | ₹19–27L total (₹16–22L opex + ₹3–5L working-capital float) | Founder savings + friends & family (simple SAFE-style note or plain equity at nominal valuation; keep it clean — no complex instruments pre-seed) | Phase-0 validation → MVP build → pilot → the metrics in §3 |
 | **Seed** | M6–M9 (only after §3 gates are green) | ₹3.5–5 Cr (~$420–600k) | Agritech-active seed funds + Gujarat angels (§4) | 18 months: Surat to city-level EBITDA-positive, city #2 launch, 2–3 engineers post-PRD approval, working capital |
 | **Series A** | ~M24+ | Sized later | Raised on multi-city replication + FPO-SaaS MRR | Gujarat → tier-2 India; country #2 evaluation (04 §8.2) |
 
@@ -90,7 +90,7 @@ Monthly run-rate once fully staffed (hires land M2–M3; M1 is lighter):
 | Contingency (~10%) | 20,000 | 35,000 | |
 | **Total** | **≈ ₹2.3L** | **≈ ₹3.9L** | **the ₹2.5–4L/mo envelope** |
 
-Cumulative 6-month cash need: **₹16–22L opex** (M1 runs lean pre-hires) **+ ₹3–5L buyer-credit working-capital float** (03 §6) = **₹18–25L bootstrap requirement** (§2). Burn discipline rules: (a) no line grows without a metric justifying it in the weekly review; (b) 3PL spend must trend from subsidy to pass-through as density rises; (c) if bootstrap cash dips below 2 months of lean burn before gates are green, cut to lean immediately and extend Phase timelines rather than raising desperate.
+Cumulative 6-month cash need: **₹16–22L opex** (M1 runs lean pre-hires) **+ ₹3–5L buyer-credit working-capital float** (03 §6) = **₹19–27L bootstrap requirement** (§2). Burn discipline rules: (a) no line grows without a metric justifying it in the weekly review; (b) 3PL spend must trend from subsidy to pass-through as density rises; (c) if bootstrap cash dips below 2 months of lean burn before gates are green, cut to lean immediately and extend Phase timelines rather than raising desperate.
 
 ## 6. Use of seed funds (18-month plan, ₹3.5–5 Cr)
 
@@ -122,7 +122,7 @@ Rule: **nothing in the data room may contradict the published website numbers** 
 
 - Separate company bank account before the first rupee of spend; zero founder-personal commingling.
 - Monthly close by the 7th: P&L, cash, receivables aging, burn vs §5 budget — reviewed in the same weekly ritual as ops metrics (14-OPS-PLAYBOOK.md).
-- Every farmer payout via the payments table with UTR (06-PRD-BACKEND.md) — the audit trail is also the marketing asset (payout slips) and the impact evidence.
+- Every farmer payout via the payments table with UTR (06-PRD-BACKEND.md §6.8 — manual UTR entry at MVP, then **Razorpay UPI, the fixed India PSP**; founder decision 14 Jul 2026, engineering anchors in 21-AI-EXECUTION-PLAYBOOK.md §10) — the audit trail is also the marketing asset (payout slips) and the impact evidence.
 - CA on retainer from incorporation; GST filed on time, always — a single compliance lapse is disproportionately expensive in diligence.
 - Monthly investor/mentor update email from M1 (even pre-raise): 5 numbers (GMV, repeat rate, fulfilment, farmer share, cash months left) + one paragraph of truth including what went wrong. This builds the warm pipeline §4 depends on.
 
@@ -135,4 +135,4 @@ Rule: **nothing in the data room may contradict the published website numbers** 
 5. **ESOP pool size** (10% default vs 12% if senior sales hire needs it) — Alpesh, at seed term-sheet stage.
 6. **Trademark outcome for "KisanSetu"** may force a rename before the raise — Alpesh, Phase-0 week 2 (T0.5); budget line sits in Legal (§5).
 
-**Decisions taken in this doc that the founder should ratify:** bootstrap ceiling ₹25L including float; seed band ₹3.5–5 Cr at 15–20% dilution; metric gates in §3.2 as hard preconditions to opening the round; the "what we say no to" list §3.3; monthly-update habit from M1.
+**Decisions taken in this doc that the founder should ratify:** bootstrap ceiling ₹27L including float; seed band ₹3.5–5 Cr at 15–20% dilution; metric gates in §3.2 as hard preconditions to opening the round; the "what we say no to" list §3.3; monthly-update habit from M1.

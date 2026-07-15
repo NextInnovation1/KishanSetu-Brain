@@ -10,7 +10,7 @@ _KisanSetu Brain · July 2026 · Owner: Alpesh (founder), executed with a retain
 
 ## 1. Entity: Private Limited incorporation
 - **Form:** Private Limited Company under Companies Act 2013 via SPICe+ (MCA). Name: "KisanSetu" pending T0.5 trademark clearance — reserve two backups in the same SPICe+ Part A cycle. Registered office: Surat.
-- **Structure at incorporation:** founder ~99%+, nominee shareholder for the second-member requirement; authorized capital ₹1,00,000 (raise later as needed); founder as sole director initially (add a second director within statutory limits — a Pvt Ltd needs **two directors**; use a family member with DIN as non-executive until a co-founder/senior hire exists).
+- **Structure at incorporation:** founder ~99%+, nominee shareholder for the second-member requirement; authorized capital ₹1,00,000 (raise later as needed); founder plus a second director **from incorporation** — a Pvt Ltd needs **two directors** minimum and SPICe+ will not accept fewer; use a family member with DIN as non-executive until a co-founder/senior hire exists.
 - **Deliverables bundle (CA-executed, ~₹15–25k all-in, 10–15 working days):** DSC, DIN, CIN, PAN, TAN, bank current account, share certificates, statutory registers, auditor appointment (within 30 days of incorporation).
 - **Object clause:** trading and marketing of agricultural produce; supply-chain, logistics-arrangement and technology services; software licensing (covers the future FPO-SaaS line — write it in now, avoid amending later).
 - **Also at incorporation:** Udyam (MSME) registration (free, unlocks delayed-payment protections against buyers); Gujarat Shops & Establishments registration for the office; Gujarat professional tax enrollment (company + employees).
@@ -23,7 +23,7 @@ _KisanSetu Brain · July 2026 · Owner: Alpesh (founder), executed with a retain
 - The **FPO** should hold its own FSSAI registration for hub aggregation activity — made a warranty in the MoU (§6).
 
 ## 3. GST registration & structure
-- **Register from day 1** (voluntary if below threshold): the platform's service revenue (delivery/handling fee, later SaaS and subscriptions) is taxable, and buyers will demand GST invoices. GSTIN in Gujarat; add places of business as hubs/cities are added (E1/E2 in [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md)).
+- **Register from day 1** (voluntary if below threshold): the platform's service revenue (delivery/handling fee, later SaaS and subscriptions) is taxable, and buyers will demand GST invoices. GSTIN in Gujarat; add places of business as Gujarat hubs/cities are added (E1 in [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md)); GST registration is state-wise — E2's first non-Gujarat metro needs its own state GSTIN.
 - **Tax treatment (to be confirmed in writing by the CA at T0.8 — this is the working position):**
   - **Fresh, unprocessed vegetables & fruits are GST-exempt (0%/nil-rated)** — the produce line on the buyer document is a **bill of supply**, not a tax invoice.
   - **Delivery/handling fee to the buyer: taxable at 18%** (support/logistics-arrangement service) — separate tax-invoice line. This is why [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §8.5 and T2.14 specify a combined document: exempt goods lines + taxable service line.
@@ -34,7 +34,7 @@ _KisanSetu Brain · July 2026 · Owner: Alpesh (founder), executed with a retain
 - Income-tax notes: TDS on salaries and contractor payments (194C for 3PL, 194J for professionals) from day 1; 194Q (goods purchases > ₹50L/seller/yr) is a scale-up item, flagged in the calendar.
 
 ## 4. Invoices & records (what the software must produce)
-Per delivery, one consolidated buyer document ([06-PRD-BACKEND.md](06-PRD-BACKEND.md) `payments`, T2.14): supplier details + GSTIN + FSSAI no., buyer details + GSTIN, bill-of-supply lines for produce (crop, grade, kg, rate — exempt), tax-invoice line for delivery/handling (18% CGST+SGST), invoice number series per FY, and the traceability reference (order ID → allocations). Farmer side: the payout slip ([14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §7.3) is our purchase record — slip archive + bank UTR trail is the audit spine. Retention: 8 years (GST) — the `legal/` folder and payout-slip files follow this.
+Per delivery, one consolidated buyer document ([06-PRD-BACKEND.md](06-PRD-BACKEND.md) `payments`, T2.14): supplier details + GSTIN + FSSAI no., buyer details + GSTIN, bill-of-supply lines for produce (crop, grade, kg, rate — exempt), tax-invoice line for delivery/handling (18% CGST+SGST), invoice number series per FY, and the traceability reference (order ID → allocations). Farmer side: the payout slip ([14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §7.3) is our purchase record — slip archive + bank UTR trail is the audit spine. Retention: 8 years (Companies Act books-of-account period; comfortably covers GST's 72-month requirement) — the `legal/` folder and payout-slip files follow this.
 
 ## 5. APMC / mandi-fee rules — direct procurement in Gujarat
 **The question:** can KisanSetu buy produce directly from farmers at an FPO hub, outside the APMC market yard, without an APMC license or market cess?
@@ -63,7 +63,7 @@ One page of recitals + these clauses (advocate drafts from this outline; Gujarat
 2. Ordering & cutoff (18:00 D-1), confirmation and partial-fill rules ([14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §4.2 — buyer acknowledges proactive-shortfall protocol).
 3. Pricing: daily catalog prices per grade; prices fixed at confirmation; delivery/handling fee as separate taxable line.
 4. Quality & claims: grades defined by the photo chart (mini-card annexed); **claims at door or within 2 hours with photo**; resolution by credit note/replacement; no returns after window (perishables).
-5. Payment terms: pay-on-delivery/prepaid first 2 weeks, then net-7 cap at pilot; late payment → supply suspension (stated plainly — it is the enforcement mechanism).
+5. Payment terms: pay-on-delivery/prepaid for the buyer's first 4 orders (mirrors the backend credit rule, [06-PRD-BACKEND.md](06-PRD-BACKEND.md)), then net-7 cap at pilot; late payment → supply suspension (stated plainly — it is the enforcement mechanism).
 6. Crates: KisanSetu property; rotation at each delivery; ₹350/crate charged after 3 deliveries unreturned.
 7. Freshness SLA: <48h harvest→door **promise** with the traceability record as evidence; SLA miss remedy = delivery-fee waiver on the affected order (money-backed but capped — do not promise produce refunds for an on-time-but-late-harvest edge case; the timestamps define truth).
 8. Data & privacy: order data used for operations and aggregate analytics; DPDP-compliant notice reference (§10).
@@ -105,7 +105,7 @@ KisanSetu is a **data fiduciary** for farmers, buyers, and leads (phone numbers 
 | Monthly | GSTR-1/3B; professional tax; payout-slip vs bank reconciliation sign-off |
 | Quarterly | TDS returns; FSSAI turnover-threshold check (§2); DPDP request log review |
 | Annually | ROC filings (AOC-4, MGT-7), audit, scale re-verification, FSSAI renewal, insurance renewal, MoU review |
-| Per expansion | New place of business in GST; state APMC memo; hub scale stamping; local licenses |
+| Per expansion | New place of business in GST (new state ⇒ separate state GSTIN); state APMC memo; hub scale stamping; local licenses |
 
 ---
 
@@ -119,7 +119,7 @@ The product is global-first ([00-GOLDEN-RULES.md](00-GOLDEN-RULES.md) Rule 2); t
 | 2 | **Food safety licensing** | Which authority licenses a fresh-produce trader/distributor; hub registration; hygiene standards; per-crop rules | FSSAI (§2) |
 | 3 | **Tax** | VAT/GST treatment of fresh produce (exempt? zero-rated? standard?); service-fee taxation; invoice/e-invoice formats; withholding on farmer payments; the principal-vs-agent question re-decided under local law | GST (§3–4) |
 | 4 | Agricultural market regulation | The local APMC-equivalent: is direct farm-gate/co-op procurement legal, licensed, or fee-bearing; state/province variation | APMC Gujarat (§5) |
-| 5 | Payments & instant rail | PSP licensing for payouts; the UPI-equivalent (PIX, PromptPay, M-Pesa, GCash…) and its business-payout rules; KYC on farmer recipients; cash-economy fallback rules | Razorpay/UPI (§3, [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §7) |
+| 5 | Payments & instant rail | PSP licensing for payouts; the UPI-equivalent (PIX, PromptPay, M-Pesa, GCash…) and its business-payout rules; KYC on farmer recipients; cash-economy fallback rules | Razorpay/UPI — **fixed** India PSP, founder 14 Jul 2026 ([21-AI-EXECUTION-PLAYBOOK.md](21-AI-EXECUTION-PLAYBOOK.md) §10) (§6.4, [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) §7) |
 | 6 | **Data protection & residency** | Local privacy law (consent model, breach duties); **data-residency mandates** — whether user/payment data must be stored in-country (drives per-region infrastructure in [11-ARCHITECTURE.md](11-ARCHITECTURE.md)); cross-border transfer rules | DPDP (§10) |
 | 7 | Producer-organization law | Legal form of the FPO-equivalent (co-op, association); can it aggregate & sell members' produce; MoU enforceability against it | FPO MoU (§6) |
 | 8 | Contracts & commercial law | B2B agreement enforceability, late-payment law (our supply-suspension lever), local-language requirements for consumer-adjacent terms | Buyer agreement (§7) |

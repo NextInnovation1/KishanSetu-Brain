@@ -20,14 +20,14 @@ This is the standard operating procedure for running one KisanSetu hub day. It i
 
 | Time | Action | SOP |
 |---|---|---|
-| 18:00 (D-1) | Set tomorrow's prices; publish price feed + WhatsApp broadcasts | §5 |
+| 18:00 (D-1) | Set tomorrow's prices; publish price feed (WhatsApp broadcasts follow at 19:00, §5) | §5 |
 | 18:00 (D-1) | Order cutoff; supply check → orders **confirmed with provisional quantities** communicated to buyers by 19:30 (no binding allocation yet) | §4.1–4.2 |
 | 19:00 (D-1) | Harvest instructions to FPO/farmers (what to harvest, how many kg — capped at demand +15% per §4.6; harvest early morning not previous afternoon) | §4.3 |
 | 05:00–07:30 | Farmer produce arrives at hub: intake → weigh → grade → payout → crate/QR → staging | §2–3, §7 |
 | 06:30 | Price sanity check vs live reference data; correct only if reference moved >10% | §5.4 |
 | 06:30–07:15 | **Binding allocation run**: graded listings → order_items → order_allocations; crate serials linked to allocations at morning staging; buyers told of any change from provisional | §4.4–4.5 |
 | 07:30 | 3PL vehicle loads; dispatch scan (`dispatch_ts`) | §2.5 |
-| 06:00–10:00 | Deliveries (canonical window, [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md) §2.1; target majority of drops before 09:00); `delivered_ts` per drop | §8 |
+| 06:00–10:00 | Deliveries (canonical buyer-facing window, [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md) §2.1; first drop follows the 07:30 dispatch; target majority of drops before 09:00); `delivered_ts` per drop | §8 |
 | 10:00 | Exceptions log: disputes, shortfalls, fallback events entered in dashboard | §8–9 |
 | 18:30 | 15-min stand-up: founder + Ops Lead (week 1–2 daily, then Mon/Thu) | — |
 | Monday 18:00 | Weekly metrics ritual (60 min) | §10 |
@@ -44,7 +44,7 @@ The hub is the FPO's existing collection point. KisanSetu adds: a stamped scale,
 3. Visual pre-check: obviously spoiled/damaged produce set aside immediately (see 2.3 rejection rules) — reject at intake, not at grading, so the farmer sees why.
 
 ### 2.2 Station 2 — Weigh
-1. Weigh on the **Legal-Metrology-stamped platform scale** (verification sticker current — [18-LEGAL-COMPLIANCE.md](18-LEGAL-COMPLIANCE.md) §5). Tare the crate (all crates same model, tare weight printed on the chart).
+1. Weigh on the **Legal-Metrology-stamped platform scale** (verification sticker current — [18-LEGAL-COMPLIANCE.md](18-LEGAL-COMPLIANCE.md) §11). Tare the crate (all crates same model, tare weight printed on the chart).
 2. Record `graded_qty` per grade after grading (2.3); the intake gross weight goes on the intake form.
 3. Weight discrepancy rule: platform pays on hub-scale weight, full stop. This is stated at farmer onboarding and printed on the payout slip. Farmer may watch the weighing — the scale display faces the farmer.
 
@@ -53,7 +53,7 @@ The hub is the FPO's existing collection point. KisanSetu adds: a stamped scale,
    - Illustrative (tomato, to be replaced by the frozen crops' charts): **A** = 80–120 g, uniform red-ripe (stage 5–6), firm, zero cuts/cracks, ≤5% blemish surface; **B** = 60–150 g, stage 4–6, minor blemish ≤15%, slight softness OK; **REJECT** = cracked, rotting, pest-holed, or overripe-soft.
 2. Grader sorts into A / B / reject piles, weighs each, records `graded_qty` per grade on the listing (status `posted → graded`).
 3. Rejects: returned to the farmer on the spot (they keep it, sell it locally, or FPO composts). Reject % recorded. Reject rate >20% for a farmer twice in a week ⇒ Ops Lead conversation, retraining against the chart, before it becomes a dispute pattern (see [16-RISKS-MITIGATIONS.md](16-RISKS-MITIGATIONS.md) R6).
-4. **Grading photo (dispute evidence, required from day 1):** one photo per farmer-per-crop-per-day of the graded piles next to the laminated chart, taken on the hub Android device at Station 3 and **uploaded on the listing via the grade endpoint** ([06-PRD-BACKEND.md](06-PRD-BACKEND.md) — the grade call carries a minimal local-disk photo path in the MVP, not a full media pipeline). This photo is the evidence base for any downstream buyer dispute (§8.3) — 10 seconds now saves an hour of he-said-she-said later.
+4. **Grading photo (dispute evidence, required from day 1):** one photo per farmer-per-crop-per-day of the graded piles next to the laminated chart, taken on the hub Android device at Station 3 and **uploaded on the listing via the grade endpoint** ([06-PRD-BACKEND.md](06-PRD-BACKEND.md) — the grade call uploads one photo (multipart) stored to local disk via the `storage.ts` interface in the MVP, not a full media pipeline). This photo is the evidence base for any downstream buyer dispute (§8.3) — 10 seconds now saves an hour of he-said-she-said later.
    - **Manual fallback:** if the upload fails (no signal / app down), the photo is still taken and filed to a dated folder on the hub device named by listing ID (`YYYY-MM-DD/<listing_id>/`), and linked to the listing when connectivity returns. Grading never waits on the upload.
 
 ### 2.4 Station 4 — Crate + QR tag
@@ -68,7 +68,7 @@ The hub is the FPO's existing collection point. KisanSetu adds: a stamped scale,
 
 ### 2.6 Self-signup farmer linking (before a farmer can list or reach Station 1)
 A farmer signed up in person on a demo day is linked to this hub then and there (`hub_id` set by ops). But a farmer who **self-signs-up in the app without a `hub_id`** — word-of-mouth, a referral, anyone outside a demo day — must be vetted before they can list:
-1. Unlinked signups land in the **"Partners / unlinked farmers" worklist** in the ops dashboard ([09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md)).
+1. Unlinked signups land in an **unlinked-farmers worklist** under the ops dashboard's Partners screen ([09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md) §5.10 — this SOP requires the worklist and [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md) delegates ops-side hub linking here, but 09 does not yet specify it; 09 must be reconciled to this SOP).
 2. Ops **calls the farmer**, verifies they are a member of a partner FPO (or otherwise eligible per the partner MoU), captures village + registered VPA, and answers questions.
 3. Ops **sets the farmer's `hub_id`.** Only then does the farmer become a listable partner; until then the app shows "pending verification" and blocks listing.
 4. Farmers who cannot be verified (not an FPO member, outside serviceable villages) are marked declined with a reason — no silent limbo.
@@ -138,7 +138,7 @@ In practice this keeps us **asset-light**: the cap + grade-priority + same-day c
 
 **Setting the price** — **five** columns are entered into `price_feed` per produce per day ([06-PRD-BACKEND.md](06-PRD-BACKEND.md)): `reference_market_price`, `platform_price_a`, `platform_price_b`, `farmer_price_a`, `farmer_price_b`. Ops enters **all five** (09's Prices screen surfaces every column) — the `platform_price_*` values are what buyers pay, the `farmer_price_*` values are what farmers are paid at grading (§7). Rules:
 - `reference_market_price` = today's mandi modal price for the standard grade.
-- `platform_price_a` = reference × **1.10–1.20** (graded, traceable, delivered A-produce carries a premium — validated in Phase 0 interviews).
+- `platform_price_a` = reference × **1.10–1.20** (graded, traceable, delivered A-produce carries a premium — to be validated in Phase 0 interviews).
 - `platform_price_b` = reference × **0.90–1.00**.
 - `farmer_price_a` = `platform_price_a` × **0.65** (the 65% farmer-share target).
 - `farmer_price_b` = `platform_price_b` × **0.65**.
@@ -186,7 +186,7 @@ Driver late >20 min at hub ⇒ Ops Lead calls vendor dispatcher; >45 min ⇒ act
 
 ## 7. Farmer payout SOP (the moment that builds or breaks trust)
 1. **Trigger:** grading complete at intake (§2.3) — payout is initiated **before the truck leaves**, same visit. Farmer payout = Σ(graded kg × the day's farmer price for that grade). The payout rates are the `farmer_price_a` / `farmer_price_b` set in the day's `price_feed` (§5) — no per-hub recomputation; shown on the app home screen and the hub price board.
-2. **Rail:** instant UPI to the farmer's registered VPA via Razorpay payout API ([06-PRD-BACKEND.md](06-PRD-BACKEND.md) `payments`, type `farmer_payout`); UTR recorded.
+2. **Rail:** instant UPI to the farmer's registered VPA — **Razorpay is the fixed payment gateway** (founder decision, 14 Jul 2026: [06-PRD-BACKEND.md](06-PRD-BACKEND.md) §6.8, [21-AI-EXECUTION-PLAYBOOK.md](21-AI-EXECUTION-PLAYBOOK.md) §10). At MVP ops executes the UPI transfer manually and enters the UTR on the `payments` row (type `farmer_payout`, §6.8 M4); from Phase 2 the payout executes via the Razorpay payout API (M5). UTR recorded either way.
 3. **THE PRINTED SLIP** (thermal, 2 copies — farmer + hub file; this slip is also the marketing asset per [04-GTM-SALES-MARKETING.md](04-GTM-SALES-MARKETING.md)). Exact fields:
    - KisanSetu header + hub code + date/time
    - Farmer name, village, listing ID
@@ -205,7 +205,7 @@ Driver late >20 min at hub ⇒ Ops Lead calls vendor dispatcher; >45 min ⇒ act
 2. **Acceptance window:** quality claims accepted at the door or by WhatsApp photo within **2 hours** of delivery. Later claims logged but not credited (perishables — stated in the buyer agreement, [18-LEGAL-COMPLIANCE.md](18-LEGAL-COMPLIANCE.md) §7).
 3. **Dispute protocol:** buyer sends photo → Ops compares against the Station-3 grading photo of that allocation (this is why §2.3.4 exists) → resolution same day: credit note on next invoice for accepted claims, replacement next delivery if wanted. Disputed crate rate is metric M7. Systematic pattern by crop/farmer/route feeds the Friday quality review.
 4. **Rejection at door** (rare, drill-tested in dry run): driver returns crates to hub; produce re-graded; B-grade rescue channel (discounted same-day sale to caterers) or FPO compost. Loss booked to the `quality_loss` ledger line — we eat unclear cases in the pilot; farmer clawbacks only for proven at-intake misrepresentation, decided by Ops Lead + founder, never by the grader alone.
-5. **Invoice:** one consolidated invoice per buyer per delivery (produce as exempt-goods bill of supply + taxable delivery/handling line, per [18-LEGAL-COMPLIANCE.md](18-LEGAL-COMPLIANCE.md) §4); weekly statement for credit-terms buyers (net-7 max during pilot; new buyers prepay/pay-on-delivery first 2 weeks).
+5. **Invoice:** one consolidated invoice per buyer per delivery (produce as exempt-goods bill of supply + taxable delivery/handling line, per [18-LEGAL-COMPLIANCE.md](18-LEGAL-COMPLIANCE.md) §4); weekly statement for credit-terms buyers (net-7 max during pilot; new buyers prepay/pay-on-delivery for their first 4 orders, per [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md) §2.1).
 
 ---
 

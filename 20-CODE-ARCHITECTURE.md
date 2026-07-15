@@ -1,6 +1,6 @@
 # 20 — CODE ARCHITECTURE (canonical patterns from Fancall)
 
-**Doc owner:** Founder (Alpesh) · **Status:** Draft for founder approval · **Last updated:** 2026-07-12
+**Doc owner:** Founder (Alpesh) · **Status:** Draft for founder approval · **Last updated:** 2026-07-14
 **Siblings:** [06-PRD-BACKEND.md](06-PRD-BACKEND.md) (what the backend does) · [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md) (what the apps do) · [11-ARCHITECTURE.md](11-ARCHITECTURE.md) (system shape) · [00-GOLDEN-RULES.md](00-GOLDEN-RULES.md)
 
 ---
@@ -76,10 +76,11 @@ Request
 
 ### 1.5 KisanSetu deltas from Fancall (deliberate)
 - **TypeScript, not JavaScript**; **Drizzle, not Knex+Objection** (this section).
-- Drop the `/api/api/v3` double-prefix accident → clean single `/api/v3` (or unversioned `/api` until a v2 exists).
+- Drop the `/api/api/v3` double-prefix accident → clean single version prefix — for KisanSetu that is `/v1` ([06-PRD-BACKEND.md](06-PRD-BACKEND.md) §6, dev base `http://localhost:4000/v1`), not Fancall's `v3` numbering.
 - Roles are the KisanSetu set (`farmer`/`buyer`/`ops`, [06-PRD-BACKEND.md](06-PRD-BACKEND.md)), not Fancall's numeric fan/celebrity/brand.
 - One monolith, no socket.io/RabbitMQ/Agora at MVP ([11-ARCHITECTURE.md](11-ARCHITECTURE.md) non-goals stand).
 - The hard analytics/allocation SQL (SLA `percentile_cont` medians, farmer-share %, greedy listing→order-item allocation) is written with Drizzle's SQL builder or `sql`-tagged raw for full control — Drizzle keeps you at SQL level, which suits these queries.
+- **Payments: Razorpay is the fixed India PSP** (founder decision, 14 Jul 2026) — one adapter behind `payments/provider.ts`; nothing Razorpay-specific outside `payments/` ([11-ARCHITECTURE.md](11-ARCHITECTURE.md) §10.7). Engineering rules + the mobile-SDK plan live in [21-AI-EXECUTION-PLAYBOOK.md](21-AI-EXECUTION-PLAYBOOK.md) §10.
 
 ---
 
@@ -88,7 +89,7 @@ Request
 ### 2.1 Stack
 Kotlin · **XML layouts + ViewBinding/DataBinding** (Fancall is not Compose) · Retrofit + OkHttp + Gson · **Dagger 2** (manual components, no Hilt) · Coroutines · Room (local) + SharedPreferences (session) · Glide/Coil.
 
-> **Parity note vs 07-PRD:** [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md) §5.0 targets **Jetpack Compose** (founder's stated stack for the new app). Fancall's reference is XML. **Decision for founder to ratify:** keep the Fancall *MVVM layering, DI, network + crypto stack* but render UI in **Jetpack Compose** (modern, and the design system in [10-DESIGN-SYSTEM.md](10-DESIGN-SYSTEM.md) is defined for Compose/Material3). The layers below the View are copied as-is; only the View technology differs. If the founder prefers XML-exact parity with Fancall, flip §5.1 of 07 — but Compose is the recommendation.
+> **Parity note vs 07-PRD:** [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md) §5.0 targets **Jetpack Compose** (founder's stated stack for the new app). Fancall's reference is XML. **Decision for founder to ratify:** keep the Fancall *MVVM layering, DI, network + crypto stack* but render UI in **Jetpack Compose** (modern, and the design system in [10-DESIGN-SYSTEM.md](10-DESIGN-SYSTEM.md) is defined for Compose/Material3). The layers below the View are copied as-is; only the View technology differs. If the founder prefers XML-exact parity with Fancall, flip §5.0 of 07 — but Compose is the recommendation.
 
 ### 2.2 Package structure (layers)
 ```
@@ -167,7 +168,7 @@ View (UIViewController; SwiftUI View in KisanSetu)
 ## 4. The one API contract all three share
 
 Backend defines it ([06-PRD-BACKEND.md](06-PRD-BACKEND.md)); both apps consume it identically (parity):
-- **Base:** `/api/v3/...` (or `/api/...`), snake_case JSON.
+- **Base:** `/v1/...` — the single version prefix set by [06-PRD-BACKEND.md](06-PRD-BACKEND.md) §6 (dev base `http://localhost:4000/v1`); snake_case JSON.
 - **Every request carries:** `x-api-key` (encrypted, §5.1), `Authorization: Bearer <jwt>` when authed, `Content-Type: text/plain` when the body is an encrypted blob (else `application/json`), `accept-language`.
 - **Envelope (before encryption):** request body = the feature JSON; response = `{ message, status, data }`.
 - **On the wire:** both bodies are a single AES-Base64 ciphertext string (§5). Multipart uploads are the exception — the file parts are plaintext and the JSON travels as an `encryptedBody` form field.

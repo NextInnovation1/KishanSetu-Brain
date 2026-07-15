@@ -36,9 +36,9 @@ Full definitions with violation examples live in [00-GOLDEN-RULES.md](00-GOLDEN-
 | [06-PRD-BACKEND.md](06-PRD-BACKEND.md) | Backend PRD: domain model, API surface, auth, state machines, SLA timestamps. | Backend dev |
 | [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md) | ONE PRD for BOTH apps (rule 1): farmer flow + buyer flow, screen by screen. | Android + iOS devs |
 | [08-PRD-WEBSITE.md](08-PRD-WEBSITE.md) | Marketing site PRD: hero, broken-chain visual, how-it-works, lead capture. | Web dev |
-| [09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md) | OPS module of the internal KisanSetu Console (one web app, two modules — see 19): price setting, grading queue, allocation, payouts, SLA reports. | Web dev, ops lead |
+| [09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md) | OPS module of the internal KisanSetu Console (one web app, two modules — see [19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md)): price setting, grading queue, allocation, payouts, SLA reports. | Web dev, ops lead |
 | [10-DESIGN-SYSTEM.md](10-DESIGN-SYSTEM.md) | Colors, type, components, voice & tone; governs all four surfaces. See also `design/design-board.html`. | Designer, all devs |
-| [11-ARCHITECTURE.md](11-ARCHITECTURE.md) | System architecture, stack decisions (Node 20/Express, Postgres 16, Kotlin/Compose, Swift/SwiftUI, vanilla-JS web), environments, conventions. | All devs |
+| [11-ARCHITECTURE.md](11-ARCHITECTURE.md) | System architecture, stack decisions (TypeScript + Express on Node 20, Drizzle ORM, Postgres 16, Kotlin/Compose, Swift/SwiftUI, vanilla-JS web), environments, conventions. | All devs |
 | [12-DEVELOPMENT-PLAN.md](12-DEVELOPMENT-PLAN.md) | Build order, milestones, dependency graph — activates only after PRD approval. | All devs |
 | [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md) | Phase 0 validation → pilot launch (1 FPO, 2 crops, 15–25 buyers) → go/no-go gates. | Founder, ops lead |
 | [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md) | Daily hub operations: price setting, grading, allocation, delivery, payout runbook. | Ops lead |
@@ -48,6 +48,8 @@ Full definitions with violation examples live in [00-GOLDEN-RULES.md](00-GOLDEN-
 | [18-LEGAL-COMPLIANCE.md](18-LEGAL-COMPLIANCE.md) | Incorporation, FSSAI, GST, APMC rules, FPO/buyer agreements, trademark, data protection. | Founder, CA |
 | [19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md) | CMS/Analytics module of the Console: who sold what, who bought what, app downloads, active users, trend graphs, CSV export. | Founder, ops lead, web dev |
 | [20-CODE-ARCHITECTURE.md](20-CODE-ARCHITECTURE.md) | Canonical code patterns: backend MVC in **TypeScript + Drizzle ORM** (Fancall layering), Android/iOS MVVM (Fancall), and the API-key + AES encode/decode security mechanism. | Every dev, before writing code |
+| [21-AI-EXECUTION-PLAYBOOK.md](21-AI-EXECUTION-PLAYBOOK.md) | How the AI-assisted build runs: will/won't scope, one-by-one build order, predicted-bug register, skills/MCP/hooks/agents mapping, testing layers, per-surface recipes, and the **fixed Razorpay payment-gateway decision** (§10). | Every dev + founder |
+| [CLAUDE.md](CLAUDE.md) | Session orientation for Claude Code: read order, fixed decisions, editing rules, AI boundaries. | AI tooling (auto-loaded) |
 
 ## Reading order for a new team member
 
@@ -68,7 +70,7 @@ Full definitions with violation examples live in [00-GOLDEN-RULES.md](00-GOLDEN-
 10. Then the PRD for your surface: [06-PRD-BACKEND.md](06-PRD-BACKEND.md) / [07-PRD-MOBILE-APPS.md](07-PRD-MOBILE-APPS.md) / [08-PRD-WEBSITE.md](08-PRD-WEBSITE.md) / [09-PRD-OPS-DASHBOARD.md](09-PRD-OPS-DASHBOARD.md) with its sibling Console module [19-PRD-CMS-ANALYTICS.md](19-PRD-CMS-ANALYTICS.md) — plus [11-ARCHITECTURE.md](11-ARCHITECTURE.md) and, before writing any code, [20-CODE-ARCHITECTURE.md](20-CODE-ARCHITECTURE.md) (the canonical Fancall-derived patterns for your layer).
 
 **Before you write any code:**
-11. [12-DEVELOPMENT-PLAN.md](12-DEVELOPMENT-PLAN.md) and [15-TASKS-BACKLOG.md](15-TASKS-BACKLOG.md) — and confirm the PRDs are founder-approved. If they are not, you plan; you do not build (rule 3).
+11. [12-DEVELOPMENT-PLAN.md](12-DEVELOPMENT-PLAN.md), [21-AI-EXECUTION-PLAYBOOK.md](21-AI-EXECUTION-PLAYBOOK.md) and [15-TASKS-BACKLOG.md](15-TASKS-BACKLOG.md) — and confirm the PRDs are founder-approved. If they are not, you plan; you do not build (rule 3).
 
 **Ongoing reference:** [14-OPS-PLAYBOOK.md](14-OPS-PLAYBOOK.md), [16-RISKS-MITIGATIONS.md](16-RISKS-MITIGATIONS.md), [17-FUNDRAISE-FINANCE.md](17-FUNDRAISE-FINANCE.md), [18-LEGAL-COMPLIANCE.md](18-LEGAL-COMPLIANCE.md).
 
@@ -76,11 +78,12 @@ Full definitions with violation examples live in [00-GOLDEN-RULES.md](00-GOLDEN-
 
 | Item | Status |
 |---|---|
-| Planning corpus (this directory) | In progress — being written now |
+| Planning corpus (this directory) | Written (README + 00–21); PRDs awaiting founder approval (T1.7) |
 | Development | **PAUSED** until PRD approval (rule 3) |
 | Phase 0 validation (10 buyer interviews, 1 FPO MoU, mandi shadow, trademark check, 2 beachhead crops frozen, real unit economics) | Not started — the very next real-world action; details in [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md) |
 | Kill/pivot criterion | <3 of 10 Surat HoReCa buyers willing to switch → pivot to FPO-SaaS-first wedge |
 | Existing code scaffolds | Frozen; will be re-reviewed against approved PRDs |
+| Payment gateway | **FIXED: Razorpay** (founder, 14 Jul 2026) — backend payouts/webhooks/collections and, if ever needed, the mobile SDKs. See [21-AI-EXECUTION-PLAYBOOK.md](21-AI-EXECUTION-PLAYBOOK.md) §10, [06-PRD-BACKEND.md](06-PRD-BACKEND.md) §6.8 |
 | Pitch deck | `KisanSetu-Pitch-Deck-v2.pptx` (July 2026 figures) in `~/Downloads/` |
 
 ## Conventions used across the Brain
@@ -89,5 +92,4 @@ Full definitions with violation examples live in [00-GOLDEN-RULES.md](00-GOLDEN-
 - **Numbers are sourced or labeled.** Verified figures cite their source and date; founder estimates are marked as such. Anything illustrative (e.g. ₹2,000 AOV) is flagged for Phase 0 validation.
 - **Domain terms are region-agnostic** in schemas and specs (`reference_market_price`, never `mandi_price`); India-specific words appear only in India UI copy. See rule 2.
 - **No TBDs without an owner and a deadline.**
-- Older draft docs at `~/Desktop/KisanSetu-Docs/` (PLAN.md, TASKS.md, ARCHITECTURE.md, DESIGN.md) are historical input. Where they conflict with this Brain (e.g. Surat-only framing), **this Brain wins.**
-# KishanSetu-Brain
+- Older draft docs in `_archive/` (PLAN.md, TASKS.md, ARCHITECTURE.md, DESIGN.md) are historical input. Where they conflict with this Brain (e.g. Surat-only framing), **this Brain wins.**

@@ -1,9 +1,9 @@
 # 11 — Architecture
 
-**Doc owner:** Founder (Alpesh) · **Status:** Draft for founder approval · **Last updated:** 2026-07-12
-**Siblings:** `06-PRD-BACKEND.md` (API + DDL detail; this doc explains *why*), `07-PRD-MOBILE-APPS.md`, `08-PRD-WEBSITE.md`, `09-PRD-OPS-DASHBOARD.md` (the four clients), `12-DEVELOPMENT-PLAN.md` (build order), `14-OPS-PLAYBOOK.md` (runbooks referenced by §9–§10), `16-RISKS-MITIGATIONS.md`.
+**Doc owner:** Founder (Alpesh) · **Status:** Draft for founder approval · **Last updated:** 2026-07-14
+**Siblings:** `06-PRD-BACKEND.md` (API + DDL detail; this doc explains *why*), `07-PRD-MOBILE-APPS.md`, `08-PRD-WEBSITE.md`, `09-PRD-OPS-DASHBOARD.md` (the four clients), `12-DEVELOPMENT-PLAN.md` (build order), `14-OPS-PLAYBOOK.md` (runbooks referenced by §5, §8–§9), `16-RISKS-MITIGATIONS.md`.
 
-Stack is founder-fixed (see brief): Node.js 20 + Express, PostgreSQL 16, REST JSON snake_case, JWT + phone OTP; vanilla-JS website & ops dashboard; Kotlin/Compose Android; Swift/SwiftUI iOS. This doc does not relitigate the stack; it defines how the pieces fit and how they grow.
+Stack is founder-fixed (see brief): Node.js 20 + Express in **TypeScript** with **Drizzle ORM** ([20-CODE-ARCHITECTURE.md](20-CODE-ARCHITECTURE.md) §1), PostgreSQL 16, REST JSON snake_case, JWT + phone OTP; vanilla-JS website & ops dashboard (intentional); Kotlin/Compose Android; Swift/SwiftUI iOS. This doc does not relitigate the stack; it defines how the pieces fit and how they grow.
 
 ---
 
@@ -20,14 +20,14 @@ flowchart LR
 
   subgraph server [Single VM / local dev]
     CADDY["Caddy\nTLS + reverse proxy + static hosting"]
-    API["Node 20 + Express monolith\n:4000 — modules: auth, users, catalog,\nprices, listings, orders, payments,\nleads, reports"]
+    API["Node 20 + Express (TypeScript) monolith\n:4000 — modules: auth, users, catalog,\nprices, listings, orders, payments,\nleads, reports, disputes,\nevents/config, geo/markets"]
   end
 
   PG[("PostgreSQL 16\n(:5433 in dev docker)\nsingle source of truth")]
 
   subgraph providers [Pluggable provider interfaces]
-    SMS["sms.js → MSG91 (IN) / Twilio (intl)"]
-    PAY["payments/provider.js → Razorpay UPI (IN)"]
+    SMS["sms.ts → MSG91 (IN) / Twilio (intl)"]
+    PAY["payments/provider.ts → Razorpay UPI (IN, fixed)"]
     MSGW["WhatsApp Business API"]
     PUSH["FCM / APNs"]
   end
@@ -45,7 +45,7 @@ flowchart LR
   PAY -.->|webhook /webhooks/razorpay| CADDY
 ```
 
-One backend, one database, four thin clients. Every provider (SMS, payments, messaging, push) sits behind a small interface module so the India instance (MSG91, Razorpay, WhatsApp) is a plug, not a weld — that is what makes country #2 cheap (§7).
+One backend, one database, four thin clients. Every provider (SMS, payments, messaging, push) sits behind a small interface module so the India instance (MSG91, Razorpay, WhatsApp) is a plug, not a weld — that is what makes country #2 cheap (§6). Within India the payments instance is **fixed = Razorpay** (founder, 14 Jul 2026 — `21-AI-EXECUTION-PLAYBOOK.md` §10): the interface is the abstraction, Razorpay is the implementation, and no other Indian PSP is evaluated.
 
 ## 2. Why one monolith (and when not)
 
@@ -93,7 +93,7 @@ erDiagram
 
 Three spines to remember:
 - **Geography spine:** `regions → hubs (→ fpos) → farmer_profiles` — every operational fact resolves to a region; nothing global is hardcoded to India.
-- **Traceability spine:** `listings → order_allocations → order_items → orders` — the many-to-many that *is* the farm-to-fork differentiator, and the row that carries the freshness SLA chain (§6).
+- **Traceability spine:** `listings → order_allocations → order_items → orders` — the many-to-many that *is* the farm-to-fork differentiator, and the row that carries the freshness SLA chain (§5).
 - **Money spine:** `price_feed` (both buyer and farmer prices per day) → `order_items.unit_price` (copied at placement, immutable) → `payments` — farmer-share % is a join, not a spreadsheet.
 
 ## 4. Auth flow
@@ -103,7 +103,7 @@ sequenceDiagram
   participant C as Client (app/dashboard)
   participant API as Express API
   participant DB as Postgres
-  participant SMS as sms.js (MSG91/Twilio)
+  participant SMS as sms.ts (MSG91/Twilio)
 
   C->>API: POST /auth/otp/request {phone E.164}
   API->>API: rate-limit check (5/phone/h)
@@ -155,19 +155,19 @@ The five abstractions that make that true:
 | **Currency** | `currency char(3)` on every money table, sourced from `regions.currency`; formatting client-side by currency code; no FX anywhere | INR | One field in the region row |
 | **Time** | All storage UTC `timestamptz`; "business date" (prices, delivery dates) computed in `regions.timezone` | Asia/Kolkata | One field in the region row |
 | **Tax** | `regions.tax_scheme` selects a module implementing `computeTax(order, region)`; tax lines on the order, no scheme-specific columns | `in_gst` (v1 returns 0 — fresh produce exempt; Q3 in `06-PRD-BACKEND.md`) | Write/choose one module (`none` ships) |
-| **Providers** | `sms.js`, `payments/provider.js`, messaging picked **per region** via config map | MSG91, Razorpay UPI, WhatsApp | Config entry + provider adapter if new |
+| **Providers** | `sms.ts`, `payments/provider.ts`, messaging picked **per region** via config map | MSG91, Razorpay UPI (fixed PSP — `21-AI-EXECUTION-PLAYBOOK.md` §10), WhatsApp | Config entry + provider adapter if new |
 | **Vocabulary** | Generic schema terms (`reference_market_price`); region-flavored words live in UI via `regions.reference_market_label` ("mandi" only as Indian copy) | label = "mandi" | label = local term |
 
 What onboarding country/region #2 actually looks like (runbook to be executed once real): (1) insert region row; (2) seed produce translations + string-table language if new; (3) sign local FPO-equivalent + 3PL (the hard part — it's ops, not software: `13-LAUNCH-PLAN.md`); (4) configure SMS/payout providers for the region; (5) seed ops users + hubs; (6) set daily prices. Users, prices, orders, and reports are region-scoped by the JWT's `region_id` throughout, so tenancy comes free. Cross-region anything (transfers, FX, consolidated invoicing) is explicitly out of scope until a real second region exists.
 
 ## 7. Deployment posture
 
-**Stage 0 — now (planning; development paused).** Everything local: Docker Postgres on `:5433`, API on `:4000`, dev OTP `123456`. Nothing public, zero cloud spend (Golden rule: don't pay for cloud before buyers exist — `PLAN.md` heritage, kept).
+**Stage 0 — now (planning; development paused).** Everything local: Docker Postgres on `:5433`, API on `:4000`, dev OTP `123456`. Nothing public, zero cloud spend (house rule, kept from `PLAN.md` heritage: don't pay for cloud before buyers exist).
 
 **Stage 1 — pilot (first real order).**
 - One VM (2 vCPU / 4 GB, Mumbai region of any major cloud, ~₹1,500–2,500/mo) running Caddy (TLS, static hosting for website + ops dashboard) + the Node API under systemd.
 - Postgres: **managed** from day 1 of production (e.g. smallest managed-PG tier) *or* on-VM with the §9 backup discipline if budget forces it — decision at pilot week −2, owner: founder. Managed preferred: backups and minor upgrades are not founder work.
-- Deploy = `git pull && npm ci && migrate && systemctl restart` script; < 1 min downtime window acceptable at pilot (deploys happen 14:00–16:00, never 04:00–09:00 hub hours).
+- Deploy = `git pull && npm ci && npm run build && migrate && systemctl restart` script; < 1 min downtime window acceptable at pilot (deploys happen 14:00–16:00, never 04:00–09:00 hub hours).
 - DNS: `api.` (API), `ops.` (dashboard), apex (website). Secrets in a root-only env file on the VM.
 
 **Stage 2 — scale path (in order, each step only when forced):** move Postgres to managed with PITR (if not already) → bigger VM → second API instance behind the proxy (this is the moment rate limits move from in-process to shared state — the one Redis trigger) → read replica for reports → regional VM for a distant country #2 (latency), still one logical architecture. Kubernetes/microservices remain non-goals until §2's exit triggers fire.
@@ -186,7 +186,7 @@ Pilot-honest, not aspirational:
 | Scenario | Response | Target |
 |---|---|---|
 | VM dies | Rebuild from provisioning script (versioned in repo: `deploy/provision.sh`) + restore latest dump; DNS unchanged | RTO ≤ 4 h |
-| DB corruption / bad migration | Restore last nightly dump to scratch, verify, promote; migrations are forward-only numbered SQL — bad ones fixed by a new migration, never edited | RPO ≤ 24 h (pilot); ≤ 5 min after managed-PG PITR (Stage 2) |
+| DB corruption / bad migration | Restore last nightly dump to scratch, verify, promote; migrations are forward-only `drizzle-kit`-generated SQL — bad ones fixed by a new migration, never edited | RPO ≤ 24 h (pilot); ≤ 5 min after managed-PG PITR (Stage 2) |
 | Secrets leak (JWT/OTP pepper) | Rotate env secrets → all sessions invalidate → users re-OTP (cheap by design); audit payout rows since leak window | Same day |
 | Provider outage (SMS/Razorpay/WhatsApp) | Degrade to manual: dev-ops can read OTP from server log for a stuck staff login; payouts fall back to `provider='manual'` + bank UPI; comms fall back to phone calls | Zero deliveries blocked (software never blocks a delivery — `09-PRD-OPS-DASHBOARD.md` §1) |
 | Founder's laptop lost | Nothing production lives on it: repo on GitHub (private), secrets on VM, DB in cloud | — |
@@ -201,7 +201,7 @@ Backup discipline (detail in `06-PRD-BACKEND.md` §8): nightly encrypted `pg_dum
 4. All lifecycle transitions are compare-and-set SQL guarded and 409 on violation.
 5. Every ops mutation writes `audit_events`.
 6. Language = **TypeScript** (strict). Data layer = **Drizzle ORM `v1.0.0-rc.4`** + `drizzle-kit` migrations + `pg` (founder decision, [20-CODE-ARCHITECTURE.md](20-CODE-ARCHITECTURE.md) §1): schema in `db/schema/*`, typed repositories, `sql`-tagged raw for the hard analytics. Parameterized/bound queries only — never string-built SQL. (Supersedes both the raw-`pg` and the interim Knex+Objection notes — Objection is frozen.)
-7. Providers only behind interfaces; no `require('razorpay')` outside `payments/`.
+7. Providers only behind interfaces; no `import`/`require` of `razorpay` outside `payments/` (`21-AI-EXECUTION-PLAYBOOK.md` §10.2).
 8. The CI region-#2 test (§6) stays green forever.
 
 ## 11. Open questions (owner + deadline)

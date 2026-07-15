@@ -41,7 +41,7 @@ The primary persona is the **HoReCa buyer on a mid-range Android phone, on 4G, a
 
 | Non-goal | Why not |
 |---|---|
-| **Buyer web-ordering portal** | Separate future PRD (planned as `08b-PRD-BUYER-PORTAL.md`, written only after pilot buyer interviews confirm web > app preference — see `15-TASKS-BACKLOG.md` T5.6). Mixing ordering into the marketing site would drag auth, cart and session complexity into a static page. |
+| **Buyer web-ordering portal** | Separate future PRD (planned as `08b-PRD-BUYER-PORTAL.md`, written only after pilot buyer interviews confirm web > app preference — see `15-TASKS-BACKLOG.md` T5.7). Mixing ordering into the marketing site would drag auth, cart and session complexity into a static page. |
 | Live freshness-SLA counter (v1) | Needs real pilot data from `order_allocations` timestamps; shipping it with fake numbers violates the brand. Spec'd below as **Phase v1.1**, built only post-pilot. |
 | CMS / blog | No one is writing weekly content in months 1–6. A blog with 2 posts is worse than no blog. Revisit for SEO after pilot. |
 | React/Vue/site builders, npm build pipeline | Founder-fixed: vanilla JS. A marketing page does not need hydration. Also keeps the <100KB JS budget trivial to hit. |
@@ -54,7 +54,7 @@ The primary persona is the **HoReCa buyer on a mid-range Android phone, on 4G, a
 
 One page, anchored sections. Nav: `Problem · How it works · For Farmers · For Buyers · Contact` + language switch (`EN | हिं`). Mobile: hamburger-free — nav collapses to a single **Contact** button + language switch; section links move to footer.
 
-All copy lives in `js/strings.js` as `STRINGS.en` / `STRINGS.hi` keyed exactly as below. Region-specific values (city, example village, radius, currency) come from `js/region.js` (`REGION = { city, cityLocal, exampleVillage, radiusKm: 50, currency: "INR", waNumber }`) and are interpolated — **no hardcoded "Surat" outside region.js** (Golden Rule #2).
+All copy lives in `js/strings.js` as `STRINGS.en` / `STRINGS.hi` keyed exactly as below. Region-specific values (city, example village, radius, currency) come from `js/region.js` (`REGION = { city, cityLocal, exampleVillage, radiusKm: 50, currency: "INR", dialCode: "+91", flagEmoji: "🇮🇳", waNumber }`) and are interpolated — **no hardcoded "Surat" outside region.js** (Golden Rule #2).
 
 ### 5.1 Hero
 
@@ -84,14 +84,14 @@ Both hero CTAs scroll to `#contact`; the farmer CTA carries `data-prefill-role="
 | `chain_new_label` | With KisanSetu — one bridge | किसानसेतु के साथ — एक पुल |
 | `chain_farmer` / `chain_farmer_old_cut` | Farmer / keeps ₹30–40 | किसान / ₹30–40 रखता है |
 | `chain_agent` / `chain_agent_cut` | Commission agent / + commission | आढ़तिया / + कमीशन |
-| `chain_wholesaler_cut` | Wholesaler / + margin | थोक व्यापारी / + मार्जिन |
-| `chain_retailer_cut` | Retailer / + margin | रिटेलर / + मार्जिन |
+| `chain_wholesaler` / `chain_wholesaler_cut` | Wholesaler / + margin | थोक व्यापारी / + मार्जिन |
+| `chain_retailer` / `chain_retailer_cut` | Retailer / + margin | रिटेलर / + मार्जिन |
 | `chain_consumer` / `chain_consumer_cut` | Your kitchen / pays ₹100 | आपकी रसोई / ₹100 देती है |
 | `chain_farmer_new_cut` | keeps ₹60–70 | ₹60–70 रखता है |
 | `chain_setu_cut` | grades · moves · pays | ग्रेड · डिलीवरी · तुरंत पैसा |
 | `chain_kitchen_new_cut` | same price, fresher stock | वही दाम, ज़्यादा ताज़ा माल |
 | `receipt_title` | Where your ₹100 goes | आपके ₹100 कहाँ जाते हैं |
-| `stat1_txt` | is all the farmer keeps of what you pay at the end of the chain. | — बस इतना ही किसान के हाथ आता है आपके दिए दाम में से। |
+| `stat1_num` / `stat1_txt` | ₹30–40 / is all the farmer keeps of what you pay at the end of the chain. | ₹30–40 / — बस इतना ही किसान के हाथ आता है आपके दिए दाम में से। |
 | `stat2_num` / `stat2_txt` | ₹1.5 lakh crore / of produce is lost in India every year after harvest — before anyone eats it. | ₹1.5 लाख करोड़ / की उपज भारत में हर साल कटाई के बाद बर्बाद हो जाती है — किसी की थाली तक पहुँचने से पहले। |
 
 **Broken-chain visual spec** (this is the page's hero argument — treat as a component, not an illustration):
@@ -111,7 +111,7 @@ Numbered list `01–05`, one line each. Keys `step{n}_t` / `step{n}_d`:
 |---|---|---|
 | 01 | **List** — The farmer lists tomorrow's harvest — crop and quantity — on the app or through FPO staff. | **लिस्ट करें** — किसान कल की फ़सल ऐप से या FPO स्टाफ़ के ज़रिए लिस्ट करता है — कौन-सी फ़सल, कितनी। |
 | 02 | **Aggregate & grade** — The nearest FPO hub collects and weighs, sorts into A/B tiers and tags every crate to its farm. | **इकट्ठा और ग्रेड** — नज़दीकी FPO हब पर तौल होती है, A/B ग्रेड बनते हैं, और हर क्रेट पर उसके खेत का टैग लगता है। |
-| 03 | **Order** — Kitchens order by 6 PM, delivered fresh next morning — at transparent daily prices: you see tomorrow's rate the evening before, and we cap day-to-day swings (≤10%) so you can plan food costs. | **ऑर्डर करें** — किचन शाम 6 बजे तक ऑर्डर करते हैं, अगली सुबह ताज़ा डिलीवरी — रोज़ाना पारदर्शी दाम पर: कल का रेट आपको एक शाम पहले दिख जाता है, और दिन-प्रतिदिन के उतार-चढ़ाव को हम सीमित रखते हैं (≤10%) ताकि आप खाने की लागत की योजना बना सकें। |
+| 03 | **Order** — Kitchens order by 6 PM, delivered fresh next morning — at transparent daily prices: you see tomorrow's rate the evening before, and we damp day-to-day swings (≤10% in normal markets) so you can plan food costs. | **ऑर्डर करें** — किचन शाम 6 बजे तक ऑर्डर करते हैं, अगली सुबह ताज़ा डिलीवरी — रोज़ाना पारदर्शी दाम पर: कल का रेट आपको एक शाम पहले दिख जाता है, और दिन-प्रतिदिन के उतार-चढ़ाव को हम सीमित रखते हैं (सामान्य दिनों में ≤10%) ताकि आप खाने की लागत की योजना बना सकें। |
 | 04 | **Deliver fresh** — Cold-chain vans move crates hub-to-door within 24–48 hours of harvest. | **ताज़ा डिलीवरी** — कोल्ड-चेन गाड़ियाँ कटाई के 24–48 घंटे के अंदर क्रेट पहुँचा देती हैं। |
 | 05 | **Instant pay** — The farmer is paid by UPI at pickup — not 30 days later. | **तुरंत पैसा** — पिकअप पर ही किसान को UPI से पैसा — 30 दिन बाद नहीं। |
 
@@ -119,7 +119,7 @@ Numbered list `01–05`, one line each. Keys `step{n}_t` / `step{n}_d`:
 
 Benefit lists (check icon + title + one-liner). Farmer section headline: EN "Your harvest. Your price. Your money — today." / HI "आपकी फ़सल। आपका दाम। आपका पैसा — आज ही।" Benefits (keys `farmers_b1..b4`): 60–70% of the final price; UPI payment at pickup; Live fair prices (see what kitchens pay today); Confirmed pre-orders (harvest what's already sold). CTA `farmers_cta`: "Join as a farmer" / "किसान बनकर जुड़ें" → `#contact` with `data-prefill-role="farmer"`.
 
-Buyer section headline: EN "One vendor. Graded, traceable, every morning." / HI "एक ही वेंडर। ग्रेडेड और ट्रेस होने वाली उपज, हर सुबह।" Benefits (keys `buyers_b1..b5`): A/B quality tiers; Farm-to-fork traceability (every crate carries its farm, farmer, harvest date); One vendor, one invoice (single tax invoice weekly); Predictable pricing (transparent daily rates against the market reference, day-to-day swings capped ≤10% so you can plan food costs — a fixed 7-day locked rate is available only on the paid Priority plan); 24–48 hour freshness ("Cut today near {exampleVillage}, in your prep line tomorrow"). CTA `buyers_cta`: "Order for your kitchen" / "अपने किचन के लिए मंगाएँ".
+Buyer section headline: EN "One vendor. Graded, traceable, every morning." / HI "एक ही वेंडर। ग्रेडेड और ट्रेस होने वाली उपज, हर सुबह।" Benefits (keys `buyers_b1..b5`): A/B quality tiers; Farm-to-fork traceability (every crate carries its farm, farmer, harvest date); One vendor, one invoice (one tax invoice per order); Predictable pricing (transparent daily rates against the market reference, day-to-day swings damped ≤10% in normal markets so you can plan food costs — a fixed 7-day locked rate on your top-5 SKUs is available only on the paid Priority plan); 24–48 hour freshness ("Cut today near {exampleVillage}, in your prep line tomorrow"). CTA `buyers_cta`: "Order for your kitchen" / "अपने किचन के लिए मंगाएँ".
 
 ### 5.5 Impact strip
 
@@ -139,9 +139,9 @@ Footer: brand mark, tagline EN "The bridge between the farm and your kitchen." /
 |---|---|---|---|---|---|
 | Name | `name` | text | yes | 2–80 chars after trim | `autocomplete="name"` |
 | Phone | `phone` | tel | yes | Strip spaces/`-`/`(`/`)`; accept `+` + 8–15 digits (E.164) or bare 10 digits → prefix `REGION.dialCode` (+91) | `inputmode="tel"`; shown error under field |
-| I am a | `role` | select | yes | one of `farmer · restaurant · hotel · caterer · cloud_kitchen · fpo · other` | values are the API enum, labels localized |
+| I am a | `business_type` | select | yes | one of `farmer · restaurant · hotel · caterer · cloud_kitchen · fpo · other` | sent as D1's `business_type` field (`06-PRD-BACKEND.md`), labels localized |
 | Message | `message` | textarea | no | ≤500 chars | placeholder: "e.g. I grow okra and tomatoes near {exampleVillage}" |
-| Website | `company` | text | — | **honeypot**: visually hidden (`position:absolute;left:-9999px`), `tabindex="-1"`, `autocomplete="off"`; if non-empty → silently fake-succeed | spam control #1 |
+| Website | `website_url` | text | — | **honeypot**: visually hidden (`position:absolute;left:-9999px`), `tabindex="-1"`, `autocomplete="off"`; if non-empty → silently fake-succeed | spam control #1 |
 | — | (timing) | — | — | reject submit if <3s since page interaction started → show generic error | spam control #2 |
 
 Inline errors, localized, shown on blur and on submit; error text + red border + `aria-invalid="true"` + `aria-describedby` pointing at the error node. Submit button disables during flight and shows "Sending… / भेज रहे हैं…".
@@ -157,7 +157,7 @@ Content-Type: application/json
 {
   "name": "Ramesh Patel",
   "phone": "+919876543210",          // E.164, normalized client-side
-  "role": "restaurant",              // enum above
+  "business_type": "restaurant",     // enum above — D1 field name per `06-PRD-BACKEND.md`
   "message": "Need daily tomatoes",  // optional, ≤500
   "language": "hi",                  // active site language
   "source": "website",
@@ -166,9 +166,9 @@ Content-Type: application/json
   "consent": true                    // implicit via submit; checkbox not shown (callback request = consent), stated in privacy note
 }
 
-201 → { "id": "…", "status": "received" }        → success state
-400 → { "error": "invalid_phone" | "invalid_role" | … }  → map to localized field error; unknown code → generic error
-429 → { "error": "rate_limited" }                 → show WhatsApp fallback immediately
+201 → { "id": "…", "received": true }            → success state
+400 → { "error": { "code": "validation_failed", "message": "…", "field_errors": { "phone": "…" } } }  → map `field_errors` keys to localized field errors; no `field_errors` → generic error
+429 → { "error": { "code": "rate_limited" } }     → show WhatsApp fallback immediately
 5xx / network error / 8s timeout                  → show WhatsApp fallback
 ```
 
@@ -235,13 +235,13 @@ Techniques: system font stacks only (serif display = Iowan Old Style/Palatino/Ge
 |---|---|
 | JS disabled | Full content readable (EN), `<noscript>` contact panel with tel: + wa.me links; form hidden (it needs fetch) |
 | API down / CORS / timeout 8s | WhatsApp fallback panel (§6.3); error logged to Plausible `lead_submit_error` |
-| Double submit | Button disabled in-flight; backend also dedupes same phone+role within 24h (409 → treated as success client-side: "You're already on the list — we'll call.") |
+| Double submit | Button disabled in-flight; backend dedupe of same phone+`business_type` within 24h is required of `06-PRD-BACKEND.md` D1 (not yet spec'd there — reconcile at PRD approval, owner: Alpesh); 409 `duplicate` → treated as success client-side: "You're already on the list — we'll call." |
 | Offline (restaurant basement) | `navigator.onLine === false` at submit → skip fetch, show WhatsApp fallback + "No connection" note |
 | Hindi text overflow | All buttons/cards tested with HI strings (10–30% longer); `min-height` not fixed heights |
 | 320px viewport | Chains go vertical; receipt bar labels drop to legend-only below 360px |
 | Old browsers (Android WebView 80+) | No optional chaining in shipped JS beyond ES2018; feature-detect IntersectionObserver → static fallback (everything visible) |
 | Spam flood | Honeypot + 3s time-gate client-side; rate limit server-side (429 path handled) |
-| User pastes +91 with spaces / leading 0 | Normalizer handles `0XXXXXXXXXX`, `+91 XXXXX XXXXX`, `91XXXXXXXXXX` → E.164 |
+| User pastes +91 with spaces / leading 0 | Normalizer handles `0XXXXXXXXXX`, `+91 XXXXX XXXXX`, `91XXXXXXXXXX`, bare `XXXXXXXXXX` → E.164 |
 
 ## 12. Acceptance criteria
 
@@ -253,20 +253,20 @@ Techniques: system font stacks only (serif display = Iowan Old Style/Palatino/Ge
 6. **Analytics:** all 8 events fire with exact names/props above, verified in Plausible dashboard.
 7. **Performance:** all §10 gates pass on a throttled Moto G4 profile in Lighthouse CI before deploy.
 8. **Golden-rule check:** no "Surat", "₹", "+91", or "mandi" hardcoded outside `region.js`/`strings.js` (grep test in CI); farmer-share and freshness numbers appear and are cited.
-9. **Commercial-terms provenance:** all commercial terms shown on the site (prices, order cutoff, delivery window, minimum order, fees) match the canonical pilot parameters table in `13-LAUNCH-PLAN.md` §2 — no number appears on the website that isn't sourced from there. In particular, the site describes daily pricing with ≤10% day-over-day damping (not a weekly lock) and a 6 PM (18:00) order cutoff; any "weekly locked rate" language is reserved for describing the paid Priority plan only.
+9. **Commercial-terms provenance:** all commercial terms shown on the site (prices, order cutoff, delivery window, minimum order, fees) match the canonical pilot parameters table in `13-LAUNCH-PLAN.md` §2 — no number appears on the website that isn't sourced from there or from the price-setting SOP in `14-OPS-PLAYBOOK.md` §5 (the canonical home of the ≤10% damper). In particular, the site describes daily pricing with ≤10% day-over-day damping (not a weekly lock) and a 6 PM (18:00) order cutoff; any "weekly locked rate" language is reserved for describing the paid Priority plan only.
 
 ## 13. Phased rollout
 
 | Phase | Contents | Gate |
 |---|---|---|
 | **v1 (MVP, week 1 of build — needed for sales meetings)** | Everything in §5–§11; deployed to production domain on static hosting (Cloudflare Pages or equivalent; any static host works — no lock-in) | Founder approves copy; 3 test leads round-trip to backend + founder's callback sheet |
-| **v1.1 (post-pilot week 2)** | **Live freshness-SLA counter:** section under impact strip — "Median farm-to-door this week: **{n} hours**, across {m} deliveries", fed by public read-only `GET /stats/freshness` (7-day rolling median from `order_allocations` timestamps, cached 1h; endpoint spec'd in `06-PRD-BACKEND.md`). Shows only when `m ≥ 20` deliveries/week — below that, hide the section (small-n numbers are noise, not proof). Also: pre-rendered `/hi/` page; real farmer-share % replaces illustrative receipt numbers. | 2 weeks of clean SLA timestamps |
+| **v1.1 (post-pilot week 2)** | **Live freshness-SLA counter:** section under impact strip — "Median farm-to-door this week: **{n} hours**, across {m} deliveries", fed by public read-only `GET /reports/sla/public` (`06-PRD-BACKEND.md` §6.10 R4: cached 1h, median harvest→door from `order_allocations` timestamps, published only when ops flips `region_settings.publish_public_stats=true`). Shows only when `m ≥ 20` deliveries/week — below that, hide the section (small-n numbers are noise, not proof). Also: pre-rendered `/hi/` page; real farmer-share % replaces illustrative receipt numbers. | 2 weeks of clean SLA timestamps |
 | **v1.2** | App download buttons (Play + TestFlight/App Store links), testimonial section with ≥2 real named kitchens (consented), payout-slip photo gallery | Apps live; consents signed |
 | **v2 (separate PRD `08b-PRD-BUYER-PORTAL.md`)** | Buyer web-ordering portal on `order.{domain}` — auth, catalog, cart against the same API. **Not part of this site**; written only after pilot proves buyer preference for web ordering. | Pilot interview data |
 
 ## 14. Metrics
 
-Weekly: unique visitors, visitor→lead conversion (target ≥3% from paid, ≥8% from referral traffic), leads by role, cost per lead by utm_campaign (target ≤₹150 buyer-side per `04-GTM-SALES-MARKETING.md`), WhatsApp clicks, lang split (expect ≥40% HI), LCP p75 from CrUX once traffic exists.
+Weekly: unique visitors, visitor→lead conversion (target ≥3% from paid, ≥8% from referral traffic), leads by role, cost per lead by utm_campaign (target CPL ₹150–250 buyer-side per `04-GTM-SALES-MARKETING.md`), WhatsApp clicks, lang split (expect ≥40% HI), LCP p75 from CrUX once traffic exists.
 
 ## 15. Open questions (decided by author where unblocking; flagged for founder)
 
