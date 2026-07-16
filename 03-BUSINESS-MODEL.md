@@ -1,6 +1,6 @@
 # 03 — BUSINESS MODEL
 
-_Doc owner: Alpesh (founder). Status: Draft v1.0 for founder approval. Last updated: 2026-07-14._
+_Doc owner: Alpesh (founder). Status: Draft v1.0 for founder approval. Last updated: 2026-07-16._
 _Reads with: 02-MARKET-RESEARCH.md (market sizing & competitive wedge), 04-GTM-SALES-MARKETING.md (how we acquire the buyers this model depends on), 13-LAUNCH-PLAN.md (pilot gates), 14-OPS-PLAYBOOK.md (the physical flow these economics price), 16-RISKS-MITIGATIONS.md, 17-FUNDRAISE-FINANCE.md (burn & raise built on these numbers), 18-LEGAL-COMPLIANCE.md (APMC/GST/FSSAI constraints on pricing and invoicing)._
 
 ---
@@ -125,8 +125,9 @@ Every cell below gets filled during Phase-0 (13-LAUNCH-PLAN.md; interview script
 |---|---|---|---|
 | AOV ₹2,000 | Real avg daily veg spend per buyer segment | 10 buyer interviews (Q4–Q6 of script) | Alpesh / Phase-0 week 2 |
 | Order frequency 15–20/mo | Stated ordering cadence + split across vendors | Buyer interviews Q5 | Alpesh / week 2 |
-| Buyer price parity assumption | Actual vendor rate cards for 8 vegetables | Mandi shadow + buyer invoices collected in interviews | Alpesh / week 2 |
+| Buyer price parity assumption | Actual vendor rate cards for 8 vegetables — **the buyer's landed price is the denominator of the spread test below** | Mandi shadow + buyer invoices collected in interviews | Alpesh / week 2 |
 | Farmer payout 65% | Documented mandi-chain farmgate price for the 2 crops | Mandi morning shadow (T0.4) + FPO records | Alpesh / week 2 |
+| **The spread itself (structural viability test)** | **Farmer share of the buyer's current HoReCa landed price, per crop** — farmgate ₹ ÷ restaurant-vendor ₹, same crop, same day | T0.4 both-ends measurement + interview bill photos | Alpesh / week 2 |
 | FPO hub fee ₹2.4/kg | Negotiated MoU rate | FPO pilot MoU (T0.3) | Alpesh / week 2 |
 | 3PL ₹2,800/route | 3 written quotes + 2 trial routes | 3PL quotes (T6.2 pulled forward for pricing) | Alpesh / week 3 |
 | Wastage 2.5% | Measured on first 50 pilot orders | pilot instrumentation | Ops lead / pilot week 4 |
@@ -135,13 +136,15 @@ Every cell below gets filled during Phase-0 (13-LAUNCH-PLAN.md; interview script
 
 **Kill/pivot criterion (pre-committed):** if **<3 of 10** interviewed buyers show real willingness to switch (rubric in 04 §2.4), we do not "try harder" — we execute the FPO-SaaS pivot in §8.
 
+**Second, structural kill input (added 16 Jul 2026 — the spread test):** the ~30–40% farmer-share baseline in [02-MARKET-RESEARCH.md](02-MARKET-RESEARCH.md) §3.2 is measured against *consumer retail*; we sell at *HoReCa wholesale*. If T0.4 shows the farmer's share of a restaurant's **current landed price** is already **≥55%** for our beachhead crops, then "pay ≥60% + partner cost stack + price at parity-minus-5%" is arithmetically negative per order — the marketplace thesis fails on structure, not execution, and the T0.7 decision memo must weigh the FPO-SaaS pivot regardless of interview enthusiasm. Between 45–55%: re-run §4 with measured numbers before any build decision.
+
 ## 6. Working capital — the honest cost of "instant farmer payout"
 
 Instant UPI payout to farmers + any credit to buyers = a float we finance.
 
 - Policy at launch: buyers pay **on delivery (UPI/link; buyer-side online collection, whenever it starts, is Razorpay — the fixed India PSP, see §9)** for their first 4 orders; vetted buyers then get **max 7-day credit**, per-buyer exposure cap **₹25,000**, auto-suspend at 10 days overdue (enforced in backend, 06-PRD-BACKEND.md).
-- Float math at city break-even scale (§7): ₹30L GMV/month with ~50% of GMV on 7-day terms ≈ **₹3.5–5L standing receivables float**, financed from bootstrap capital (17-FUNDRAISE-FINANCE.md §5 reserves this) and later from seed + Stream-5 invoice financing.
-- HoReCa habitually demands 15–30 day credit. We do **not** match it from our books; we hold the line at 7 days and route longer terms to the financing partner (Stream 5). Losing a buyer over credit terms is acceptable; becoming an unlicensed lender is not.
+- Float math at city break-even scale (§7), **restated 16 Jul 2026**: the earlier ₹3.5–5L figure counted only clean 7-day receivables on ~50% of GMV. The honest float adds what the receivables number hides: payout-to-collection timing gaps on *every* order (farmer paid at grading day 0; even pay-on-delivery cash lands day 1–2), late payers inside the 10-day suspension window, disputed/credit-noted invoices, and a shrinkage buffer. Realistic standing float at ₹30L GMV/month ≈ **₹7–10L** (~2× the old number). ReshaMandi died of exactly this — working capital consumed by the gap between paying suppliers instantly and collecting from buyers slowly — with far more cushion than we have; [17-FUNDRAISE-FINANCE.md](17-FUNDRAISE-FINANCE.md) §2/§5 reserves accordingly. Weekly float report is part of the 14-OPS ritual from pilot week 1.
+- HoReCa habitually demands 15–30 day credit. We do **not** match it from our books; we hold the line at 7 days and route longer terms to the financing partner (Stream 5). Losing a buyer over credit terms is acceptable; becoming an unlicensed lender is not. **The net-7 line is tested explicitly in Phase 0** (04 §2.2 Q8) — a buyer who will only switch on 15–30 day terms is recorded as a NO in the switch rubric, not a maybe.
 
 ## 7. Path to profitability with tens of buyers
 

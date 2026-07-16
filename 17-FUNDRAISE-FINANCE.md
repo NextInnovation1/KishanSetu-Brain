@@ -1,13 +1,13 @@
 # 17 — FUNDRAISE & FINANCE
 
-_Doc owner: Alpesh (founder). Status: Draft v1.0 for founder approval. Last updated: 2026-07-14._
+_Doc owner: Alpesh (founder). Status: Draft v1.0 for founder approval. Last updated: 2026-07-16._
 _Reads with: 02-MARKET-RESEARCH.md (the market story investors buy), 03-BUSINESS-MODEL.md (unit economics & break-even the raise is priced on), 04-GTM-SALES-MARKETING.md (the sales engine that produces the metrics), 13-LAUNCH-PLAN.md (pilot gates = raise gates), 16-RISKS-MITIGATIONS.md (the risk answers for diligence), 18-LEGAL-COMPLIANCE.md (corporate hygiene the data room proves)._
 
 ---
 
 ## 1. Purpose
 
-Define how KisanSetu is financed from today (planning stage, zero revenue) through an 18-month seed runway: the bootstrap→seed narrative, the exact metrics that unlock the raise, the logic for who we pitch (and who we don't), the 6-month indicative burn of ₹2.5–4L/month, working-capital treatment, financial hygiene from day 1, and the data-room checklist so the raise is a 4-week process, not a 4-month scramble.
+Define how KisanSetu is financed from today (planning stage, zero revenue) through an 18-month seed runway: the bootstrap→seed narrative, the exact metrics that unlock the raise, the logic for who we pitch (and who we don't), the 9–12-month bootstrap at an indicative burn of ₹2.5–4L/month, working-capital treatment, financial hygiene from day 1, and the data-room checklist so the raise is a 4-week process, not a 4-month scramble.
 
 **Financing philosophy:** raise on **retention and unit economics, not vision**. The vision slide is free; the repeat-rate slide costs 6 months of disciplined ops. We bootstrap to pilot proof precisely because the 2024–25 graveyard (Otipy, Fraazo, ReshaMandi — 02-MARKET-RESEARCH.md) taught investors to distrust fresh-produce stories without per-order math. Our per-order math is 03-BUSINESS-MODEL.md §4; this doc funds the period needed to make it real.
 
@@ -15,20 +15,22 @@ Define how KisanSetu is financed from today (planning stage, zero revenue) throu
 
 | Stage | When | Amount | Source | Buys |
 |---|---|---|---|---|
-| **Bootstrap** | Now → M6 | ₹19–27L total (₹16–22L opex + ₹3–5L working-capital float) | Founder savings + friends & family (simple SAFE-style note or plain equity at nominal valuation; keep it clean — no complex instruments pre-seed) | Phase-0 validation → MVP build → pilot → the metrics in §3 |
-| **Seed** | M6–M9 (only after §3 gates are green) | ₹3.5–5 Cr (~$420–600k) | Agritech-active seed funds + Gujarat angels (§4) | 18 months: Surat to city-level EBITDA-positive, city #2 launch, 2–3 engineers post-PRD approval, working capital |
+| **Bootstrap** | Now → **M9–M12** (restated 16 Jul 2026; was M6 — see note below) | **₹29–45L total** (₹22–35L opex over 9–12 months + **₹7–10L** working-capital float per the restated 03 §6) | Founder savings + friends & family (simple SAFE-style note or plain equity at nominal valuation; keep it clean — no complex instruments pre-seed) | Phase-0 validation → MVP build → pilot → the metrics in §3 |
+| **Seed** | **M9–M12** (only after §3 gates are green) | ₹3.5–5 Cr (~$420–600k) | Agritech-active seed funds + Gujarat angels (§4) | 18 months: Surat to city-level EBITDA-positive, city #2 launch, 2–3 engineers post-PRD approval, working capital |
 | **Series A** | ~M24+ | Sized later | Raised on multi-city replication + FPO-SaaS MRR | Gujarat → tier-2 India; country #2 evaluation (04 §8.2) |
 
 Dilution guidance: friends & family ≤10%; seed 15–20%; founder keeps >70% post-seed. ESOP pool (10%) created at seed, not before.
 
-**If the Phase-0 kill criterion fires** (<3/10 buyers, 03 §8): the FPO-SaaS-first pivot needs **less** money (no logistics, no buyer credit float) — bootstrap stretches to ~9 months, and the seed story becomes vertical SaaS with a marketplace option. The raise is delayed, not killed. This is stated up front to every early investor so a pivot is a plan executed, not a surprise.
+**Why the bootstrap window moved to M9–M12 (16 Jul 2026 — the gate-math correction):** the §3.2 seed gates require a **≥70% weekly repeat rate held for 8 consecutive weeks** AND **≥40 active buyers with a 3-month-old cohort**. With pilot launch at ~M3 (13-LAUNCH-PLAN), a 3-month-old cohort exists at M6 at the earliest and the 8-week streak realistically completes M8–M10. A 6-month bootstrap therefore could not reach its own seed gates — the old plan had the round opening before the evidence it depends on could exist. The bootstrap is sized to the gates, not to optimism.
+
+**If the Phase-0 kill criterion fires** (<3/10 buyers, 03 §8): the FPO-SaaS-first pivot needs **less** money (no logistics, no buyer credit float) — the same ₹29–45L stretches to ~15–18 months, and the seed story becomes vertical SaaS with a marketplace option. The raise is delayed, not killed. This is stated up front to every early investor so a pivot is a plan executed, not a surprise.
 
 ## 3. The narrative & the metrics that unlock the seed
 
 ### 3.1 The story arc (deck already structured for this; update slide 14 with real data — task T8.1)
 
 1. **The problem is a broken chain**: farmers keep 30–40%, produce takes days, ₹1.5 lakh crore/yr post-harvest loss (NABCONS 2022).
-2. **The market bifurcated and left the lane open**: Ninjacart broadening away from fresh-to-HoReCa; DeHaat/AgroStar inputs-led; every asset-heavy B2B2C fresh player died 2024–25 — **the graveyard proves the asset-light thesis** (02-MARKET-RESEARCH.md).
+2. **The market bifurcated and left a narrow, honest wedge** (restated 16 Jul 2026): Ninjacart broadening away from fresh-to-HoReCa; DeHaat/AgroStar inputs-led; every asset-heavy B2B2C fresh player died 2024–25 — **the graveyard proves the asset-light thesis**. And we name the elephant ourselves before any investor does: **Hyperpure owns organized-HoReCa procurement (incl. Surat) as a warehouse distributor — our lane is farm-direct + published farmer-share + traceability, a 2–4-year window, defended by supply-side depth** (02-MARKET-RESEARCH.md §6.4).
 3. **We built the survivor design**: asset-light (FPO hubs + 3PL), B2B sales-led, contribution-positive per order, two published numbers (<36h harvest→door; ≥60% farmer share).
 4. **And here is the pilot data** (§3.2) — retention, fulfilment, farmer share on real payout slips, GMV ramp.
 5. **The moat compounds**: FPO procurement SaaS makes every hub a pre-integrated supply node + data feed; the model is region-agnostic by construction (global-first, 03 §9).
@@ -71,7 +73,7 @@ Criteria (all four must hold before a fund makes the list): (1) writes ₹50L–
 
 Process: warm-path-first (portfolio founders, GUSEC/CIIE mentors, the FPO ecosystem's NABARD/SFAC contacts); a 12-fund pipeline max; 2-week diligence sprint enabled by the data room (§7). Monthly investor updates (§8) start **before** the raise, to the 5 most-likely leads — the raise opens warm.
 
-## 5. Six-month indicative burn (bootstrap period): ₹2.5–4L/month
+## 5. Indicative monthly burn, bootstrap period (9–12 months): ₹2.5–4L/month
 
 Monthly run-rate once fully staffed (hires land M2–M3; M1 is lighter):
 
@@ -90,7 +92,7 @@ Monthly run-rate once fully staffed (hires land M2–M3; M1 is lighter):
 | Contingency (~10%) | 20,000 | 35,000 | |
 | **Total** | **≈ ₹2.3L** | **≈ ₹3.9L** | **the ₹2.5–4L/mo envelope** |
 
-Cumulative 6-month cash need: **₹16–22L opex** (M1 runs lean pre-hires) **+ ₹3–5L buyer-credit working-capital float** (03 §6) = **₹19–27L bootstrap requirement** (§2). Burn discipline rules: (a) no line grows without a metric justifying it in the weekly review; (b) 3PL spend must trend from subsidy to pass-through as density rises; (c) if bootstrap cash dips below 2 months of lean burn before gates are green, cut to lean immediately and extend Phase timelines rather than raising desperate.
+Cumulative cash need over the restated **9–12-month** bootstrap (§2): **₹22–35L opex** (M1 runs lean pre-hires; later months at the lean-to-full envelope) **+ ₹7–10L buyer-credit working-capital float** (03 §6, restated 16 Jul 2026) = **₹29–45L bootstrap requirement**. If only the old ₹19–27L is actually available, the plan is the *lean* column + a pre-agreed scope cut (delay field-sales hire, hold marketing at ₹25k) — not silent hope. Burn discipline rules: (a) no line grows without a metric justifying it in the weekly review; (b) 3PL spend must trend from subsidy to pass-through as density rises; (c) if bootstrap cash dips below 2 months of lean burn before gates are green, cut to lean immediately and extend Phase timelines rather than raising desperate.
 
 ## 6. Use of seed funds (18-month plan, ₹3.5–5 Cr)
 
@@ -113,7 +115,7 @@ Seed success criteria (what Series A is raised on): 2 cities at city-level EBITD
 **D. Metrics & unit economics** (the heart of the room): unit-economics workbook implementing the 03 §4.1 waterfall per order, real (not illustrative); weekly KPI history — repeat rate, fulfilment, farmer share, freshness hours, GMV, contribution/order; cohort retention table by buyer start-month; SLA timestamp extract proving <36h median; sample payout slips + UTR trail proving ≥60% farmer share; CAC by channel (04 §9).
 **E. Financials**: monthly P&L and cash-flow actuals vs the §5 budget, bank statements, receivables aging (proving the 7-day/₹25k policy holds), GST-reconciled revenue.
 **F. Product & tech**: this Brain (the PRD corpus itself is diligence gold — Rule 3 evidenced), architecture note (11-ARCHITECTURE.md), security/data-protection posture (DPDP compliance note), repo access on request.
-**G. Market**: 02-MARKET-RESEARCH.md with citations (TAM ~$47B, SAM ~$10B founder-estimate flagged as such, competitor graveyard evidence), Phase-0 interview summaries + scoring sheet (04 §2.4), mandi shadow data.
+**G. Market**: 02-MARKET-RESEARCH.md with citations (TAM ~$47B; SAM ~$2–3B organized-HoReCa fresh and SOM as realistic capture, restated 16 Jul 2026 — the retracted $10B/$300M never ships; Hyperpure/Fambo named up front, competitor graveyard evidence), Phase-0 interview summaries + scoring sheet (04 §2.4), mandi shadow data **including the measured farmgate→HoReCa-landed spread (T0.4)**.
 **H. People**: team bios, hire plan, ESOP plan draft, advisor agreements if any.
 
 Rule: **nothing in the data room may contradict the published website numbers** — farmer share and freshness stats shown publicly must equal the data-room extracts. Radical transparency is the brand (04 §7); inconsistency here kills the round.
@@ -129,10 +131,10 @@ Rule: **nothing in the data room may contradict the published website numbers** 
 ## 9. Open questions (owner + deadline)
 
 1. **Exact bootstrap split** (founder savings vs F&F, and instrument for F&F) — Alpesh, before first F&F conversation, target M1.
-2. **Seed size point** in the ₹3.5–5 Cr band (raise-for-18-months vs 24) — Alpesh at raise open (M6–M9), driven by real burn data from §5 actuals.
+2. **Seed size point** in the ₹3.5–5 Cr band (raise-for-18-months vs 24) — Alpesh at raise open (M9–M12, §2), driven by real burn data from §5 actuals.
 3. **Whether to take a strategic angel from HoReCa** (value vs conflict risk) — Alpesh, case-by-case during raise.
 4. **Impact-fund reporting overhead** (is their diligence worth the cheque at seed?) — Alpesh, after first 2 impact-fund conversations.
 5. **ESOP pool size** (10% default vs 12% if senior sales hire needs it) — Alpesh, at seed term-sheet stage.
 6. **Trademark outcome for "KisanSetu"** may force a rename before the raise — Alpesh, Phase-0 week 2 (T0.5); budget line sits in Legal (§5).
 
-**Decisions taken in this doc that the founder should ratify:** bootstrap ceiling ₹27L including float; seed band ₹3.5–5 Cr at 15–20% dilution; metric gates in §3.2 as hard preconditions to opening the round; the "what we say no to" list §3.3; monthly-update habit from M1.
+**Decisions taken in this doc that the founder should ratify:** bootstrap requirement **₹29–45L over 9–12 months including the ₹7–10L float** (restated 16 Jul 2026 — supersedes the old ₹27L/6-month ceiling); seed band ₹3.5–5 Cr at 15–20% dilution, opening M9–M12 on green gates; metric gates in §3.2 as hard preconditions to opening the round; the "what we say no to" list §3.3; monthly-update habit from M1.

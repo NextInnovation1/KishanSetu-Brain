@@ -13,15 +13,18 @@ This register exists so that failure modes are decided **in advance, in writing,
 | R1 | Demand validation fails | Medium | Fatal to model | Phase 0 → pilot week 8 |
 | R2 | FPO partner quality/reliability | Medium-High | High | Pilot onward |
 | R3 | Cold-chain cost blowout | Medium | High (margin) | Pilot onward |
-| R4 | Price war — Ninjacart (or other) re-focuses on our lane | Low-Medium | High | Month 6+ / post-traction |
+| R4 | Funded incumbent squeeze — **Hyperpure is in Surat today**; Ninjacart/others can re-focus | **Medium-High** | High | **Day 1** (not "post-traction") |
 | R5 | Farmer side-selling | High | Medium-High | Every price-spike day |
 | R6 | Perishability & quality disputes | Medium | Medium (trust) | Every delivery |
 | R7 | Regulatory — APMC/mandi-fee action | Low-Medium | Medium-High | Launch onward |
-| R8 | Funding winter — seed round fails | Medium | High | Month 5–9 |
+| R8 | Funding winter — seed round fails | Medium | High | Month 8–15 (raise opens M9–M12, 17 §2) |
 | R9 | Single-founder execution risk | High | Fatal if unmanaged | Always |
 | R10 | Brand/trademark blocked ("KisanSetu") | Medium | Low-Medium | Phase 0 |
 | R11 | Payment/fraud incident | Low | Medium | Pilot onward |
 | R12 | Supply shock (monsoon/pest/price crash) | Medium | Medium | Seasonal |
+| R13 | The spread doesn't exist (farmer share of HoReCa landed price already ≥55%) | Unknown — **unmeasured** | **Fatal to model** | Phase 0 (T0.4 measures it) |
+| R14 | Working-capital float spiral (instant payout out, slow collection in) | Medium | High → fatal at scale | Pilot week 1 onward |
+| R15 | Farmer credit lock-in (arhtiya advances) caps supply depth | Medium-High | Medium-High | Pilot onward, spikes each sowing season |
 
 ---
 
@@ -46,9 +49,9 @@ This register exists so that failure modes are decided **in advance, in writing,
 **Contingency:** re-price delivery fee (buyers accept visible fuel-style adjustments better than produce-price games); consolidate delivery days for small buyers (3×/week instead of daily); drop unprofitable routes — a smaller profitable pilot beats a bigger bleeding one.
 **Kill criterion:** contribution margin per order still negative at week 16 **with** route utilization >70% and take rate in band ⇒ the unit economics don't work at tier-2 density; halt expansion, shrink to the profitable core, and re-run the model with FPO-SaaS revenue in the mix before raising or scaling.
 
-## R4 — Price war: Ninjacart (or another funded player) re-focuses on our lane
-**The risk:** our wedge exists because Ninjacart pivoted away from focused fresh-to-HoReCa ([02-MARKET-RESEARCH.md](02-MARKET-RESEARCH.md)). Traction can invite them back — or invite DeHaat to bolt on buyer-side delivery — with below-cost pricing we cannot match.
-**Early warnings:** competitor sales reps visiting our named buyers; sudden below-mandi pricing in Surat HoReCa; competitor job postings for Surat/Gujarat fresh-supply roles; our CAC rising while M1 falls among newest cohorts.
+## R4 — Funded incumbent squeeze: Hyperpure is already here; others can re-focus
+**The risk (restated 16 Jul 2026 — this is a present condition, not a future event):** **Hyperpure (Eternal/Zomato) already serves organized HoReCa in Surat** — ₹6,196 Cr FY25 revenue, ~40k+ customers, EBITDA-positive, and a one-invoice/reliability story that overlaps ours ([02-MARKET-RESEARCH.md](02-MARKET-RESEARCH.md) §6.1/§6.4). Our wedge vs it is farm-direct + farmer-share + traceability + fresh depth — a **2–4-year timing arbitrage**, not an empty lane. Separately, traction can invite Ninjacart back to focused fresh, DeHaat to bolt on buyer-side delivery, or Fambo to enter Gujarat — with below-cost pricing we cannot match.
+**Early warnings:** Phase-0 interviews reveal target buyers already on Hyperpure (T0.2 now records this); competitor sales reps visiting our named buyers; sudden below-mandi pricing in Surat HoReCa; competitor job postings for Surat/Gujarat fresh-supply roles; our CAC rising while M1 falls among newest cohorts; Hyperpure adding farm-traceability messaging.
 **Mitigation:** the moat is deliberately non-price: traceability, published freshness SLA, farmer-share story, and switching costs via standing orders + WhatsApp habit; B2B relationships defend better than app users (founder knows all ≤25 buyers personally); tier-2 focus is itself protection — Surat is small for their cost structure; FPO SaaS deepens the supply-side lock.
 **Contingency:** do not match below-cost prices (pre-committed — subsidy wars are how the 2024–25 graveyard filled); defend on the accounts where we have SLA history; accelerate crop breadth for existing buyers (share-of-wallet beats buyer count in a knife fight); consider the FPO-SaaS flank where a marketplace competitor can't follow easily.
 **Kill criterion:** losing >30% of 8-week+ tenured buyers to a subsidizing competitor over 8 weeks despite SLA being met ⇒ the buyers were price-loyal, not quality-loyal; retreat from that segment, refocus on the sub-segment that stayed, and revisit the SaaS pivot rather than out-burning a Walmart-backed balance sheet.
@@ -103,6 +106,24 @@ This register exists so that failure modes are decided **in advance, in writing,
 **Contingency:** temporary sourcing from a neighboring FPO/aggregator for buyer continuity (disclosed in the trace — traceability is never faked, even in a shock week); crop substitution offers to buyers.
 **Kill criterion:** none at pilot scale; a full failed season in the district would trigger the R2/R7-style geography review.
 
+## R13 — The spread doesn't exist (added 16 Jul 2026)
+**The risk:** the entire model is a levered bet on an **unmeasured number** — the gap between farmgate price and what a restaurant currently pays its vendor. The published 30–40% farmer-share baseline is vs *consumer retail*; we sell at *HoReCa wholesale*, a shorter chain. If farmers already capture ≥55% of the HoReCa landed price for our crops, then ≥60% farmer share + FPO fee + 3PL + our take at parity-minus-5% pricing is **negative on every order, structurally** — no execution, density, or scale fixes arithmetic.
+**Early warnings:** none post-launch — this must be caught **before** building. That is the point.
+**Mitigation:** T0.4 mandi shadow now measures both ends of the same crop on the same day (04 §2.5); thresholds pre-committed in [03-BUSINESS-MODEL.md](03-BUSINESS-MODEL.md) §5 (≥55% alarm / 45–55% remodel / <45% proceed).
+**Kill criterion (pre-committed):** measured farmer share of HoReCa landed price ≥55% on both beachhead crops ⇒ the marketplace thesis fails on structure; execute the FPO-SaaS pivot regardless of interview enthusiasm.
+
+## R14 — Working-capital float spiral (added 16 Jul 2026)
+**The risk:** we pay farmers instantly (day 0) and collect from buyers slowly (day 1–2 even on "pay-on-delivery"; day 7+ on credit; later on disputes). At growth, receivables + timing gaps + late payers + credit notes consume cash faster than margin generates it — **ReshaMandi's cause of death, with a thinner cushion**. The old ₹3.5–5L float estimate counted only clean receivables; the honest number is ~2× (03 §6 restated).
+**Early warnings:** float report (weekly ritual) shows standing float >₹8L before GMV justifies it; receivables aging R5 report shows >20% of invoices past due; growth pace outrunning the float reserve; anyone proposing to relax the ₹25k cap or net-7 line "for a big buyer".
+**Mitigation:** ₹7–10L float reserved in the bootstrap ([17-FUNDRAISE-FINANCE.md](17-FUNDRAISE-FINANCE.md) §2); exposure cap + auto-suspend enforced in the backend (06-PRD); first-4-orders pay-on-delivery; weekly float line in the ops ritual from pilot week 1; growth rate explicitly subordinated to float capacity — we decline buyers rather than finance them.
+**Kill criterion:** float demand exceeding reserve twice in a quarter while contribution/order is on target ⇒ stop adding credit buyers entirely until Stream-5 invoice financing is live; if that stalls growth below G1 gates, the model needs external working capital earlier than planned — surface it to investors honestly rather than stretching payables.
+
+## R15 — Farmer credit lock-in caps supply depth (added 16 Jul 2026)
+**The risk:** most smallholders are bound to *arhtiyas*/input dealers by interest-free advances settled against harvest (~35% of agri credit). Price + instant payment don't free a farmer whose crop is already pledged — so our addressable supply is FPO members with unpledged surplus, and it may be too shallow on spike days (compounds R5).
+**Early warnings:** FPO meetings (T0.3) reveal high advance-dependence among members; listings concentrate in a few larger farmers; supply thins every sowing season (when cash needs peak).
+**Mitigation:** T0.3 now asks the arhtiya-dependence question explicitly; target FPOs whose members skew toward unpledged surplus; instant payout + payout-slip marketing recruits at the margin; accelerate the Stream-5 input-credit referral evaluation (NBFC partner, consent-based payout deduction — [03-BUSINESS-MODEL.md](03-BUSINESS-MODEL.md)) if depth stalls — credit is a supply-side unlock, not just a revenue stream.
+**Kill criterion (for the assumption, not the company):** if two FPOs' measured unpledged-surplus depth cannot fill pilot demand at week 8, supply strategy shifts (more FPOs earlier, or spot-intake model per R5) before any city-#2 talk.
+
 ---
 
 ## How this register is used
@@ -110,4 +131,4 @@ This register exists so that failure modes are decided **in advance, in writing,
 2. **Kill criteria are pre-commitments.** Overriding one requires a written memo stating why the criterion was wrong *when written* — not why this week is special.
 3. Every gate in [13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md) maps to a risk here: G1↔R1, supply gates↔R2/R5, margin gates↔R3, runway check↔R8.
 
-_Change log: v1.0 (July 2026) — initial register, pre-pilot._
+_Change log: v1.0 (July 2026) — initial register, pre-pilot. v1.1 (16 Jul 2026) — VC self-evaluation folded in: R4 restated (Hyperpure is a present incumbent, not a future entrant; likelihood raised to Medium-High, window from day 1); R13 (unmeasured spread — fatal-if-true, measured by T0.4), R14 (working-capital float spiral — the ReshaMandi failure mode), R15 (arhtiya credit lock-in caps supply depth) added._

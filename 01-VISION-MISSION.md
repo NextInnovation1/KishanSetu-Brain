@@ -39,7 +39,7 @@ KisanSetu is a **global platform launched hyper-locally** (rule 2). The expansio
 |---|---|---|
 | 0. Beachhead | **Surat, Gujarat** — 1 FPO hub, 2 crops, 15–25 HoReCa buyers | Phase 0 validation passed; pilot gates: ≥70% weekly buyer repeat, ≥95% fulfilment, farmer share ≥60% documented ([13-LAUNCH-PLAN.md](13-LAUNCH-PLAN.md)) |
 | 1. Region | Gujarat (Ahmedabad, Vadodara, Rajkot) | Surat contribution-margin positive; ops playbook repeatable without founder present daily |
-| 2. Tier-2 India | Nashik, Indore, Coimbatore, Jaipur-class cities — the uncontested lane | Multi-hub ops proven; FPO SaaS deployed at partner hubs |
+| 2. Tier-2 India | Nashik, Indore, Coimbatore, Jaipur-class cities — under-served on the farm-direct/fresh-specialist axis (not uncontested: Hyperpure distributes in tier-2 — [02-MARKET-RESEARCH.md](02-MARKET-RESEARCH.md) §6.4) | Multi-hub ops proven; FPO SaaS deployed at partner hubs |
 | 3. Indian metros | Selective — enter where incumbents have vacated focused fresh | Brand + balance sheet to fight for supply |
 | 4. International | Southeast Asia → Africa → LATAM (same smallholder→HoReCa gap) | Platform fully region-agnostic in production (it is by design from day 1); local partner model validated remotely first |
 
@@ -70,7 +70,7 @@ Adjacent revenue (input credit, invoice financing) enters only after the core lo
 
 **Years 0–1 — Prove (Surat).** Phase 0 validation, then pilot: 1 FPO hub, 2 crops, 15–25 buyers, 25–50 farmers. Freshness SLA instrumented from crate one. Exit criteria: the two metrics hit and published, contribution-margin-positive orders. If <3 of 10 buyers bite in Phase 0 → pivot to FPO-SaaS-first (the fallback is a feature of the plan, not an embarrassment).
 
-**Years 1–3 — Repeat (Gujarat → tier-2 India).** 3–5 cities, multi-hub ops, ops playbook executed by hired city leads instead of the founder. FPO procurement SaaS licensed to partner hubs — the software becomes the switching cost and the data moat (grading records, yield patterns, demand curves). Seed → Series A on retention and unit economics, not GMV theater. Directional target: capture a meaningful slice of the ~$300M beachhead SOM.
+**Years 1–3 — Repeat (Gujarat → tier-2 India).** 3–5 cities, multi-hub ops, ops playbook executed by hired city leads instead of the founder. FPO procurement SaaS licensed to partner hubs — the software becomes the switching cost and the data moat (grading records, yield patterns, demand curves). Seed → Series A on retention and unit economics, not GMV theater. Directional target: the restated 3-year capture of [02-MARKET-RESEARCH.md](02-MARKET-RESEARCH.md) §2 (~$2–5M GMV/yr by Y3 — restated 16 Jul 2026; the old "$300M SOM" framing is retracted).
 
 **Years 3–5 — Compound (India scale + first international).** 15–25 Indian cities; buyer types widen to modern retail and processors; crop range widens with grading capability. Data products mature: demand forecasting for FPOs, dynamic daily pricing, credit-scoring signals from transaction history (partner-delivered financing). First international pilot in one Southeast Asian city (likely Indonesia or Vietnam) run with a local partner on the same codebase — the day-1 region abstraction pays out here.
 

@@ -1,6 +1,6 @@
 # 04 — GO-TO-MARKET, SALES & MARKETING
 
-_Doc owner: Alpesh (founder). Status: Draft v1.0 for founder approval. Last updated: 2026-07-12._
+_Doc owner: Alpesh (founder). Status: Draft v1.0 for founder approval. Last updated: 2026-07-16._
 _Reads with: 02-MARKET-RESEARCH.md (who the buyers are and why the lane is open), 03-BUSINESS-MODEL.md (pricing, contribution math that GTM must respect — especially route density), 08-PRD-WEBSITE.md (lead capture this plan feeds), 13-LAUNCH-PLAN.md (phase gates), 14-OPS-PLAYBOOK.md (hub and payout SOPs), 17-FUNDRAISE-FINANCE.md (marketing budget inside the burn)._
 
 **Operating principle (Golden Rule 6): this is a B2B, sales-led business. Ads support sales; they never replace it.** The founder selling with a sample crate is the strategy, not a stopgap until "real marketing" starts.
@@ -44,7 +44,7 @@ Rules: ask, then shut up. No pitching until Q12. Record numbers verbatim. Ask to
 5. "How many days a week do you order? Split across how many vendors?" (**frequency + share-of-wallet**)
 6. "Which 8–10 items are your daily staples? Which hurt most on quality?" (**beachhead-crop selection, T0.6**)
 7. "Rank your top 3 frustrations: price volatility, quality inconsistency, short supply in season spikes, delivery timing, billing/GST mess, credit terms." (pain ranking)
-8. "What payment terms do you get today? What would you need from a new supplier?" (**credit-terms demand — feeds 03 §6**)
+8. "What payment terms do you get today? What would you need from a new supplier?" — then, explicitly: **"Our terms are pay-on-delivery for the first 4 orders, then maximum 7-day credit with a ₹25,000 cap. Would you still switch on those terms?"** (**credit-terms demand at OUR terms, not in the abstract — feeds 03 §6; a switch conditional on 15–30-day credit scores as NO in the §2.4 rubric**)
 9. "If produce arrived graded A/B, within 36 hours of harvest, with the farm name on the crate — what's that worth? Same price? 5% more? Only if cheaper?" (willingness-to-pay)
 10. "Would a paid priority tier — guaranteed supply during shortage weeks, price locked 7 days — interest you? What monthly fee feels fair / expensive / absurd?" (**Priority pricing — feeds 03 Stream 3**)
 11. "What would make you actually switch a first order this month? What would make you refuse forever?" (conversion trigger + deal-breaker)
@@ -67,11 +67,15 @@ Rules: ask, then shut up. No pitching until Q12. Record numbers verbatim. Ask to
 
 Score each buyer 0–3: **0** = happy, won't try. **1** = polite interest, no commitment. **2** = named a concrete condition and accepted a trial crate. **3** = accepted trial AND stated a start condition we can meet within 30 days.
 
+**Scoring override (added 16 Jul 2026):** a "2" requires the named condition to be one we can actually meet. A switch conditional on **>7-day credit terms or exposure above the ₹25k cap** (Q8) scores at most **1** — the condition violates the 03 §6 net-7 line, so it is not a switch we can win. No post-hoc exceptions.
+
 **Go:** ≥5 buyers scoring 2+. **Kill/pivot:** <3 scoring 2+ → execute FPO-SaaS-first pivot (03-BUSINESS-MODEL.md §8). Between 3 and 4: extend to 10 more interviews, one time only.
 
 ### 2.5 Mandi morning shadow (T0.4) — data checklist
 
 One 4 am–9 am visit: for 8 target vegetables record farmgate price paid to arriving farmers, each hop's margin (commission agent → wholesaler → sub-wholesaler → retailer/vendor), waiting time, weighing/deduction practices ("kaanta" cuts), wastage piles, time from farm arrival to buyer dispatch. Output: the **broken-chain diagram with real Surat numbers** — used on the website (08-PRD-WEBSITE.md), the sales price card, and the pitch deck.
+
+**The existential measurement (added 16 Jul 2026 — do NOT skip):** for the same crops on the same day, also record **what a restaurant actually pays its current vendor** (landed price — from the §2.2 interview bill photos and the HoReCa-supplier hop of the chain). Compute **farmer share of the HoReCa landed price** per crop. This — not the farmer-share-of-retail number — is the denominator our ≥60% promise and entire take-rate live inside. Thresholds (pre-committed in [03-BUSINESS-MODEL.md](03-BUSINESS-MODEL.md) §5): **≥55% → structural-spread alarm, marketplace thesis fails on arithmetic; 45–55% → re-run the 03 §4 model with measured numbers before any build decision; <45% → the spread exists, proceed to the interview verdict.**
 
 ## 3. ICP & buyer tiering (who we sell to, in what order)
 

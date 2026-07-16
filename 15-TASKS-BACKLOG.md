@@ -17,9 +17,9 @@ _KisanSetu Brain · July 2026 · Owner: Alpesh (founder; owner defaults to found
 | ID | St | Task | Acceptance criteria | Size |
 |---|---|---|---|---|
 | T0.1 | [ ] | List 30 Surat HoReCa targets | Sheet with name, area, cuisine, est. daily veg spend, contact, source (Zomato/Swiggy/associations); ≥30 rows, ≥5 per buyer sub-type | S |
-| T0.2 | [ ] | Run 10 buyer interviews (5 restaurants, 2 hotels, 2 caterers, 1 cloud kitchen) | Filled interview sheet per buyer: current supplier, weekly veg spend, AOV, pain ranking, willingness-to-switch (committed Y/N), acceptable price position; go/pivot verdict computed (≥5 switch = strong, <3 = pivot per [16-RISKS-MITIGATIONS.md](16-RISKS-MITIGATIONS.md) R1) | M |
+| T0.2 | [ ] | Run 10 buyer interviews (5 restaurants, 2 hotels, 2 caterers, 1 cloud kitchen) | Filled interview sheet per buyer: current supplier (incl. **whether they already buy from Hyperpure** — [02-MARKET-RESEARCH.md](02-MARKET-RESEARCH.md) §6.4), weekly veg spend, AOV, pain ranking, **willingness-to-switch at explicit net-7/₹25k terms** (04 §2.2 Q8 — a 15–30-day-credit conditional = NO), acceptable price position; go/pivot verdict computed (≥5 switch = strong, <3 = pivot per [16-RISKS-MITIGATIONS.md](16-RISKS-MITIGATIONS.md) R1) | M |
 | T0.3 | [ ] | Identify Surat-district FPOs; meet 2; sign 1 pilot MoU | FPO shortlist from SFAC/NABARD directories; 2 meeting notes; 1 MoU signed per [18-LEGAL-COMPLIANCE.md](18-LEGAL-COMPLIANCE.md) §6 outline | M |
-| T0.4 | [ ] | Mandi morning shadow + one restaurant procurement cycle | Documented price spreads, hop count, timings for 8 target vegetables; farmer-share baseline computed from observed spreads | S |
+| T0.4 | [ ] | Mandi morning shadow + one restaurant procurement cycle | Documented price spreads, hop count, timings for 8 target vegetables; farmer-share baseline computed from observed spreads; **farmer share of HoReCa LANDED price per crop computed (the existential number — 04 §2.5): ≥55% = structural alarm feeding T0.7; 45–55% = re-run 03 §4 before any build** | S |
 | T0.5 | [ ] | Trademark search "KisanSetu" + domain + store-name availability | IP India search report (classes 9, 31, 35, 39, 42); decision memo keep/rename; domain + Play/App Store names + social handles reserved | S |
 | T0.6 | [ ] | Freeze 2 beachhead crops | Decision memo naming 2 crops with interview-demand evidence; grading-feasibility note per crop (can A/B be judged by photo chart?) | S |
 | T0.7 | [ ] | Decision memo: marketplace-first vs FPO-SaaS-first | 1-page memo with the T0.2 data as input; decision recorded; MVP scope in [12-DEVELOPMENT-PLAN.md](12-DEVELOPMENT-PLAN.md) matches it | S |
@@ -131,7 +131,7 @@ _Stack per [20-CODE-ARCHITECTURE.md](20-CODE-ARCHITECTURE.md) §1: TypeScript (s
 | T7.7 | [ ] | Trade association intros | ≥2 Surat hotelier/restaurant association meetings held; member list access | S |
 | T7.8 | [ ] | Press prep (post-traction only) | "Asset-light survivor" narrative doc + real SLA/farmer-share data pack; pitched only after G1 passed | S |
 
-## T8 · Fundraise (month 5–6, only after retention data; per [17-FUNDRAISE-FINANCE.md](17-FUNDRAISE-FINANCE.md))
+## T8 · Fundraise (month 8–11 prep, raise opens M9–M12 — only after the 17 §3.2 gates are green; per [17-FUNDRAISE-FINANCE.md](17-FUNDRAISE-FINANCE.md) §2, restated 16 Jul 2026)
 
 | ID | St | Task | Acceptance criteria | Size |
 |---|---|---|---|---|

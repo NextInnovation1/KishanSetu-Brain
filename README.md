@@ -84,7 +84,8 @@ Full definitions with violation examples live in [00-GOLDEN-RULES.md](00-GOLDEN-
 | Kill/pivot criterion | <3 of 10 Surat HoReCa buyers willing to switch → pivot to FPO-SaaS-first wedge |
 | Existing code scaffolds | Frozen; will be re-reviewed against approved PRDs |
 | Payment gateway | **FIXED: Razorpay** (founder, 14 Jul 2026) — backend payouts/webhooks/collections and, if ever needed, the mobile SDKs. See [21-AI-EXECUTION-PLAYBOOK.md](21-AI-EXECUTION-PLAYBOOK.md) §10, [06-PRD-BACKEND.md](06-PRD-BACKEND.md) §6.8 |
-| Pitch deck | `KisanSetu-Pitch-Deck-v2.pptx` (July 2026 figures) in `~/Downloads/` |
+| VC self-evaluation (16 Jul 2026) | 13-dimension investor-grade evaluation run against this corpus: **not fundable pre-Phase-0** (38/100). Findings folded in: Hyperpure/Fambo added + wedge rewritten ([02](02-MARKET-RESEARCH.md) §6), SAM/SOM restated ([02](02-MARKET-RESEARCH.md) §2), the **spread test** added as a structural kill input ([03](03-BUSINESS-MODEL.md) §5, [04](04-GTM-SALES-MARKETING.md) §2.5, T0.4), float ~2× restated ([03](03-BUSINESS-MODEL.md) §6), bootstrap 9–12 mo ([17](17-FUNDRAISE-FINANCE.md) §2), risks R13–R15 ([16](16-RISKS-MITIGATIONS.md)), iOS-defer + co-founder-gate pending founder ratification ([12](12-DEVELOPMENT-PLAN.md) Q6–Q7) |
+| Pitch deck | `KisanSetu-Pitch-Deck-v2.pptx` (July 2026 figures) in `~/Downloads/` — **⚠ stale as of 16 Jul 2026**: carries the retracted $10B SAM / $300M SOM and the pre-Hyperpure wedge; must be rebuilt from [02-MARKET-RESEARCH.md](02-MARKET-RESEARCH.md) §2/§6.4 before any investor sees it (T8.1) |
 
 ## Conventions used across the Brain
 
